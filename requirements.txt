@@ -1,3 +1,5 @@
 pyTelegramBotAPI
-requests
+pandas
 numpy
+pytz
+requests
