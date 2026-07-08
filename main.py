@@ -7,7 +7,6 @@ import pytz
 TOKEN = '8904166729:AAGXAXHqBC452xAixkcLz1xhU7eg27eyGeQ'
 bot = telebot.TeleBot(TOKEN)
 
-# 1. ICT Killzone Logic
 def get_killzone():
     ist = pytz.timezone('Asia/Kolkata')
     now = datetime.now(ist)
@@ -17,7 +16,6 @@ def get_killzone():
     if 20.5 <= hr <= 21.5: return "London Close 🕒"
     return None
 
-# 2. SMC/ICT Professional Engine
 def smc_ict_analysis(df):
     high = df['high'].max()
     low = df['low'].min()
@@ -29,7 +27,8 @@ def smc_ict_analysis(df):
     return f"📊 ANALYSIS:\nZone: {zone}\nEquilibrium: {eq:.2f}\nLiquidity Sweep: {liquidity_sweep}\nSuggested RR: {rr}"
 
 @bot.message_handler(commands=['start'])
-def start(m): bot.reply_to(m, "🦅 SMC + ICT RENDER ENGINE LIVE! ✅")
+def start(m):
+    bot.reply_to(m, "🦅 SMC + ICT RENDER ENGINE LIVE! ✅")
 
 @bot.message_handler(commands=['tred'])
 def trade(m):
@@ -38,4 +37,4 @@ def trade(m):
     analysis = smc_ict_analysis(df)
     bot.reply_to(m, f"🚨 {kz if kz else 'Outside Killzone'}\n\n{analysis}")
 
-bot.polling()
+bot.polling(none_stop=True)
