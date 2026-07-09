@@ -1,6 +1,8 @@
 pyTelegramBotAPI
 yfinance
 pandas
-flask
 numpy
 pytz
+requests
+flask
+pandas_ta
