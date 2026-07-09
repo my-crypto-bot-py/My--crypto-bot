@@ -15,26 +15,26 @@ CHAT_ID = os.environ.get('CHAT_ID')
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 
-# Bybit एक्सचेंज सेटअप - User-Agent के साथ (403 एरर फिक्स)
-exchange = ccxt.bybit({
+# एक्सचेंज सेटअप - Binance (Railway के लिए सबसे स्टेबल)
+exchange = ccxt.binance({
     'enableRateLimit': True,
-    'headers': {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-    }
+    'options': {'defaultType': 'spot'}
 })
 
 @app.route('/')
 def home():
-    return "SMC Advanced Engine (Bybit Powered) is Operational."
+    return "SMC Advanced Engine (Binance Powered) is Operational."
 
 def fetch_ohlcv(symbol, timeframe='1h', limit=200):
-    """Bybit से डेटा फेच करने का फंक्शन"""
+    """Binance से डेटा फेच करने का फंक्शन"""
     try:
-        bars = exchange.fetch_ohlcv(symbol, timeframe=timeframe, limit=limit)
+        # बाइनेंस के लिए सिंबल का फॉर्मेट सही करना (XAU/USDT बाइनेंस पर गोल्ड का सिंबल अलग हो सकता है)
+        # हम यहाँ सीधा सिंबल पास कर रहे हैं
+        bars = exchange.fetch_ohlcv(symbol.replace('XAU', 'GOLD').replace('XAG', 'SILVER'), timeframe=timeframe, limit=limit)
         df = pd.DataFrame(bars, columns=['timestamp', 'Open', 'High', 'Low', 'Close', 'Volume'])
         return df
     except Exception as e:
-        time.sleep(2) # फेल होने पर थोड़ा वेट करें
+        time.sleep(3)
         raise e
 
 def get_indicators(df):
@@ -45,7 +45,6 @@ def get_indicators(df):
 
 def get_market_analysis(symbol):
     try:
-        # डेटा फेचिंग
         df = fetch_ohlcv(symbol)
         df = get_indicators(df).dropna()
         
@@ -55,16 +54,13 @@ def get_market_analysis(symbol):
         trend = "BULLISH" if curr > ema200 else "BEARISH"
         signal = "BUY" if (curr > ema50 and rsi < 65) else "SELL" if (curr < ema200 and rsi > 35) else "WAIT"
         
-        # RR RATIO लॉजिक
         is_trend = (signal == "BUY" and curr > ema200) or (signal == "SELL" and curr < ema200)
         rr_ratio = 4.5 if is_trend else 3.5 
         
         if signal == "BUY":
-            sl = curr * 0.985
-            tp = curr + (curr - sl) * rr_ratio
+            sl, tp = curr * 0.985, curr + (curr - (curr * 0.985)) * rr_ratio
         elif signal == "SELL":
-            sl = curr * 1.015
-            tp = curr - (sl - curr) * rr_ratio
+            sl, tp = curr * 1.015, curr - ((curr * 1.015) - curr) * rr_ratio
         else:
             sl, tp = 0.0, 0.0
 
@@ -77,7 +73,7 @@ def get_market_analysis(symbol):
         return f"❌ Error in {symbol}: {str(e)}", "WAIT"
 
 def check_and_alert():
-    assets = ['BTC/USDT', 'SOL/USDT', 'XRP/USDT', 'XAU/USDT', 'XAG/USDT']
+    assets = ['BTC/USDT', 'SOL/USDT', 'XRP/USDT'] # गोल्ड/सिल्वर के लिए Binance के सिम्बल्स अलग होते हैं
     for symbol in assets:
         report, signal = get_market_analysis(symbol)
         if signal != "WAIT":
@@ -91,12 +87,12 @@ def run_scheduler():
 
 @bot.message_handler(commands=['start'])
 def start(m):
-    bot.send_message(CHAT_ID, "🦅 **SMC ADVANCED ENGINE (BYBIT) ACTIVE**")
+    bot.send_message(CHAT_ID, "🦅 **SMC ADVANCED ENGINE (BINANCE POWERED) ACTIVE**")
 
 @bot.message_handler(commands=['tred'])
 def trade_signal(m):
-    bot.reply_to(m, "⏳ *Analyzing market via Bybit...*", parse_mode='Markdown')
-    assets = ['BTC/USDT', 'SOL/USDT', 'XRP/USDT', 'XAU/USDT', 'XAG/USDT']
+    bot.reply_to(m, "⏳ *Analyzing market via Binance...*", parse_mode='Markdown')
+    assets = ['BTC/USDT', 'SOL/USDT', 'XRP/USDT']
     results = "\n\n".join([get_market_analysis(a)[0] for a in assets])
     bot.send_message(CHAT_ID, f"🚨 **TRED UPDATE!**\n\n{results}", parse_mode='Markdown')
 
