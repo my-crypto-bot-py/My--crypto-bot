@@ -3,7 +3,6 @@ import ccxt
 import pandas as pd
 import pandas_ta as ta
 import os
-import time
 from flask import Flask
 from threading import Thread
 from telebot import types
@@ -19,7 +18,6 @@ exchange = ccxt.kucoin({'enableRateLimit': True})
 exchange.load_markets()
 
 def get_volume_imbalance(symbol):
-    """ऑर्डर फ्लो: बायर बनाम सेलर का वॉल्यूम इम्बैलेंस"""
     try:
         order_book = exchange.fetch_order_book(symbol)
         bids = sum([b[1] for b in order_book['bids'][:5]])
@@ -40,9 +38,24 @@ def get_market_analysis(symbol):
         curr, rsi, ema50 = float(last['Close']), float(last['RSI']), float(last['EMA50'])
         
         signal = "BUY" if (curr > ema50 and rsi < 65) else "SELL" if (curr < ema50 and rsi > 35) else "WAIT"
+        
+        # ऑटो-कैलकुलेशन: Entry, SL, TP
+        rr_ratio = 3.0
+        sl, tp = 0.0, 0.0
+        if signal == "BUY":
+            sl = curr * 0.985 # 1.5% SL
+            tp = curr + (curr - sl) * rr_ratio
+        elif signal == "SELL":
+            sl = curr * 1.015 # 1.5% SL
+            tp = curr - (sl - curr) * rr_ratio
+            
         flow = get_volume_imbalance(symbol)
         
-        report = f"📊 *{symbol}*\n🎯 Action: {signal}\n💰 Price: {curr:.2f}\n{flow}\n💪 RSI: {rsi:.2f}"
+        report = f"📊 *{symbol}*\n🎯 Action: {signal}\n💰 Price: {curr:.2f}"
+        if signal != "WAIT":
+            report += f"\n🟢 Entry: {curr:.2f}\n🔴 SL: {sl:.2f}\n🎯 TP: {tp:.2f}"
+        
+        report += f"\n{flow}\n💪 RSI: {rsi:.2f}"
         return report
     except:
         return f"❌ Error in {symbol}"
@@ -52,7 +65,6 @@ def trade_signal(m):
     assets = ['BTC/USDT', 'SOL/USDT', 'XRP/USDT']
     results = "\n\n".join([get_market_analysis(a) for a in assets])
     
-    # हीटमैप के लिए बटन बनाना
     markup = types.InlineKeyboardMarkup()
     btn = types.InlineKeyboardButton("🔥 View Liquidation Heatmap", url="https://www.coinglass.com/pro/futures/LiquidationHeatMap")
     markup.add(btn)
