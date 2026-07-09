@@ -3,8 +3,8 @@ import yfinance as yf
 import pandas as pd
 import pandas_ta as ta
 import os
-import time          # अलर्ट के लिए जोड़ा गया
-import schedule      # अलर्ट के लिए जोड़ा गया
+import time
+import schedule
 from flask import Flask
 from threading import Thread
 
@@ -52,9 +52,21 @@ def get_market_analysis(symbol):
         trend = "BULLISH" if curr > ema200 else "BEARISH"
         signal = "BUY" if (curr > ema50 and rsi < 65) else "SELL" if (curr < ema200 and rsi > 35) else "WAIT"
         
-        sl, tp = (curr * 0.98, curr * 1.04) if signal == "BUY" else (curr * 1.02, curr * 0.96) if signal == "SELL" else (0.0, 0.0)
-        td_data = get_top_down_info(symbol)
+        # --- RR RATIO LOGIC START ---
+        is_trend = (signal == "BUY" and curr > ema200) or (signal == "SELL" and curr < ema200)
+        rr_ratio = 4.5 if is_trend else 3.5  # Trend: 1:4.5, Counter: 1:3.5
         
+        if signal == "BUY":
+            sl = curr * 0.985 # 1.5% Risk
+            tp = curr + (curr - sl) * rr_ratio
+        elif signal == "SELL":
+            sl = curr * 1.015 # 1.5% Risk
+            tp = curr - (sl - curr) * rr_ratio
+        else:
+            sl, tp = 0.0, 0.0
+        # --- RR RATIO LOGIC END ---
+
+        td_data = get_top_down_info(symbol)
         report = f"📊 *{symbol} Report*\n{td_data}\n📈 Trend: {trend}\n🎯 Action: {signal}\n"
         if signal != "WAIT":
             report += f"🟢 Entry: {curr:.2f}\n🔴 SL: {sl:.2f}\n🎯 TP: {tp:.2f}\n"
@@ -63,20 +75,18 @@ def get_market_analysis(symbol):
     except Exception as e:
         return f"❌ Error in {symbol}: {str(e)}", "WAIT"
 
-# --- ऑटोमैटिक अलर्ट लॉजिक (नया जोड़ा गया) ---
 def check_and_alert():
     assets = ['BTC-USD', 'GC=F', 'SOL-USD']
     for symbol in assets:
         report, signal = get_market_analysis(symbol)
-        if signal != "WAIT": # सिर्फ BUY या SELL पर अलर्ट भेजेगा
-            bot.send_message(CHAT_ID, f"🚨 **STRONG SIGNAL ALERT!**\n\n{report}", parse_mode='Markdown')
+        if signal != "WAIT":
+            bot.send_message(CHAT_ID, f"🚨 **SIGNAL ALERT!**\n\n{report}", parse_mode='Markdown')
 
 def run_scheduler():
     schedule.every(1).hours.do(check_and_alert)
     while True:
         schedule.run_pending()
         time.sleep(1)
-# -------------------------------------------
 
 @bot.message_handler(commands=['start'])
 def start(m):
@@ -91,5 +101,5 @@ def trade_signal(m):
 
 if __name__ == "__main__":
     Thread(target=lambda: app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))).start()
-    Thread(target=run_scheduler, daemon=True).start() # ऑटोमैटिक अलर्ट थ्रेड
+    Thread(target=run_scheduler, daemon=True).start()
     bot.infinity_polling()
