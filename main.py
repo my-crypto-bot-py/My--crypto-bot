@@ -18,34 +18,30 @@ def home():
     return "SMC Advanced Bot is Running!"
 
 def get_indicators(df):
+    # RSI, EMA, MACD Calculations
     df['EMA50'] = ta.ema(df['Close'], length=50)
     df['EMA200'] = ta.ema(df['Close'], length=200)
     df['RSI'] = ta.rsi(df['Close'], length=14)
-    # MACD calculations fixed
     macd = ta.macd(df['Close'])
     return pd.concat([df, macd], axis=1)
 
 def get_market_analysis(symbol):
     try:
-        df = yf.download(symbol, period='5d', interval='1h')
-        if df.empty: return f"❌ {symbol} डेटा उपलब्ध नहीं।"
+        # डेटा डाउनलोड करें
+        data = yf.download(symbol, period='5d', interval='1h')
+        if data.empty: return f"❌ {symbol} डेटा उपलब्ध नहीं।"
         
-        # yfinance के MultiIndex Columns एरर को ठीक करने के लिए इंडेक्स को फ्लैट करना
-        if isinstance(df.columns, pd.MultiIndex):
-            df.columns = df.columns.get_level_values(0)
+        # yfinance के MultiIndex एरर को ठीक करना
+        if isinstance(data.columns, pd.MultiIndex):
+            data.columns = data.columns.get_level_values(0)
+            
+        df = get_indicators(data)
         
-        df = get_indicators(df)
-        
-        # DataFrame/Series की उलझन से बचने के लिए सबसे सुरक्षित तरीका (to_numpy)
-        close_series = df['Close'].iloc[:, 0] if isinstance(df['Close'], pd.DataFrame) else df['Close']
-        rsi_series = df['RSI'].iloc[:, 0] if isinstance(df['RSI'], pd.DataFrame) else df['RSI']
-        ema50_series = df['EMA50'].iloc[:, 0] if isinstance(df['EMA50'], pd.DataFrame) else df['EMA50']
-        ema200_series = df['EMA200'].iloc[:, 0] if isinstance(df['EMA200'], pd.DataFrame) else df['EMA200']
-        
-        curr = float(close_series.to_numpy()[-1])
-        rsi = float(rsi_series.to_numpy()[-1])
-        ema50 = float(ema50_series.to_numpy()[-1])
-        ema200 = float(ema200_series.to_numpy()[-1])
+        # आखिरी वैल्यू को शुद्ध नंबर में बदलना
+        curr = float(df['Close'].iloc[-1].item() if hasattr(df['Close'].iloc[-1], 'item') else df['Close'].iloc[-1])
+        rsi = float(df['RSI'].iloc[-1].item() if hasattr(df['RSI'].iloc[-1], 'item') else df['RSI'].iloc[-1])
+        ema50 = float(df['EMA50'].iloc[-1].item() if hasattr(df['EMA50'].iloc[-1], 'item') else df['EMA50'].iloc[-1])
+        ema200 = float(df['EMA200'].iloc[-1].item() if hasattr(df['EMA200'].iloc[-1], 'item') else df['EMA200'].iloc[-1])
         
         # Trend and Signal Logic
         trend = "BULLISH" if curr > ema200 else "BEARISH"
@@ -53,11 +49,11 @@ def get_market_analysis(symbol):
         
         # Calculate SL and TP (1:2 Risk Reward)
         if signal == "BUY":
-            sl = curr * 0.98  # 2% Risk
-            tp = curr * 1.04  # 4% Reward
+            sl = curr * 0.98
+            tp = curr * 1.04
         elif signal == "SELL":
-            sl = curr * 1.02  # 2% Risk
-            tp = curr * 0.96  # 4% Reward
+            sl = curr * 1.02
+            tp = curr * 0.96
         else:
             sl, tp = 0.0, 0.0
         
@@ -76,12 +72,11 @@ def start(m):
 
 @bot.message_handler(commands=['tred'])
 def trade_signal(m):
-    # Analyzing multiple assets
+    bot.reply_to(m, "⏳ *Analyzing market... please wait!*", parse_mode='Markdown')
     msg1 = get_market_analysis('BTC-USD')
     msg2 = get_market_analysis('GC=F')
     bot.send_message(CHAT_ID, f"🚨 **TRED UPDATE!**\n\n{msg1}\n\n{msg2}", parse_mode='Markdown')
 
 if __name__ == "__main__":
-    # Flask thread for Railway
     Thread(target=lambda: app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))).start()
     bot.infinity_polling()
