@@ -30,17 +30,28 @@ def get_market_analysis(symbol):
         df = yf.download(symbol, period='5d', interval='1h')
         if df.empty: return f"❌ {symbol} डेटा उपलब्ध नहीं।"
         
+        # yfinance के MultiIndex Columns एरर को ठीक करने के लिए इंडेक्स को फ्लैट करना
+        if isinstance(df.columns, pd.MultiIndex):
+            df.columns = df.columns.get_level_values(0)
+        
         df = get_indicators(df)
-        curr = float(df['Close'].iloc[-1])
-        rsi = float(df['RSI'].iloc[-1])
-        ema50 = float(df['EMA50'].iloc[-1])
-        ema200 = float(df['EMA200'].iloc[-1])
+        
+        # DataFrame/Series की उलझन से बचने के लिए सबसे सुरक्षित तरीका (to_numpy)
+        close_series = df['Close'].iloc[:, 0] if isinstance(df['Close'], pd.DataFrame) else df['Close']
+        rsi_series = df['RSI'].iloc[:, 0] if isinstance(df['RSI'], pd.DataFrame) else df['RSI']
+        ema50_series = df['EMA50'].iloc[:, 0] if isinstance(df['EMA50'], pd.DataFrame) else df['EMA50']
+        ema200_series = df['EMA200'].iloc[:, 0] if isinstance(df['EMA200'], pd.DataFrame) else df['EMA200']
+        
+        curr = float(close_series.to_numpy()[-1])
+        rsi = float(rsi_series.to_numpy()[-1])
+        ema50 = float(ema50_series.to_numpy()[-1])
+        ema200 = float(ema200_series.to_numpy()[-1])
         
         # Trend and Signal Logic
         trend = "BULLISH" if curr > ema200 else "BEARISH"
         signal = "BUY" if (curr > ema50 and rsi < 65) else "SELL" if (curr < ema50 and rsi > 35) else "WAIT"
         
-        # Calculate SL and TP
+        # Calculate SL and TP (1:2 Risk Reward)
         if signal == "BUY":
             sl = curr * 0.98  # 2% Risk
             tp = curr * 1.04  # 4% Reward
