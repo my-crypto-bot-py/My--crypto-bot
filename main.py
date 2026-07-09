@@ -15,8 +15,13 @@ CHAT_ID = os.environ.get('CHAT_ID')
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 
-# Bybit एक्सचेंज सेटअप
-exchange = ccxt.bybit()
+# Bybit एक्सचेंज सेटअप - User-Agent के साथ (403 एरर फिक्स)
+exchange = ccxt.bybit({
+    'enableRateLimit': True,
+    'headers': {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+})
 
 @app.route('/')
 def home():
@@ -24,10 +29,13 @@ def home():
 
 def fetch_ohlcv(symbol, timeframe='1h', limit=200):
     """Bybit से डेटा फेच करने का फंक्शन"""
-    # Bybit सिम्बल्स को CCXT फॉर्मेट में फेच करें
-    bars = exchange.fetch_ohlcv(symbol, timeframe=timeframe, limit=limit)
-    df = pd.DataFrame(bars, columns=['timestamp', 'Open', 'High', 'Low', 'Close', 'Volume'])
-    return df
+    try:
+        bars = exchange.fetch_ohlcv(symbol, timeframe=timeframe, limit=limit)
+        df = pd.DataFrame(bars, columns=['timestamp', 'Open', 'High', 'Low', 'Close', 'Volume'])
+        return df
+    except Exception as e:
+        time.sleep(2) # फेल होने पर थोड़ा वेट करें
+        raise e
 
 def get_indicators(df):
     df['EMA50'] = ta.ema(df['Close'], length=50)
