@@ -6,3 +6,4 @@ pytz
 requests
 flask
 pandas_ta
+schedule
