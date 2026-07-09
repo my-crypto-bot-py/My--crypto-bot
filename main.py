@@ -22,13 +22,23 @@ def get_indicators(df):
     df['RSI'] = ta.rsi(df['Close'], length=14)
     return df
 
-# यहाँ टॉप-डाउन एनालिसिस के लिए नया फंक्शन जोड़ा गया है (बिना पुराना कोड बदले)
+# सुधारा गया फंक्शन
 def get_top_down_info(symbol):
     try:
-        data_1w = yf.download(symbol, period='1mo', interval='1wk')['Close'].iloc[-1]
-        data_5m = yf.download(symbol, period='1d', interval='5m')['Close'].iloc[-1]
-        return f"📅 1W Price: {float(data_1w):.2f} | 🕒 5M Price: {float(data_5m):.2f}"
-    except:
+        # डेटा फेचिंग और फ्लैटनिंग
+        data_1w = yf.download(symbol, period='1mo', interval='1wk')
+        data_5m = yf.download(symbol, period='1d', interval='5m')
+        
+        # कॉलम फ्लैट करें
+        for df in [data_1w, data_5m]:
+            if isinstance(df.columns, pd.MultiIndex):
+                df.columns = df.columns.get_level_values(0)
+        
+        price_1w = float(data_1w['Close'].iloc[-1])
+        price_5m = float(data_5m['Close'].iloc[-1])
+        
+        return f"📅 1W Price: {price_1w:.2f} | 🕒 5M Price: {price_5m:.2f}"
+    except Exception as e:
         return "TD Data N/A"
 
 def get_market_analysis(symbol):
@@ -44,7 +54,7 @@ def get_market_analysis(symbol):
         df = df.dropna()
         
         if df.empty:
-            return f"⚠️ {symbol}: इंडिकेटर कैलकुलेशन के लिए पर्याप्त डेटा नहीं है।"
+            return f"⚠️ {symbol}: इंडिकेटर के लिए पर्याप्त डेटा नहीं है।"
 
         last_row = df.iloc[-1]
         curr = float(last_row['Close'])
@@ -53,7 +63,7 @@ def get_market_analysis(symbol):
         ema200 = float(last_row['EMA200'])
         
         trend = "BULLISH" if curr > ema200 else "BEARISH"
-        signal = "BUY" if (curr > ema50 and rsi < 65) else "SELL" if (curr < ema50 and rsi > 35) else "WAIT"
+        signal = "BUY" if (curr > ema50 and rsi < 65) else "SELL" if (curr < ema200 and rsi > 35) else "WAIT"
         
         sl, tp = (0.0, 0.0)
         if signal == "BUY":
@@ -61,7 +71,6 @@ def get_market_analysis(symbol):
         elif signal == "SELL":
             sl, tp = curr * 1.02, curr * 0.96
         
-        # टॉप-डाउन डेटा को रिपोर्ट में जोड़ा गया
         td_data = get_top_down_info(symbol)
         
         report = f"📊 *{symbol} Report*\n{td_data}\n📈 Trend: {trend}\n🎯 Action: {signal}\n"
@@ -80,11 +89,8 @@ def start(m):
 @bot.message_handler(commands=['tred'])
 def trade_signal(m):
     bot.reply_to(m, "⏳ *Analyzing market...*", parse_mode='Markdown')
-    
-    # यहाँ 'SOL-USD' को लिस्ट में जोड़ा गया है
     assets = ['BTC-USD', 'GC=F', 'SOL-USD']
     results = "\n\n".join([get_market_analysis(a) for a in assets])
-    
     bot.send_message(CHAT_ID, f"🚨 **TRED UPDATE!**\n\n{results}", parse_mode='Markdown')
 
 if __name__ == "__main__":
