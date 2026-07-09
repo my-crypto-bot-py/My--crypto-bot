@@ -22,14 +22,11 @@ def get_indicators(df):
     df['RSI'] = ta.rsi(df['Close'], length=14)
     return df
 
-# सुधारा गया फंक्शन
 def get_top_down_info(symbol):
     try:
-        # डेटा फेचिंग और फ्लैटनिंग
         data_1w = yf.download(symbol, period='1mo', interval='1wk')
         data_5m = yf.download(symbol, period='1d', interval='5m')
         
-        # कॉलम फ्लैट करें
         for df in [data_1w, data_5m]:
             if isinstance(df.columns, pd.MultiIndex):
                 df.columns = df.columns.get_level_values(0)
@@ -43,7 +40,8 @@ def get_top_down_info(symbol):
 
 def get_market_analysis(symbol):
     try:
-        data = yf.download(symbol, period='5d', interval='1h')
+        # यहाँ period बदल दिया गया है (6mo)
+        data = yf.download(symbol, period='6mo', interval='1h')
         if data.empty:
             return f"❌ {symbol}: डेटा प्राप्त नहीं हुआ।"
         
