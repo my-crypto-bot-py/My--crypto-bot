@@ -24,23 +24,26 @@ def get_indicators(df):
 
 def get_top_down_info(symbol):
     try:
+        # डेटा फेचिंग
         data_1w = yf.download(symbol, period='1mo', interval='1wk')
         data_5m = yf.download(symbol, period='1d', interval='5m')
         
+        # मल्टी-इंडेक्स को फ्लैट करना
         for df in [data_1w, data_5m]:
             if isinstance(df.columns, pd.MultiIndex):
                 df.columns = df.columns.get_level_values(0)
         
-        price_1w = float(data_1w['Close'].iloc[-1])
-        price_5m = float(data_5m['Close'].iloc[-1])
+        # यहाँ .iloc[-1] के बजाय .ffill().iloc[-1] का इस्तेमाल करें ताकि अगर आखिरी डेटा N/A हो तो पिछला मिल जाए
+        price_1w = float(data_1w['Close'].ffill().iloc[-1])
+        price_5m = float(data_5m['Close'].ffill().iloc[-1])
         
-        return f"📅 1W Price: {price_1w:.2f} | 🕒 5M Price: {price_5m:.2f}"
+        return f"📅 1W: {price_1w:.2f} | 🕒 5M: {price_5m:.2f}"
     except Exception as e:
         return "TD Data N/A"
 
 def get_market_analysis(symbol):
     try:
-        # यहाँ period बदल दिया गया है (6mo)
+        # 6 महीने का डेटा इंडिकेटर्स के लिए पर्याप्त है
         data = yf.download(symbol, period='6mo', interval='1h')
         if data.empty:
             return f"❌ {symbol}: डेटा प्राप्त नहीं हुआ।"
@@ -52,7 +55,7 @@ def get_market_analysis(symbol):
         df = df.dropna()
         
         if df.empty:
-            return f"⚠️ {symbol}: इंडिकेटर के लिए पर्याप्त डेटा नहीं है।"
+            return f"⚠️ {symbol}: डेटा अपर्याप्त है।"
 
         last_row = df.iloc[-1]
         curr = float(last_row['Close'])
