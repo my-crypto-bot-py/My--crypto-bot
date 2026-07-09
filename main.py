@@ -1,5 +1,5 @@
 import telebot
-import yfinance as yf
+import ccxt
 import pandas as pd
 import pandas_ta as ta
 import os
@@ -8,15 +8,26 @@ import schedule
 from flask import Flask
 from threading import Thread
 
+# पर्यावरण वेरिएबल्स
 TOKEN = os.environ.get('TOKEN')
 CHAT_ID = os.environ.get('CHAT_ID')
 
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 
+# Bybit एक्सचेंज सेटअप
+exchange = ccxt.bybit()
+
 @app.route('/')
 def home():
-    return "SMC Advanced Engine is Operational."
+    return "SMC Advanced Engine (Bybit Powered) is Operational."
+
+def fetch_ohlcv(symbol, timeframe='1h', limit=200):
+    """Bybit से डेटा फेच करने का फंक्शन"""
+    # Bybit सिम्बल्स को CCXT फॉर्मेट में फेच करें
+    bars = exchange.fetch_ohlcv(symbol, timeframe=timeframe, limit=limit)
+    df = pd.DataFrame(bars, columns=['timestamp', 'Open', 'High', 'Low', 'Close', 'Volume'])
+    return df
 
 def get_indicators(df):
     df['EMA50'] = ta.ema(df['Close'], length=50)
@@ -24,27 +35,11 @@ def get_indicators(df):
     df['RSI'] = ta.rsi(df['Close'], length=14)
     return df
 
-def get_top_down_info(symbol):
-    try:
-        data_1w = yf.download(symbol, period='1mo', interval='1wk')
-        data_5m = yf.download(symbol, period='1d', interval='5m')
-        for df in [data_1w, data_5m]:
-            if isinstance(df.columns, pd.MultiIndex):
-                df.columns = df.columns.get_level_values(0)
-        price_1w = float(data_1w['Close'].ffill().iloc[-1])
-        price_5m = float(data_5m['Close'].ffill().iloc[-1])
-        return f"📅 1W: {price_1w:.2f} | 🕒 5M: {price_5m:.2f}"
-    except:
-        return "TD Data N/A"
-
 def get_market_analysis(symbol):
     try:
-        data = yf.download(symbol, period='6mo', interval='1h')
-        if data.empty: return f"❌ {symbol}: डेटा प्राप्त नहीं हुआ।"
-        if isinstance(data.columns, pd.MultiIndex):
-            data.columns = data.columns.get_level_values(0)
-        df = get_indicators(data).dropna()
-        if df.empty: return f"⚠️ {symbol}: डेटा अपर्याप्त है।"
+        # डेटा फेचिंग
+        df = fetch_ohlcv(symbol)
+        df = get_indicators(df).dropna()
         
         last_row = df.iloc[-1]
         curr, rsi, ema50, ema200 = float(last_row['Close']), float(last_row['RSI']), float(last_row['EMA50']), float(last_row['EMA200'])
@@ -52,22 +47,20 @@ def get_market_analysis(symbol):
         trend = "BULLISH" if curr > ema200 else "BEARISH"
         signal = "BUY" if (curr > ema50 and rsi < 65) else "SELL" if (curr < ema200 and rsi > 35) else "WAIT"
         
-        # --- RR RATIO LOGIC START ---
+        # RR RATIO लॉजिक
         is_trend = (signal == "BUY" and curr > ema200) or (signal == "SELL" and curr < ema200)
-        rr_ratio = 4.5 if is_trend else 3.5  # Trend: 1:4.5, Counter: 1:3.5
+        rr_ratio = 4.5 if is_trend else 3.5 
         
         if signal == "BUY":
-            sl = curr * 0.985 # 1.5% Risk
+            sl = curr * 0.985
             tp = curr + (curr - sl) * rr_ratio
         elif signal == "SELL":
-            sl = curr * 1.015 # 1.5% Risk
+            sl = curr * 1.015
             tp = curr - (sl - curr) * rr_ratio
         else:
             sl, tp = 0.0, 0.0
-        # --- RR RATIO LOGIC END ---
 
-        td_data = get_top_down_info(symbol)
-        report = f"📊 *{symbol} Report*\n{td_data}\n📈 Trend: {trend}\n🎯 Action: {signal}\n"
+        report = f"📊 *{symbol} Report*\n📈 Trend: {trend}\n🎯 Action: {signal}\n"
         if signal != "WAIT":
             report += f"🟢 Entry: {curr:.2f}\n🔴 SL: {sl:.2f}\n🎯 TP: {tp:.2f}\n"
         report += f"💪 RSI: {rsi:.2f}"
@@ -76,7 +69,7 @@ def get_market_analysis(symbol):
         return f"❌ Error in {symbol}: {str(e)}", "WAIT"
 
 def check_and_alert():
-    assets = ['BTC-USD', 'GC=F', 'SOL-USD']
+    assets = ['BTC/USDT', 'SOL/USDT', 'XRP/USDT', 'XAU/USDT', 'XAG/USDT']
     for symbol in assets:
         report, signal = get_market_analysis(symbol)
         if signal != "WAIT":
@@ -90,12 +83,12 @@ def run_scheduler():
 
 @bot.message_handler(commands=['start'])
 def start(m):
-    bot.send_message(CHAT_ID, "🦅 **SMC ADVANCED ENGINE ACTIVE**")
+    bot.send_message(CHAT_ID, "🦅 **SMC ADVANCED ENGINE (BYBIT) ACTIVE**")
 
 @bot.message_handler(commands=['tred'])
 def trade_signal(m):
-    bot.reply_to(m, "⏳ *Analyzing market...*", parse_mode='Markdown')
-    assets = ['BTC-USD', 'GC=F', 'SOL-USD']
+    bot.reply_to(m, "⏳ *Analyzing market via Bybit...*", parse_mode='Markdown')
+    assets = ['BTC/USDT', 'SOL/USDT', 'XRP/USDT', 'XAU/USDT', 'XAG/USDT']
     results = "\n\n".join([get_market_analysis(a)[0] for a in assets])
     bot.send_message(CHAT_ID, f"🚨 **TRED UPDATE!**\n\n{results}", parse_mode='Markdown')
 
