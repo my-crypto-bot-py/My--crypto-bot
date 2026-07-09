@@ -19,11 +19,13 @@ exchange = ccxt.kucoin({'enableRateLimit': True})
 exchange.load_markets()
 
 def get_poi_status(df):
-    """Simple POI Detection: Price near recent Order Block zone"""
+    if df.empty: return "Neutral"
     last_close = df['Close'].iloc[-1]
-    # अगर क्लोजिंग पिछले 20 कैंडल्स के हाई/लो के पास है तो उसे POI माना जाएगा
-    if last_close > df['Close'].rolling(20).max().iloc[-1] * 0.995: return "Supply Zone"
-    if last_close < df['Close'].rolling(20).min().iloc[-1] * 1.005: return "Demand Zone"
+    # साफ़ डेटा के साथ POI डिटेक्शन
+    highs = df['Close'].rolling(20).max()
+    lows = df['Close'].rolling(20).min()
+    if last_close > highs.iloc[-1] * 0.995: return "Supply Zone"
+    if last_close < lows.iloc[-1] * 1.005: return "Demand Zone"
     return "Neutral"
 
 def get_market_analysis(symbol):
@@ -33,19 +35,20 @@ def get_market_analysis(symbol):
         for tf, limit in timeframes.items():
             bars = exchange.fetch_ohlcv(symbol, timeframe=tf, limit=limit)
             df = pd.DataFrame(bars, columns=['t', 'O', 'H', 'L', 'Close', 'V'])
-            df['EMA200'] = ta.ema(df['Close'], length=200)
+            df['EMA200'] = ta.ema(df['Close'], length=50) # EMA50 किया ताकि डेटा जल्दी मिले
+            df = df.dropna() # यहाँ से None वैल्यू हटाई गई
             data[tf] = df
+
+        if any(df.empty for df in data.values()): return f"❌ {symbol}: डेटा अपडेट हो रहा है..."
 
         w1, d1, h4, c5 = data['1w'].iloc[-1], data['1d'].iloc[-1], data['4h'].iloc[-1], data['5m'].iloc[-1]
         
-        # POI Analysis
         poi = get_poi_status(data['4h'])
         w_liq = (c5['Close'] < w1['L']) or (c5['Close'] > w1['H'])
         d_liq = (c5['Close'] < d1['L']) or (c5['Close'] > d1['H'])
         
         trend = "🟢 BULLISH" if c5['Close'] > h4['EMA200'] else "🔴 BEARISH"
         
-        # Top-down logic: Trend + Liquidity + POI
         signal = "BUY" if (trend == "🟢 BULLISH" and (w_liq or d_liq) and poi == "Demand Zone") else \
                  "SELL" if (trend == "🔴 BEARISH" and (w_liq or d_liq) and poi == "Supply Zone") else "WAIT"
         
@@ -55,13 +58,13 @@ def get_market_analysis(symbol):
         risk = abs(c5['Close'] - sl)
         tp = c5['Close'] + (risk * rr) if signal == "BUY" else c5['Close'] - (risk * rr)
 
-        report = f"📊 *{symbol} SMC PRO Analysis*\n📈 Trend: {trend}\n📍 POI: {poi}\n🎯 Action: {signal}"
+        report = f"📊 *{symbol} SMC PRO*\n📈 Trend: {trend}\n📍 POI: {poi}\n🎯 Action: {signal}"
         if signal != "WAIT":
             report += f"\n🟢 Entry: {c5['Close']:.2f}\n🔴 SL: {sl:.2f}\n🎯 TP: {tp:.2f} (RR: 1:{rr:.1f})"
         report += f"\n💎 Liquidity: {'Active' if (w_liq or d_liq) else 'Neutral'}"
         return report
     except Exception as e:
-        return f"❌ Error in {symbol}: {str(e)}"
+        return f"❌ Error in {symbol}"
 
 @bot.message_handler(commands=['tred'])
 def trade_signal(m):
@@ -74,7 +77,8 @@ def trade_signal(m):
 def auto_report():
     assets = ['BTC/USDT', 'SOL/USDT', 'XRP/USDT']
     results = "\n\n".join([get_market_analysis(a) for a in assets])
-    bot.send_message(CHAT_ID, f"⏰ **HOURLY SMC ELITE UPDATE**\n\n{results}", parse_mode='Markdown')
+    try: bot.send_message(CHAT_ID, f"⏰ **HOURLY SMC ELITE UPDATE**\n\n{results}", parse_mode='Markdown')
+    except: pass
 
 def run_scheduler():
     schedule.every().hour.do(auto_report)
