@@ -15,9 +15,8 @@ CHAT_ID = os.environ.get('CHAT_ID')
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 
-# एक्सचेंज सेटअप
+# एक्सचेंज सेटअप: Binance (यह Railway के साथ परफेक्ट चलता है)
 exchange = ccxt.binance({'enableRateLimit': True})
-# मार्केट्स लोड करें ताकि सिम्बल्स का नाम सही से मिले
 exchange.load_markets()
 
 @app.route('/')
@@ -25,17 +24,13 @@ def home():
     return "SMC Advanced Engine (Binance Powered) is Operational."
 
 def fetch_ohlcv(symbol, timeframe='1h', limit=200):
-    """Binance से सुरक्षित डेटा फेचिंग"""
+    """Binance डेटा फेचिंग"""
     try:
-        # बाइनेंस के लिए सिंबल चेक करें
-        if symbol not in exchange.markets:
-            return None
         bars = exchange.fetch_ohlcv(symbol, timeframe=timeframe, limit=limit)
         df = pd.DataFrame(bars, columns=['timestamp', 'Open', 'High', 'Low', 'Close', 'Volume'])
         return df
     except Exception as e:
-        time.sleep(2)
-        raise e
+        return None
 
 def get_indicators(df):
     df['EMA50'] = ta.ema(df['Close'], length=50)
@@ -46,7 +41,7 @@ def get_indicators(df):
 def get_market_analysis(symbol):
     try:
         df = fetch_ohlcv(symbol)
-        if df is None: return f"❌ {symbol} not found on Binance", "WAIT"
+        if df is None: return f"❌ {symbol} fetch error", "WAIT"
         df = get_indicators(df).dropna()
         
         last_row = df.iloc[-1]
@@ -55,8 +50,7 @@ def get_market_analysis(symbol):
         trend = "BULLISH" if curr > ema200 else "BEARISH"
         signal = "BUY" if (curr > ema50 and rsi < 65) else "SELL" if (curr < ema200 and rsi > 35) else "WAIT"
         
-        is_trend = (signal == "BUY" and curr > ema200) or (signal == "SELL" and curr < ema200)
-        rr_ratio = 4.5 if is_trend else 3.5 
+        rr_ratio = 4.5 if (signal == "BUY" and curr > ema200) else 3.5 
         
         if signal == "BUY":
             sl, tp = curr * 0.985, curr + (curr * 0.015) * rr_ratio
@@ -74,8 +68,7 @@ def get_market_analysis(symbol):
         return f"❌ Error in {symbol}: {str(e)}", "WAIT"
 
 def check_and_alert():
-    # यहाँ आप वो सिम्बल्स डालें जो Binance पर मौजूद हैं
-    assets = ['BTC/USDT', 'SOL/USDT', 'XRP/USDT'] 
+    assets = ['BTC/USDT', 'SOL/USDT', 'XRP/USDT']
     for symbol in assets:
         report, signal = get_market_analysis(symbol)
         if signal != "WAIT":
