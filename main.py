@@ -17,8 +17,12 @@ exchange = ccxt.kucoin({'enableRateLimit': True})
 
 def get_market_analysis(symbol):
     try:
-        # ग्लिच फिक्स: बढ़ाया गया डिले ताकि API रेट लिमिट एरर न आए
-        time.sleep(1.5) 
+        # लाइव प्राइस फेच करें
+        ticker = exchange.fetch_ticker(symbol)
+        current_price = ticker['last']
+        
+        # BTC Correlation Check
+        time.sleep(1.5)
         btc_bars = exchange.fetch_ohlcv('BTC/USDT', timeframe='4h', limit=50)
         btc_df = pd.DataFrame(btc_bars, columns=['t', 'Open', 'High', 'Low', 'Close', 'Vol'])
         btc_trend = "🟢 BULLISH" if btc_df['Close'].iloc[-1] > btc_df['Close'].rolling(50).mean().iloc[-1] else "🔴 BEARISH"
@@ -34,18 +38,17 @@ def get_market_analysis(symbol):
 
         if any(df.empty for df in data.values()): return f"❌ {symbol}: Data Loading..."
 
-        h4, m15 = data['4h'].iloc[-1], data['15m'].iloc[-1]
-        close = m15['Close']
+        h4 = data['4h'].iloc[-1]
         
         # 1. SWING/INTRADAY LOGIC
         highs_4h = data['4h']['Close'].rolling(20).max().iloc[-1]
         lows_4h = data['4h']['Close'].rolling(20).min().iloc[-1]
-        poi = "Supply Zone" if close > highs_4h * 0.995 else "Demand Zone" if close < lows_4h * 1.005 else "Neutral"
-        trend = "🟢 BULLISH" if close > h4['EMA200'] else "🔴 BEARISH"
+        poi = "Supply Zone" if current_price > highs_4h * 0.995 else "Demand Zone" if current_price < lows_4h * 1.005 else "Neutral"
+        trend = "🟢 BULLISH" if current_price > h4['EMA200'] else "🔴 BEARISH"
         
         # 2. SCALPING LOGIC
         prev_15m = data['15m'].iloc[-2]
-        is_sweep = (m15['Low'] < prev_15m['Low']) or (m15['High'] > prev_15m['High'])
+        is_sweep = (current_price < prev_15m['Low']) or (current_price > prev_15m['High'])
         
         report = f"📊 *{symbol} SMC ENGINE*\n📈 Trend: {trend} (BTC: {btc_trend})\n📍 POI: {poi}\n"
         
@@ -55,9 +58,9 @@ def get_market_analysis(symbol):
                      'SELL' if (poi == 'Supply Zone' and btc_trend == "🔴 BEARISH") else "WAIT"
             
             if action != "WAIT":
-                sl = close * 0.98 if action == 'BUY' else close * 1.02
-                tp = close + (abs(close - sl) * 6) if action == 'BUY' else close - (abs(close - sl) * 6)
-                report += f"\n💎 *SWING SETUP*\nAction: {action}\nEntry: {close:.2f}\n🔴 SL: {sl:.2f}\n🎯 TP: {tp:.2f} (RR 1:6)"
+                sl = current_price * 0.98 if action == 'BUY' else current_price * 1.02
+                tp = current_price + (abs(current_price - sl) * 6) if action == 'BUY' else current_price - (abs(current_price - sl) * 6)
+                report += f"\n💎 *SWING SETUP*\nAction: {action}\nEntry: {current_price:.2f}\n🔴 SL: {sl:.2f}\n🎯 TP: {tp:.2f} (RR 1:6)"
             
         # Scalp Setup (RR 1:3) with BTC Filter
         if is_sweep:
@@ -65,9 +68,9 @@ def get_market_analysis(symbol):
                      'SELL' if (trend == "🔴 BEARISH" and btc_trend == "🔴 BEARISH") else "WAIT"
             
             if action != "WAIT":
-                sl = close * 0.99 if action == 'BUY' else close * 1.01
-                tp = close + (abs(close - sl) * 3) if action == 'BUY' else close - (abs(close - sl) * 3)
-                report += f"\n⚡ *SCALP SETUP*\nAction: {action}\nEntry: {close:.2f}\n🔴 SL: {sl:.2f}\n🎯 TP: {tp:.2f} (RR 1:3)"
+                sl = current_price * 0.99 if action == 'BUY' else current_price * 1.01
+                tp = current_price + (abs(current_price - sl) * 3) if action == 'BUY' else current_price - (abs(current_price - sl) * 3)
+                report += f"\n⚡ *SCALP SETUP*\nAction: {action}\nEntry: {current_price:.2f}\n🔴 SL: {sl:.2f}\n🎯 TP: {tp:.2f} (RR 1:3)"
             
         return report if ("SWING" in report or "SCALP" in report) else f"📉 {symbol}: Market waiting (BTC Sync needed)..."
     except Exception as e:
