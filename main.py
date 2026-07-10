@@ -78,4 +78,4 @@ if __name__ == "__main__":
     bot.remove_webhook()
     Thread(target=lambda: app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))).start()
     Thread(target=run_scheduler, daemon=True).start()
-    bot.infinity_polling(none_stop=True)
+    bot.infinity_polling(none_stop=True, drop_pending_updates=True)
