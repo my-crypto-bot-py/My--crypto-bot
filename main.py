@@ -17,9 +17,12 @@ exchange = ccxt.kucoin({'enableRateLimit': True})
 
 def get_market_analysis(symbol):
     try:
+        # Timeframes: 1w, 1d, 4h (Swing/Intraday), 15m (Scalping)
         timeframes = {'1w': 100, '1d': 100, '4h': 100, '15m': 100}
         data = {}
         for tf, limit in timeframes.items():
+            # ग्लिच फिक्स: हर रिक्वेस्ट के बीच थोड़ा गैप ताकि API ब्लॉक न हो
+            time.sleep(0.5)
             bars = exchange.fetch_ohlcv(symbol, timeframe=tf, limit=limit)
             df = pd.DataFrame(bars, columns=['t', 'Open', 'High', 'Low', 'Close', 'Vol'])
             df['EMA200'] = ta.ema(df['Close'], length=50) 
