@@ -17,46 +17,46 @@ exchange = ccxt.kucoin({'enableRateLimit': True})
 
 def get_market_analysis(symbol):
     try:
-        # Timeframes: 1w, 1d, 4h (Swing/Intraday), 15m (Scalping)
         timeframes = {'1w': 100, '1d': 100, '4h': 100, '15m': 100}
         data = {}
         for tf, limit in timeframes.items():
             bars = exchange.fetch_ohlcv(symbol, timeframe=tf, limit=limit)
-            # कॉलम नाम सुरक्षित तरीके से सेट करना
             df = pd.DataFrame(bars, columns=['t', 'Open', 'High', 'Low', 'Close', 'Vol'])
             df['EMA200'] = ta.ema(df['Close'], length=50) 
             data[tf] = df.dropna()
 
-        # डेटा चेक
         if any(df.empty for df in data.values()): return f"❌ {symbol}: Data Loading..."
 
-        w1, d1, h4, m15 = data['1w'].iloc[-1], data['1d'].iloc[-1], data['4h'].iloc[-1], data['15m'].iloc[-1]
+        h4, m15 = data['4h'].iloc[-1], data['15m'].iloc[-1]
+        close = m15['Close']
         
-        # 1. SWING/INTRADAY LOGIC (Top-Down)
+        # 1. SWING/INTRADAY LOGIC
         highs_4h = data['4h']['Close'].rolling(20).max().iloc[-1]
         lows_4h = data['4h']['Close'].rolling(20).min().iloc[-1]
-        poi = "Supply Zone" if m15['Close'] > highs_4h * 0.995 else "Demand Zone" if m15['Close'] < lows_4h * 1.005 else "Neutral"
+        poi = "Supply Zone" if close > highs_4h * 0.995 else "Demand Zone" if close < lows_4h * 1.005 else "Neutral"
+        trend = "🟢 BULLISH" if close > h4['EMA200'] else "🔴 BEARISH"
         
-        trend = "🟢 BULLISH" if m15['Close'] > h4['EMA200'] else "🔴 BEARISH"
-        
-        # 2. SCALPING LOGIC (Indicator-Free Price Action)
+        # 2. SCALPING LOGIC
         prev_15m = data['15m'].iloc[-2]
         is_sweep = (m15['Low'] < prev_15m['Low']) or (m15['High'] > prev_15m['High'])
         
-        # Reporting
         report = f"📊 *{symbol} SMC ENGINE*\n📈 Trend: {trend}\n📍 POI: {poi}\n"
         
-        # Swing Setup
+        # Swing Setup Entry/SL/TP (RR 1:6)
         if poi != "Neutral":
-            rr = 6.0
-            report += f"\n💎 *SWING SETUP*\nAction: {'BUY' if poi == 'Demand Zone' else 'SELL'}\n🎯 TP RR 1:{rr}"
+            action = 'BUY' if poi == 'Demand Zone' else 'SELL'
+            sl = close * 0.98 if action == 'BUY' else close * 1.02
+            tp = close + (abs(close - sl) * 6) if action == 'BUY' else close - (abs(close - sl) * 6)
+            report += f"\n💎 *SWING SETUP*\nAction: {action}\nEntry: {close:.2f}\n🔴 SL: {sl:.2f}\n🎯 TP: {tp:.2f} (RR 1:6)"
             
-        # Scalp Setup (Liquidity Sweep based)
+        # Scalp Setup Entry/SL/TP (RR 1:3)
         if is_sweep:
-            rr_s = 3.0
-            report += f"\n⚡ *SCALP SETUP (Sweep detected)*\nAction: {'BUY' if trend == '🟢 BULLISH' else 'SELL'}\n🎯 TP RR 1:{rr_s}"
+            action = 'BUY' if trend == '🟢 BULLISH' else 'SELL'
+            sl = close * 0.99 if action == 'BUY' else close * 1.01
+            tp = close + (abs(close - sl) * 3) if action == 'BUY' else close - (abs(close - sl) * 3)
+            report += f"\n⚡ *SCALP SETUP*\nAction: {action}\nEntry: {close:.2f}\n🔴 SL: {sl:.2f}\n🎯 TP: {tp:.2f} (RR 1:3)"
             
-        return report
+        return report if "SETUP" in report else f"📉 {symbol}: Market waiting..."
     except Exception as e:
         return f"❌ Error in {symbol}: {str(e)}"
 
