@@ -17,8 +17,8 @@ exchange = ccxt.kucoin({'enableRateLimit': True})
 
 def get_market_analysis(symbol):
     try:
-        # BTC Correlation Check
-        time.sleep(0.5)
+        # ग्लिच फिक्स: बढ़ाया गया डिले ताकि API रेट लिमिट एरर न आए
+        time.sleep(1.5) 
         btc_bars = exchange.fetch_ohlcv('BTC/USDT', timeframe='4h', limit=50)
         btc_df = pd.DataFrame(btc_bars, columns=['t', 'Open', 'High', 'Low', 'Close', 'Vol'])
         btc_trend = "🟢 BULLISH" if btc_df['Close'].iloc[-1] > btc_df['Close'].rolling(50).mean().iloc[-1] else "🔴 BEARISH"
@@ -26,7 +26,7 @@ def get_market_analysis(symbol):
         timeframes = {'1w': 100, '1d': 100, '4h': 100, '15m': 100}
         data = {}
         for tf, limit in timeframes.items():
-            time.sleep(0.5)
+            time.sleep(1.5)
             bars = exchange.fetch_ohlcv(symbol, timeframe=tf, limit=limit)
             df = pd.DataFrame(bars, columns=['t', 'Open', 'High', 'Low', 'Close', 'Vol'])
             df['EMA200'] = ta.ema(df['Close'], length=50) 
