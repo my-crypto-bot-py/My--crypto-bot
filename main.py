@@ -9,7 +9,6 @@ from flask import Flask
 from threading import Thread
 from telebot import types
 
-# 1. Configuration
 TOKEN = os.environ.get('TOKEN')
 CHAT_ID = os.environ.get('CHAT_ID')
 
@@ -28,7 +27,8 @@ def get_poi_status(df):
 
 def get_market_analysis(symbol):
     try:
-        timeframes = {'1w': 100, '1d': 100, '4h': 100, '5m': 100}
+        # Original Top-Down + Scalping timeframe
+        timeframes = {'1w': 100, '1d': 100, '4h': 100, '15m': 100}
         data = {}
         for tf, limit in timeframes.items():
             bars = exchange.fetch_ohlcv(symbol, timeframe=tf, limit=limit)
@@ -39,30 +39,47 @@ def get_market_analysis(symbol):
 
         if any(df.empty for df in data.values()): return f"❌ {symbol}: Data Loading..."
 
-        w1, d1, h4, c5 = data['1w'].iloc[-1], data['1d'].iloc[-1], data['4h'].iloc[-1], data['5m'].iloc[-1]
+        w1, d1, h4, m15 = data['1w'].iloc[-1], data['1d'].iloc[-1], data['4h'].iloc[-1], data['15m'].iloc[-1]
+        c15 = data['15m']
         
+        # 1. SWING/INTRADAY LOGIC (Original)
         poi = get_poi_status(data['4h'])
-        w_liq = (c5['Close'] < w1['L']) or (c5['Close'] > w1['H'])
-        d_liq = (c5['Close'] < d1['L']) or (c5['Close'] > d1['H'])
+        w_liq = (m15['Close'] < w1['L']) or (m15['Close'] > w1['H'])
+        d_liq = (m15['Close'] < d1['L']) or (m15['Close'] > d1['H'])
+        trend = "🟢 BULLISH" if m15['Close'] > h4['EMA200'] else "🔴 BEARISH"
         
-        trend = "🟢 BULLISH" if c5['Close'] > h4['EMA200'] else "🔴 BEARISH"
-        
-        signal = "BUY" if (trend == "🟢 BULLISH" and (w_liq or d_liq) and poi == "Demand Zone") else \
-                 "SELL" if (trend == "🔴 BEARISH" and (w_liq or d_liq) and poi == "Supply Zone") else "WAIT"
+        swing_signal = "BUY" if (trend == "🟢 BULLISH" and (w_liq or d_liq) and poi == "Demand Zone") else \
+                       "SELL" if (trend == "🔴 BEARISH" and (w_liq or d_liq) and poi == "Supply Zone") else "WAIT"
 
-        report = f"📊 *{symbol} SMC PRO*\n📈 Trend: {trend}\n📍 POI: {poi}\n🎯 Action: {signal}"
+        # 2. SCALPING LOGIC (Pure Price Action: Sweep + Displacement)
+        # Check Sweep (Prev candle high/low)
+        prev_15m = c15.iloc[-2]
+        is_sweep = (m15['Low'] < prev_15m['Low']) or (m15['High'] > prev_15m['High'])
+        # Check Displacement (Momentum)
+        is_displacement = abs(m15['Close'] - m15['O']) > (m15['H'] - m15['L']) * 0.5
         
-        if signal != "WAIT":
+        scalp_signal = "WAIT"
+        if is_sweep and is_displacement:
+            scalp_signal = "BUY (SCALP)" if trend == "🟢 BULLISH" else "SELL (SCALP)"
+
+        # Reporting
+        report = f"📊 *{symbol} SMC PRO*\n📈 Trend: {trend}\n📍 POI: {poi}\n"
+        
+        if swing_signal != "WAIT":
             rr = 6.0
-            sl = c5['Close'] * 0.985 if signal == "BUY" else c5['Close'] * 1.015
-            risk = abs(c5['Close'] - sl)
-            tp = c5['Close'] + (risk * rr) if signal == "BUY" else c5['Close'] - (risk * rr)
-            report += f"\n🟢 Entry: {c5['Close']:.2f}\n🔴 SL: {sl:.2f}\n🎯 TP: {tp:.2f} (RR: 1:{rr:.1f})"
+            sl = m15['Close'] * 0.985 if swing_signal == "BUY" else m15['Close'] * 1.015
+            report += f"\n💎 *SWING SETUP*\nAction: {swing_signal}\nEntry: {m15['Close']:.2f}\n🎯 TP RR 1:{rr}"
+            
+        if scalp_signal != "WAIT":
+            rr_s = 3.0
+            sl_s = m15['Close'] * 0.99 if "BUY" in scalp_signal else m15['Close'] * 1.01
+            report += f"\n⚡ *SCALP SETUP*\nAction: {scalp_signal}\nEntry: {m15['Close']:.2f}\n🎯 TP RR 1:{rr_s}"
             
         return report
     except Exception as e:
         return f"❌ Error in {symbol}: {str(e)}"
 
+# Rest of your bot logic (commands, scheduler) remains exactly the same...
 @bot.message_handler(commands=['tred'])
 def trade_signal(m):
     assets = ['BTC/USDT', 'SOL/USDT', 'XRP/USDT']
