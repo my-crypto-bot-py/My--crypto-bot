@@ -17,11 +17,15 @@ exchange = ccxt.kucoin({'enableRateLimit': True})
 
 def get_market_analysis(symbol):
     try:
-        # Timeframes: 1w, 1d, 4h (Swing/Intraday), 15m (Scalping)
+        # BTC Correlation Check
+        time.sleep(0.5)
+        btc_bars = exchange.fetch_ohlcv('BTC/USDT', timeframe='4h', limit=50)
+        btc_df = pd.DataFrame(btc_bars, columns=['t', 'Open', 'High', 'Low', 'Close', 'Vol'])
+        btc_trend = "🟢 BULLISH" if btc_df['Close'].iloc[-1] > btc_df['Close'].rolling(50).mean().iloc[-1] else "🔴 BEARISH"
+
         timeframes = {'1w': 100, '1d': 100, '4h': 100, '15m': 100}
         data = {}
         for tf, limit in timeframes.items():
-            # ग्लिच फिक्स: हर रिक्वेस्ट के बीच थोड़ा गैप ताकि API ब्लॉक न हो
             time.sleep(0.5)
             bars = exchange.fetch_ohlcv(symbol, timeframe=tf, limit=limit)
             df = pd.DataFrame(bars, columns=['t', 'Open', 'High', 'Low', 'Close', 'Vol'])
@@ -43,23 +47,29 @@ def get_market_analysis(symbol):
         prev_15m = data['15m'].iloc[-2]
         is_sweep = (m15['Low'] < prev_15m['Low']) or (m15['High'] > prev_15m['High'])
         
-        report = f"📊 *{symbol} SMC ENGINE*\n📈 Trend: {trend}\n📍 POI: {poi}\n"
+        report = f"📊 *{symbol} SMC ENGINE*\n📈 Trend: {trend} (BTC: {btc_trend})\n📍 POI: {poi}\n"
         
-        # Swing Setup Entry/SL/TP (RR 1:6)
+        # Swing Setup (RR 1:6) with BTC Filter
         if poi != "Neutral":
-            action = 'BUY' if poi == 'Demand Zone' else 'SELL'
-            sl = close * 0.98 if action == 'BUY' else close * 1.02
-            tp = close + (abs(close - sl) * 6) if action == 'BUY' else close - (abs(close - sl) * 6)
-            report += f"\n💎 *SWING SETUP*\nAction: {action}\nEntry: {close:.2f}\n🔴 SL: {sl:.2f}\n🎯 TP: {tp:.2f} (RR 1:6)"
+            action = 'BUY' if (poi == 'Demand Zone' and btc_trend == "🟢 BULLISH") else \
+                     'SELL' if (poi == 'Supply Zone' and btc_trend == "🔴 BEARISH") else "WAIT"
             
-        # Scalp Setup Entry/SL/TP (RR 1:3)
+            if action != "WAIT":
+                sl = close * 0.98 if action == 'BUY' else close * 1.02
+                tp = close + (abs(close - sl) * 6) if action == 'BUY' else close - (abs(close - sl) * 6)
+                report += f"\n💎 *SWING SETUP*\nAction: {action}\nEntry: {close:.2f}\n🔴 SL: {sl:.2f}\n🎯 TP: {tp:.2f} (RR 1:6)"
+            
+        # Scalp Setup (RR 1:3) with BTC Filter
         if is_sweep:
-            action = 'BUY' if trend == '🟢 BULLISH' else 'SELL'
-            sl = close * 0.99 if action == 'BUY' else close * 1.01
-            tp = close + (abs(close - sl) * 3) if action == 'BUY' else close - (abs(close - sl) * 3)
-            report += f"\n⚡ *SCALP SETUP*\nAction: {action}\nEntry: {close:.2f}\n🔴 SL: {sl:.2f}\n🎯 TP: {tp:.2f} (RR 1:3)"
+            action = 'BUY' if (trend == "🟢 BULLISH" and btc_trend == "🟢 BULLISH") else \
+                     'SELL' if (trend == "🔴 BEARISH" and btc_trend == "🔴 BEARISH") else "WAIT"
             
-        return report if "SETUP" in report else f"📉 {symbol}: Market waiting..."
+            if action != "WAIT":
+                sl = close * 0.99 if action == 'BUY' else close * 1.01
+                tp = close + (abs(close - sl) * 3) if action == 'BUY' else close - (abs(close - sl) * 3)
+                report += f"\n⚡ *SCALP SETUP*\nAction: {action}\nEntry: {close:.2f}\n🔴 SL: {sl:.2f}\n🎯 TP: {tp:.2f} (RR 1:3)"
+            
+        return report if ("SWING" in report or "SCALP" in report) else f"📉 {symbol}: Market waiting (BTC Sync needed)..."
     except Exception as e:
         return f"❌ Error in {symbol}: {str(e)}"
 
