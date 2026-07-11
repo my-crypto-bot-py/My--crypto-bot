@@ -13,45 +13,49 @@ app = Flask(__name__)
 
 def get_liquidation_data(symbol):
     coin = symbol.upper()
-    # CoinGlass का सही एंडपॉइंट
-    url = f"https://open-api.coinglass.com/api/pro/v1/futures/liquidation_chart?symbol={coin}"
+    # यह नया PUBLIC V2 एंडपॉइंट है (यह बिना 'pro' के है, जो फ्री है)
+    url = f"https://open-api.coinglass.com/public/v2/liquidation_data?symbol={coin}&timeType=24h"
     
     headers = {
-        "coinglassSecret": COINGLASS_API_KEY # Railway Variable से की उठाएगा
+        "accept": "application/json",
+        "coinglassSecret": COINGLASS_API_KEY if COINGLASS_API_KEY else ""
     }
     
     try:
         response = requests.get(url, headers=headers).json()
-        # डेटा के लिए रिस्पॉन्स चेक करें
-        if response.get('code') == '0' and response.get('data'):
-            data = response['data']
-            # चार्ट डेटा में से लेटेस्ट वैल्यू निकालें
-            return f"🟢 Buy Liq (24h): ${data.get('buyVol', 'N/A')}\n🔴 Sell Liq (24h): ${data.get('sellVol', 'N/A')}"
+        # रिस्पॉन्स को डीबग करने के लिए प्रिंट करें
+        print(f"API Response: {response}") 
         
-        return f"Data Error: {response.get('msg', 'Unavailable')}"
+        # V2 का डेटा स्ट्रक्चर लिस्ट के अंदर होता है
+        if response.get('code') == '0' and response.get('data'):
+            data_list = response['data']
+            if isinstance(data_list, list) and len(data_list) > 0:
+                d = data_list[0]
+                return f"🟢 Buy Liq (24h): ${d.get('buyVolUsd', '0')}\n🔴 Sell Liq (24h): ${d.get('sellVolUsd', '0')}"
+        
+        return "Data currently unavailable or API Key limits reached."
     except Exception as e:
         return f"Error: {str(e)}"
 
 @bot.message_handler(commands=['check'])
 def check_liquidation(m):
-    msg = bot.reply_to(m, "Fetching live liquidation data...")
+    msg = bot.reply_to(m, "Fetching live data from V2 API...")
     info = get_liquidation_data('BTC')
-    
-    response = f"🔥 *LIQUIDATION MONITOR: BTC*\n\n{info}"
-    bot.edit_message_text(chat_id=m.chat.id, message_id=msg.message_id, text=response, parse_mode='Markdown')
+    bot.edit_message_text(chat_id=m.chat.id, message_id=msg.message_id, 
+                          text=f"🔥 *LIQUIDATION MONITOR: BTC*\n\n{info}", parse_mode='Markdown')
 
 def run_flask():
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
 
 if __name__ == "__main__":
-    # 409 Conflict एरर रोकने के लिए Webhook हटाना जरूरी है
     try:
-        bot.remove_webhook()
+        bot.delete_webhook()
     except:
         pass
         
     Thread(target=run_flask).start()
-    print("Bot is running...")
     
-    # none_stop=True जोड़ने से बोट क्रैश नहीं होगा
-    bot.infinity_polling(none_stop=True, timeout=30)
+    print("Bot is running...")
+    # Polling stability के लिए none_stop=True और timeout का सही उपयोग
+    bot.infinity_polling(none_stop=True, interval=2, timeout=60)
