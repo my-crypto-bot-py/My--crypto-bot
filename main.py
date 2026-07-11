@@ -6,12 +6,10 @@ TOKEN = os.environ.get('TOKEN')
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 
-# Root route (Railway healthcheck ke liye zaroori)
 @app.route('/', methods=['GET'])
 def index():
-    return "Bot is running", 200
+    return "Bot is running!", 200
 
-# Webhook route
 @app.route(f'/{TOKEN}', methods=['POST'])
 def webhook():
     if request.headers.get('content-type') == 'application/json':
@@ -21,10 +19,8 @@ def webhook():
             bot.process_new_updates([update])
             return '', 200
         except Exception as e:
-            print(f"Error processing update: {e}")
-            return 'Internal Server Error', 500
-    else:
-        return 'Forbidden', 403
+            return str(e), 500
+    return 'Forbidden', 403
 
 if __name__ == "__main__":
     # Local development ke liye
