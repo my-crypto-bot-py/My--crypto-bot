@@ -1,11 +1,18 @@
-from flask import Flask, request
-import telebot
 import os
+import telebot
+from flask import Flask, request
 
+# Railway Variables se TOKEN lein
 TOKEN = os.environ.get('TOKEN')
-# Is baat ka dhyan rakhein ki Railway Variables mein TOKEN sahi se save ho
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
+
+# Webhook URL setup
+WEBHOOK_URL = "https://easygoing-possibility-production.up.railway.app"
+
+# App start hote hi Webhook set ho jayega
+bot.remove_webhook()
+bot.set_webhook(url=f"{WEBHOOK_URL}/{TOKEN}")
 
 @app.route(f'/{TOKEN}', methods=['POST'])
 def webhook():
@@ -18,10 +25,6 @@ def webhook():
 def health():
     return "OK", 200
 
-# Gunicorn ke liye 'app' variable chahiye hota hai
-# Webhook set karne ka kaam hum alag se karenge
+# Gunicorn is 'app' ko directly import karega
 if __name__ == "__main__":
-    WEBHOOK_URL = "https://easygoing-possibility-production.up.railway.app" 
-    bot.remove_webhook()
-    bot.set_webhook(url=f"{WEBHOOK_URL}/{TOKEN}")
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
