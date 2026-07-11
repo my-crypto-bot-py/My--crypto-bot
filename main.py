@@ -3,14 +3,14 @@ import os
 import requests
 from flask import Flask
 from threading import Thread
-import time
 
 TOKEN = os.environ.get('TOKEN')
 COINGLASS_API_KEY = os.environ.get('COINGLASS_API_KEY') 
 
+bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 
-# Railway Healthcheck ke liye route
+# Railway Healthcheck
 @app.route('/health')
 def health():
     return "OK", 200
@@ -18,9 +18,6 @@ def health():
 @app.route('/')
 def home():
     return "Bot is running..."
-
-def run_flask():
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
 
 def get_liquidation_data(symbol):
     coin = symbol.upper()
@@ -41,31 +38,21 @@ def get_liquidation_data(symbol):
     except Exception as e:
         return f"System Error: {str(e)}"
 
-if __name__ == "__main__":
-    bot = telebot.TeleBot(TOKEN)
-    
-    # Webhook cleanup
-    try:
-        bot.remove_webhook()
-        bot.delete_webhook(drop_pending_updates=True)
-    except Exception as e:
-        print(f"Webhook cleanup error: {e}")
+@bot.message_handler(commands=['check'])
+def check_liquidation(m):
+    msg = bot.reply_to(m, "🔄 Fetching...")
+    info = get_liquidation_data('BTC')
+    bot.edit_message_text(chat_id=m.chat.id, message_id=msg.message_id, 
+                          text=f"🔥 *LIQUIDATION MONITOR: BTC*\n\n{info}", parse_mode='Markdown')
 
-    # Flask सर्वर को थ्रेड में शुरू करना
-    Thread(target=run_flask).start()
-    
-    @bot.message_handler(commands=['check'])
-    def check_liquidation(m):
-        msg = bot.reply_to(m, "🔄 Fetching...")
-        info = get_liquidation_data('BTC')
-        bot.edit_message_text(chat_id=m.chat.id, message_id=msg.message_id, 
-                              text=f"🔥 *LIQUIDATION MONITOR: BTC*\n\n{info}", parse_mode='Markdown')
-    
-    print("Bot is starting polling...")
-    
-    while True:
-        try:
-            bot.infinity_polling(none_stop=True, timeout=60, long_polling_timeout=60, skip_pending=True)
-        except Exception as e:
-            print(f"Polling error: {e}")
-            time.sleep(5)
+def run_bot():
+    # Purane connections saaf karein
+    bot.remove_webhook()
+    # Polling shuru karein
+    bot.infinity_polling(skip_pending=True)
+
+if __name__ == "__main__":
+    # Bot ko alag thread mein chalayein (daemon=True taaki app band hone par bot bhi band ho)
+    Thread(target=run_bot, daemon=True).start()
+    # Flask main thread mein
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
