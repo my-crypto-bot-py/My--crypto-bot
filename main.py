@@ -10,6 +10,11 @@ COINGLASS_API_KEY = os.environ.get('COINGLASS_API_KEY')
 
 app = Flask(__name__)
 
+# Railway Healthcheck ke liye route
+@app.route('/health')
+def health():
+    return "OK", 200
+
 @app.route('/')
 def home():
     return "Bot is running..."
@@ -39,14 +44,14 @@ def get_liquidation_data(symbol):
 if __name__ == "__main__":
     bot = telebot.TeleBot(TOKEN)
     
-    # पुरानी पेंडिंग रिक्वेस्ट को हटाना
+    # Webhook cleanup
     try:
         bot.remove_webhook()
         bot.delete_webhook(drop_pending_updates=True)
     except Exception as e:
         print(f"Webhook cleanup error: {e}")
 
-    # Flask सर्वर को शुरू करना
+    # Flask सर्वर को थ्रेड में शुरू करना
     Thread(target=run_flask).start()
     
     @bot.message_handler(commands=['check'])
@@ -58,7 +63,6 @@ if __name__ == "__main__":
     
     print("Bot is starting polling...")
     
-    # पोलिंग लूप: skip_pending=True पुराने पेंडिंग अपडेट्स को इग्नोर करेगा ताकि 409 एरर न आए
     while True:
         try:
             bot.infinity_polling(none_stop=True, timeout=60, long_polling_timeout=60, skip_pending=True)
