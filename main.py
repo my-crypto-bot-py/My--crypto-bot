@@ -3,41 +3,54 @@ import os
 import requests
 from flask import Flask
 from threading import Thread
+import time
 
 TOKEN = os.environ.get('TOKEN')
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 
-# Coinglass API से लिक्विडेशन डेटा लेने का फंक्शन
+# Coinglass API का नया स्ट्रक्चर
 def get_liquidation_data(symbol):
-    # सिंबल को coinglass फॉर्मेट में बदलें (जैसे BTC/USDT -> BTC)
     coin = symbol.split('/')[0]
-    url = f"https://open-api.coinglass.com/public/v2/liquidation_data?symbol={coin}"
+    # CoinGlass का नया पब्लिक एंडपॉइंट
+    url = f"https://open-api.coinglass.com/public/v2/liquidation_data?symbol={coin}&timeType=24h"
     
-    # नोट: अगर जरूरत हो तो Coinglass API key यहाँ जोड़ें, 
-    # लेकिन पब्लिक डेटा के लिए यह बिना की के भी काम करता है
     try:
-        response = requests.get(url).json()
-        if response['code'] == '0':
-            data = response['data']
-            # यहाँ हम लेटेस्ट लिक्विडेशन डेटा निकाल रहे हैं
-            return f"💰 24h Liq: {data[0].get('buyOrder', 0)} Buy / {data[0].get('sellOrder', 0)} Sell"
-        return "Data Unavailable"
+        # Headers जोड़ना जरूरी है ताकि API ब्लॉक न करे
+        headers = {"accept": "application/json"}
+        response = requests.get(url, headers=headers).json()
+        
+        if response.get('code') == '0' and response.get('data'):
+            # डेटा लिस्ट में होता है, सुरक्षित तरीके से निकालें
+            liq_list = response['data']
+            if len(liq_list) > 0:
+                d = liq_list[0]
+                return f"🟢 Buy Liq: {d.get('buyVolUsd', '0')} \n🔴 Sell Liq: {d.get('sellVolUsd', '0')}"
+        return "Data currently unavailable"
     except Exception as e:
-        return f"Error: {str(e)}"
+        return f"API Error: {str(e)}"
 
 @bot.message_handler(commands=['check'])
 def check_liquidation(m):
-    symbol = 'BTC/USDT'
+    # प्रोसेसिंग का मैसेज भेजें
+    msg = bot.reply_to(m, "Fetching data from Coinglass...")
+    symbol = 'BTC'
     info = get_liquidation_data(symbol)
     
-    response = f"🔥 *LIQUIDATION MONITOR: {symbol}*\n\n🏢 *Coinglass Source:*\n{info}"
-    bot.reply_to(m, response, parse_mode='Markdown')
+    response = f"🔥 *LIQUIDATION MONITOR: {symbol}*\n\n{info}"
+    bot.edit_message_text(chat_id=m.chat.id, message_id=msg.message_id, text=response, parse_mode='Markdown')
 
 def run_flask():
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
 
 if __name__ == "__main__":
-    bot.remove_webhook()
+    # Flask सर्वर शुरू करें
     Thread(target=run_flask).start()
-    bot.infinity_polling()
+    
+    # बोट को रन करें
+    print("Bot is running...")
+    while True:
+        try:
+            bot.infinity_polling(timeout=10, long_polling_timeout=5)
+        except Exception as e:
+            time.sleep(5) # एरर आने पर 5 सेकंड रुकें और फिर दोबारा शुरू करें
