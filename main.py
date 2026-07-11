@@ -1,6 +1,6 @@
 import telebot
-import ccxt
 import os
+import requests
 from flask import Flask
 from threading import Thread
 
@@ -8,40 +8,30 @@ TOKEN = os.environ.get('TOKEN')
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 
-# एक्सचेंज सेटअप
-bybit = ccxt.bybit()
-binance = ccxt.binance()
-
-# मार्केट लोड करना जरूरी है ताकि एक्सचेंज डेटा फेच कर सके
-bybit.load_markets()
-binance.load_markets()
-
+# Coinglass API से लिक्विडेशन डेटा लेने का फंक्शन
 def get_liquidation_data(symbol):
-    results = {}
-    exchanges = {'Bybit': bybit, 'Binance': binance}
+    # सिंबल को coinglass फॉर्मेट में बदलें (जैसे BTC/USDT -> BTC)
+    coin = symbol.split('/')[0]
+    url = f"https://open-api.coinglass.com/public/v2/liquidation_data?symbol={coin}"
     
-    for name, exchange in exchanges.items():
-        try:
-            # लिक्विडेशन डेटा फेच करना
-            data = exchange.fetch_liquidations(symbol, limit=1)
-            if data:
-                liq = data[0]
-                results[name] = f"Side: {liq['side']} | Amt: {liq['amount']} | Price: {liq['price']}"
-            else:
-                results[name] = "No recent liquidation"
-        except Exception as e:
-            results[name] = "Data Unavailable"
-    return results
+    # नोट: अगर जरूरत हो तो Coinglass API key यहाँ जोड़ें, 
+    # लेकिन पब्लिक डेटा के लिए यह बिना की के भी काम करता है
+    try:
+        response = requests.get(url).json()
+        if response['code'] == '0':
+            data = response['data']
+            # यहाँ हम लेटेस्ट लिक्विडेशन डेटा निकाल रहे हैं
+            return f"💰 24h Liq: {data[0].get('buyOrder', 0)} Buy / {data[0].get('sellOrder', 0)} Sell"
+        return "Data Unavailable"
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 @bot.message_handler(commands=['check'])
 def check_liquidation(m):
     symbol = 'BTC/USDT'
-    data = get_liquidation_data(symbol)
+    info = get_liquidation_data(symbol)
     
-    response = f"🔥 *LIQUIDATION MONITOR: {symbol}*\n\n"
-    for ex, info in data.items():
-        response += f"🏢 *{ex}:* {info}\n"
-    
+    response = f"🔥 *LIQUIDATION MONITOR: {symbol}*\n\n🏢 *Coinglass Source:*\n{info}"
     bot.reply_to(m, response, parse_mode='Markdown')
 
 def run_flask():
@@ -49,7 +39,5 @@ def run_flask():
 
 if __name__ == "__main__":
     bot.remove_webhook()
-    # Flask को अलग थ्रेड में चलाएं
     Thread(target=run_flask).start()
-    # बिना किसी पैरामीटर के infinity_polling चलाएं ताकि कोई एरर न आए
     bot.infinity_polling()
