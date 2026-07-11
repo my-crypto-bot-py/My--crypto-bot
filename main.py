@@ -3,6 +3,7 @@ import telebot
 import os
 
 TOKEN = os.environ.get('TOKEN')
+# Is baat ka dhyan rakhein ki Railway Variables mein TOKEN sahi se save ho
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 
@@ -17,11 +18,10 @@ def webhook():
 def health():
     return "OK", 200
 
+# Gunicorn ke liye 'app' variable chahiye hota hai
+# Webhook set karne ka kaam hum alag se karenge
 if __name__ == "__main__":
-    # Yahan apna Railway domain dalein (Dashboard -> Networking tab mein milega)
     WEBHOOK_URL = "https://easygoing-possibility-production.up.railway.app" 
-    
     bot.remove_webhook()
     bot.set_webhook(url=f"{WEBHOOK_URL}/{TOKEN}")
-    
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
