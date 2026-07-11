@@ -8,6 +8,6 @@ bot = telebot.TeleBot(TOKEN)
 def send_welcome(message):
     bot.reply_to(message, "Bot is running in Polling Mode!")
 
-# Infinite polling: Bot kabhi band nahi hoga, Railway bas script chalaye rakhega
 print("Bot is polling...")
-bot.infinity_polling()
+# Bracket band kar diya aur timeout set kar diya taaki connection loose na ho
+bot.infinity_polling(timeout=60, long_polling_timeout=60)
