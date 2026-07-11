@@ -8,3 +8,4 @@ flask
 pandas_ta
 schedule
 ccxt
+gunicorn
