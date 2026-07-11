@@ -6,21 +6,26 @@ TOKEN = os.environ.get('TOKEN')
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 
-# Railway variable se URL lein, hardcode na karein
-WEBHOOK_URL = os.environ.get('WEBHOOK_URL') 
-
-@app.route(f'/{TOKEN}', methods=['POST'])
-def webhook():
-    if request.headers.get('content-type') == 'application/json':
-        json_str = request.get_data().decode('utf-8')
-        update = telebot.types.Update.de_json(json_str)
-        bot.process_new_updates([update])
-        return '', 200
-    else:
-        return '!', 403
-
-@app.route('/')
+# Root route (Railway healthcheck ke liye zaroori)
+@app.route('/', methods=['GET'])
 def index():
     return "Bot is running", 200
 
-# Gunicorn is file ko 'app' object ke liye use karega
+# Webhook route
+@app.route(f'/{TOKEN}', methods=['POST'])
+def webhook():
+    if request.headers.get('content-type') == 'application/json':
+        try:
+            json_str = request.get_data().decode('utf-8')
+            update = telebot.types.Update.de_json(json_str)
+            bot.process_new_updates([update])
+            return '', 200
+        except Exception as e:
+            print(f"Error processing update: {e}")
+            return 'Internal Server Error', 500
+    else:
+        return 'Forbidden', 403
+
+if __name__ == "__main__":
+    # Local development ke liye
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
