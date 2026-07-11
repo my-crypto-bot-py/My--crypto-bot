@@ -6,22 +6,21 @@ TOKEN = os.environ.get('TOKEN')
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 
-WEBHOOK_URL = "https://easygoing-possibility-production.up.railway.app"
+# Railway variable se URL lein, hardcode na karein
+WEBHOOK_URL = os.environ.get('WEBHOOK_URL') 
 
 @app.route(f'/{TOKEN}', methods=['POST'])
 def webhook():
-    json_str = request.stream.read().decode('UTF-8')
-    update = telebot.types.Update.de_json(json_str)
-    bot.process_new_updates([update])
-    return '!', 200
+    if request.headers.get('content-type') == 'application/json':
+        json_str = request.get_data().decode('utf-8')
+        update = telebot.types.Update.de_json(json_str)
+        bot.process_new_updates([update])
+        return '', 200
+    else:
+        return '!', 403
 
 @app.route('/')
 def index():
     return "Bot is running", 200
 
-if __name__ == "__main__":
-    # Webhook sirf tab set hoga agar aap local run karenge
-    # Production (Gunicorn) mein ise manually Telegram se set karna best hai
-    bot.remove_webhook()
-    bot.set_webhook(url=f"{WEBHOOK_URL}/{TOKEN}")
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+# Gunicorn is file ko 'app' object ke liye use karega
