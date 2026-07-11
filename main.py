@@ -10,8 +10,12 @@ COINGLASS_API_KEY = os.environ.get('COINGLASS_API_KEY')
 
 app = Flask(__name__)
 
-# बोट का ऑब्जेक्ट यहाँ न बनाकर नीचे main के अंदर बनाएंगे
-bot = None
+@app.route('/')
+def home():
+    return "Bot is running..."
+
+def run_flask():
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
 
 def get_liquidation_data(symbol):
     coin = symbol.upper()
@@ -32,27 +36,19 @@ def get_liquidation_data(symbol):
     except Exception as e:
         return f"System Error: {str(e)}"
 
-# Flask app route (Railway के हेल्थ चेक के लिए)
-@app.route('/')
-def home():
-    return "Bot is running..."
-
-def run_flask():
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
-
 if __name__ == "__main__":
     bot = telebot.TeleBot(TOKEN)
     
-    # 1. किसी भी पुराने वेबहुक को तुरंत हटा दें (Conflict से बचने के लिए)
+    # पुरानी पेंडिंग रिक्वेस्ट को हटाना
     try:
+        bot.remove_webhook()
         bot.delete_webhook(drop_pending_updates=True)
     except Exception as e:
-        print(f"Webhook error: {e}")
+        print(f"Webhook cleanup error: {e}")
 
-    # 2. Flask को अलग थ्रेड में चलाएं
+    # Flask सर्वर को शुरू करना
     Thread(target=run_flask).start()
     
-    # 3. मैसेज हैंडलर को यहाँ रजिस्टर करें ताकि बोट ऑब्जेक्ट के साथ सही जुड़ें
     @bot.message_handler(commands=['check'])
     def check_liquidation(m):
         msg = bot.reply_to(m, "🔄 Fetching...")
@@ -62,10 +58,10 @@ if __name__ == "__main__":
     
     print("Bot is starting polling...")
     
-    # 4. इनफिनिटी पोलिंग को सुरक्षित तरीके से चलाएं
+    # पोलिंग लूप: skip_pending=True पुराने पेंडिंग अपडेट्स को इग्नोर करेगा ताकि 409 एरर न आए
     while True:
         try:
-            bot.infinity_polling(none_stop=True, timeout=60, long_polling_timeout=60)
+            bot.infinity_polling(none_stop=True, timeout=60, long_polling_timeout=60, skip_pending=True)
         except Exception as e:
             print(f"Polling error: {e}")
-            time.sleep(5) # एरर आने पर 5 सेकंड रुकें
+            time.sleep(5)
