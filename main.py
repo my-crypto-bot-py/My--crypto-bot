@@ -8,25 +8,24 @@ bot = telebot.TeleBot(TOKEN)
 
 def get_market_data(symbol):
     try:
-        # CryptoCompare API
+        # CryptoCompare API call
         url = f"https://min-api.cryptocompare.com/data/price?fsym={symbol}&tsyms=USD"
         response = requests.get(url, timeout=10)
         data = response.json()
         
-        # Debugging ke liye response print karein (Actions logs mein dikhega)
-        print(f"Response for {symbol}: {data}")
-        
-        # Check karein agar 'USD' key data mein hai
-        if 'USD' in data:
+        # Yahan hum check kar rahe hain ki data mein kya hai
+        if data and 'USD' in data:
             return f"🔹 {symbol}: ${data['USD']:,.2f}"
         else:
-            return f"🔹 {symbol}: No Price Found"
+            # Agar USD nahi mila, toh poora data return karenge takki hum samajh sakein
+            return f"🔹 {symbol}: Raw Data={data}"
+            
     except Exception as e:
-        return f"🔹 {symbol}: Error"
+        return f"🔹 {symbol}: Error {str(e)}"
 
 try:
     symbols = ['BTC', 'XRP', 'SOL']
-    report = "🚀 MARKET MONITOR UPDATE:\n\n"
+    report = "🚀 DEBUG MODE UPDATE:\n\n"
     for s in symbols:
         report += get_market_data(s) + "\n"
     bot.send_message(CHAT_ID, report)
