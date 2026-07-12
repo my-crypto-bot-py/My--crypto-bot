@@ -1,13 +1,18 @@
 import os
 import telebot
 
-TOKEN = os.environ.get('TOKEN')
+# GitHub Secrets se values fetch karein
+TOKEN = os.environ.get('TELEGRAM_TOKEN')
+CHAT_ID = os.environ.get('CHAT_ID')
+
+# Bot initialize karein
 bot = telebot.TeleBot(TOKEN)
 
-@bot.message_handler(commands=['start', 'help'])
-def send_welcome(message):
-    bot.reply_to(message, "Bot is running in Polling Mode!")
-
-print("Bot is polling...")
-# Bracket band kar diya aur timeout set kar diya taaki connection loose na ho
-bot.infinity_polling(timeout=60, long_polling_timeout=60)
+# Message bhejne ka logic
+try:
+    # Yahan aap apna liquidation logic add kar sakte hain
+    message_text = "🚀 Liquidation Bot active hai aur check kar raha hai!"
+    bot.send_message(CHAT_ID, message_text)
+    print("Success: Message sent to Telegram!")
+except Exception as e:
+    print(f"Error: {e}")
