@@ -1,6 +1,5 @@
 import ccxt
 import pandas as pd
-import pandas_ta as ta
 import requests
 import os
 import telebot
@@ -10,15 +9,23 @@ bot = telebot.TeleBot(os.environ.get('TELEGRAM_TOKEN'))
 CHAT_ID = os.environ.get('CHAT_ID')
 exchange = ccxt.binance()
 
+# Manual ATR calculation (No pandas_ta needed)
+def calculate_atr(df, length=14):
+    df['h-l'] = df['high'] - df['low']
+    df['h-pc'] = abs(df['high'] - df['close'].shift(1))
+    df['l-pc'] = abs(df['low'] - df['close'].shift(1))
+    df['tr'] = df[['h-l', 'h-pc', 'l-pc']].max(axis=1)
+    return df['tr'].rolling(window=length).mean()
+
 # 1. Advanced Technical Analysis Logic
 def fetch_data(symbol, timeframe):
     bars = exchange.fetch_ohlcv(symbol, timeframe=timeframe, limit=100)
     df = pd.DataFrame(bars, columns=['ts', 'open', 'high', 'low', 'close', 'vol'])
-    df['atr'] = ta.atr(df['high'], df['low'], df['close'], length=14)
+    # Using manual ATR instead of pandas_ta
+    df['atr'] = calculate_atr(df, 14)
     return df
 
 def get_coinglass_signal(symbol):
-    # Coinglass API call
     url = f"https://open-api.coinglass.com/api/pro/v1/futures/liquidation_chart?symbol={symbol}&timeType=h4"
     headers = {'coinglassSecret': os.environ.get('COINGLASS_API_KEY')}
     try:
@@ -32,11 +39,12 @@ def analyze_trade(symbol):
     last_close = df['close'].iloc[-1]
     atr = df['atr'].iloc[-1]
     prev_high = df['high'].iloc[-2]
+    prev_low = df['low'].iloc[-2]
     
     if last_close > prev_high and flow == "Bullish Flow":
-        return f"✅ BUY: {last_close} | SL: {last_close - (atr*1.5)} | TP: {last_close + (atr*3)}"
-    elif last_close < df['low'].iloc[-2] and flow == "Bearish Flow":
-        return f"✅ SELL: {last_close} | SL: {last_close + (atr*1.5)} | TP: {last_close - (atr*3)}"
+        return f"✅ BUY: {last_close:.2f} | SL: {(last_close - (atr*1.5)):.2f} | TP: {(last_close + (atr*3)):.2f}"
+    elif last_close < prev_low and flow == "Bearish Flow":
+        return f"✅ SELL: {last_close:.2f} | SL: {(last_close + (atr*1.5)):.2f} | TP: {(last_close - (atr*3)):.2f}"
     return "⏳ WAIT - No setup"
 
 # 2. Simple Market Monitor Logic
@@ -51,13 +59,10 @@ def get_market_price(symbol):
 # --- Combined Execution ---
 try:
     report = "🚀 ADVANCED MARKET MONITOR & SIGNALS:\n\n"
-    
-    # Prices
     report += "📊 CURRENT PRICES:\n"
     for s in ['BTC', 'XRP', 'SOL']:
         report += f"🔹 {s}: {get_market_price(s)}\n"
     
-    # Trade Signals
     report += "\n🎯 ADVANCED SIGNALS:\n"
     for s in ['BTC/USDT', 'SOL/USDT']:
         report += f"🔹 {s}: {analyze_trade(s)}\n"
