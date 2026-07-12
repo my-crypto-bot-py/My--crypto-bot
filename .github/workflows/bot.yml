@@ -14,13 +14,15 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11' # Version 3.11 set kar diya hai
+          python-version: '3.11'
           
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install setuptools wheel
-          pip install -r requirements.txt # Yahan ab 'pandas-ta' sahi se install hoga
+          # Yahan hum pandas-ta ko direct source se install kar rahe hain
+          pip install git+https://github.com/twopirllc/pandas-ta.git@development
+          pip install -r requirements.txt
           
       - name: Run Bot
         env:
