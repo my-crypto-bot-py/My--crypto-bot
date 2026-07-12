@@ -2,8 +2,8 @@ name: Run Advanced Crypto Bot
 
 on:
   schedule:
-    - cron: '0 * * * *' # Har ghante check karega
-  workflow_dispatch:      # Aap ise manually bhi run kar sakte hain
+    - cron: '0 * * * *' 
+  workflow_dispatch:
 
 jobs:
   build:
@@ -14,12 +14,13 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.11' # Version 3.11 set kar diya hai
           
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install setuptools wheel
+          pip install -r requirements.txt # Yahan ab 'pandas-ta' sahi se install hoga
           
       - name: Run Bot
         env:
