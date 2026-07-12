@@ -5,11 +5,12 @@ import os
 import telebot
 
 # --- Setup ---
-bot = telebot.TeleBot(os.environ.get('TELEGRAM_TOKEN'))
+TOKEN = os.environ.get('TELEGRAM_TOKEN')
 CHAT_ID = os.environ.get('CHAT_ID')
+bot = telebot.TeleBot(TOKEN)
 exchange = ccxt.binance()
 
-# Manual ATR calculation (No pandas_ta needed)
+# Manual ATR calculation
 def calculate_atr(df, length=14):
     df['h-l'] = df['high'] - df['low']
     df['h-pc'] = abs(df['high'] - df['close'].shift(1))
@@ -17,11 +18,9 @@ def calculate_atr(df, length=14):
     df['tr'] = df[['h-l', 'h-pc', 'l-pc']].max(axis=1)
     return df['tr'].rolling(window=length).mean()
 
-# 1. Advanced Technical Analysis Logic
 def fetch_data(symbol, timeframe):
     bars = exchange.fetch_ohlcv(symbol, timeframe=timeframe, limit=100)
     df = pd.DataFrame(bars, columns=['ts', 'open', 'high', 'low', 'close', 'vol'])
-    # Using manual ATR instead of pandas_ta
     df['atr'] = calculate_atr(df, 14)
     return df
 
@@ -47,7 +46,6 @@ def analyze_trade(symbol):
         return f"✅ SELL: {last_close:.2f} | SL: {(last_close + (atr*1.5)):.2f} | TP: {(last_close - (atr*3)):.2f}"
     return "⏳ WAIT - No setup"
 
-# 2. Simple Market Monitor Logic
 def get_market_price(symbol):
     ids = {"BTC": "bitcoin", "XRP": "ripple", "SOL": "solana"}
     try:
@@ -56,18 +54,31 @@ def get_market_price(symbol):
         return f"${data[ids[symbol]]['usd']:,.2f}"
     except: return "N/A"
 
-# --- Combined Execution ---
-try:
-    report = "🚀 ADVANCED MARKET MONITOR & SIGNALS:\n\n"
-    report += "📊 CURRENT PRICES:\n"
-    for s in ['BTC', 'XRP', 'SOL']:
-        report += f"🔹 {s}: {get_market_price(s)}\n"
-    
-    report += "\n🎯 ADVANCED SIGNALS:\n"
-    for s in ['BTC/USDT', 'SOL/USDT']:
-        report += f"🔹 {s}: {analyze_trade(s)}\n"
+# --- COMMANDS ---
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    bot.reply_to(message, "Bot is active and ready to monitor markets!")
+
+@bot.message_handler(commands=['report'])
+def manual_report(message):
+    generate_and_send()
+
+def generate_and_send():
+    try:
+        print("Generating report...")
+        report = "🚀 ADVANCED MARKET MONITOR:\n\n📊 PRICES:\n"
+        for s in ['BTC', 'XRP', 'SOL']:
+            report += f"🔹 {s}: {get_market_price(s)}\n"
+        report += "\n🎯 SIGNALS:\n"
+        for s in ['BTC/USDT', 'SOL/USDT']:
+            report += f"🔹 {s}: {analyze_trade(s)}\n"
         
-    bot.send_message(CHAT_ID, report)
-    print("Success: Combined report sent!")
-except Exception as e:
-    print(f"Error: {e}")
+        bot.send_message(CHAT_ID, report)
+        print("Success: Message sent!")
+    except Exception as e:
+        print(f"FAILED to send message. Error: {e}")
+
+# --- Combined Execution ---
+if __name__ == "__main__":
+    # GitHub Action ke liye direct run
+    generate_and_send()
