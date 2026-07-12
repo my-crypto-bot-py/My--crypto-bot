@@ -8,26 +8,28 @@ bot = telebot.TeleBot(TOKEN)
 
 def get_market_data(symbol):
     try:
-        # CryptoCompare API call
-        url = f"https://min-api.cryptocompare.com/data/price?fsym={symbol}&tsyms=USD"
+        # CoinGecko Public API (No key needed)
+        # BTC, XRP, SOL ke liye id map karni padti hai
+        ids = {"BTC": "bitcoin", "XRP": "ripple", "SOL": "solana"}
+        coin_id = ids.get(symbol)
+        
+        url = f"https://api.coingecko.com/api/v3/simple/price?ids={coin_id}&vs_currencies=usd"
         response = requests.get(url, timeout=10)
         data = response.json()
         
-        # Yahan hum check kar rahe hain ki data mein kya hai
-        if data and 'USD' in data:
-            return f"🔹 {symbol}: ${data['USD']:,.2f}"
-        else:
-            # Agar USD nahi mila, toh poora data return karenge takki hum samajh sakein
-            return f"🔹 {symbol}: Raw Data={data}"
-            
+        if coin_id in data:
+            price = data[coin_id]['usd']
+            return f"🔹 {symbol}: ${price:,.2f}"
+        return f"🔹 {symbol}: Data Unavailable"
     except Exception as e:
-        return f"🔹 {symbol}: Error {str(e)}"
+        return f"🔹 {symbol}: Error"
 
 try:
     symbols = ['BTC', 'XRP', 'SOL']
-    report = "🚀 DEBUG MODE UPDATE:\n\n"
+    report = "🚀 MARKET MONITOR UPDATE:\n\n"
     for s in symbols:
         report += get_market_data(s) + "\n"
     bot.send_message(CHAT_ID, report)
+    print("Success: Data sent!")
 except Exception as e:
     print(f"Main Error: {e}")
