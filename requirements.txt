@@ -1,11 +1,2 @@
 pyTelegramBotAPI
-yfinance
-pandas
-numpy
-pytz
 requests
-flask
-pandas_ta
-schedule
-ccxt
-gunicorn
