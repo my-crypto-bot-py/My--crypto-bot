@@ -21,37 +21,39 @@ def test_connection():
 
 if __name__ == "__main__":
     test_connection()
-# --- AUTOMATION & COMMANDS (Paste this at the end of your file) ---
 
-import schedule
-import time
+import ccxt
+import pandas as pd
+import requests
+import os
+import telebot
 
-# 1. /start command
-@bot.message_handler(commands=['start'])
-def send_welcome(message):
-    bot.reply_to(message, "✅ Bot is active and running! You will receive updates every hour.")
+# --- Setup ---
+TOKEN = os.environ.get('TELEGRAM_TOKEN')
+raw_chat_id = os.environ.get('CHAT_ID')
+CHAT_ID = int(raw_chat_id) if raw_chat_id else None
+bot = telebot.TeleBot(TOKEN)
+exchange = ccxt.binance()
 
-# 2. Hourly Scheduled Task
-def hourly_update():
-    print("Running scheduled hourly update...")
-    generate_and_send() # Yeh aapka pehle wala function hai
+# --- Functions (Aapke purane functions yahan raheinge) ---
+# def get_market_price(s): ...
+# def analyze_trade(s): ...
 
-# 3. Background Threading for Polling (Command Handling)
-def run_bot_polling():
-    print("Bot polling started in background...")
-    bot.polling(none_stop=True)
+def generate_and_send():
+    try:
+        report = "🚀 ADVANCED MARKET MONITOR:\n\n📊 PRICES:\n"
+        for s in ['BTC', 'XRP', 'SOL']:
+            report += f"🔹 {s}: {get_market_price(s)}\n"
+        report += "\n🎯 SIGNALS:\n"
+        for s in ['BTC/USDT', 'SOL/USDT']:
+            report += f"🔹 {s}: {analyze_trade(s)}\n"
+        
+        if CHAT_ID:
+            bot.send_message(CHAT_ID, report)
+            print(f"Success: Message sent to {CHAT_ID}!")
+    except Exception as e:
+        print(f"FAILED to send message: {e}")
 
-# 4. Main Execution Block
 if __name__ == "__main__":
-    # Schedule hourly task
-    schedule.every(1).hours.do(hourly_update)
-    
-    # Start polling in a separate thread so it doesn't block the scheduler
-    import threading
-    polling_thread = threading.Thread(target=run_bot_polling)
-    polling_thread.start()
-    
-    # Keep the script running
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+    # GitHub Action ise har ghante chalayega, humein sirf ek baar report bhejni hai.
+    generate_and_send()
