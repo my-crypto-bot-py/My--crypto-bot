@@ -49,22 +49,26 @@ TOKEN = os.environ.get('TELEGRAM_TOKEN')
 CHAT_ID = os.environ.get('CHAT_ID')
 bot = telebot.TeleBot(TOKEN)
 
-# Timeout aur connection retry settings
-exchange = ccxt.binance({'timeout': 30000, 'enableRateLimit': True})
+# Switch to a more public-friendly exchange connection
+exchange = ccxt.binance({
+    'enableRateLimit': True,
+    'options': {'defaultType': 'future'} 
+})
 
 # --- FUNCTIONS ---
 
 def get_market_price(s):
     try:
+        # Trying a different approach to fetch ticker
         ticker = exchange.fetch_ticker(f"{s}/USDT")
-        price = ticker.get('last')
-        return f"${float(price):,.2f}"
+        return f"${float(ticker['last']):,.2f}"
     except Exception as e:
-        return f"Err: {type(e).__name__}"
+        return f"Err: {str(e)[:15]}"
 
 def analyze_trade(symbol):
     try:
-        bars = exchange.fetch_ohlcv(symbol, timeframe='1h', limit=25)
+        # Ensure we are fetching data correctly
+        bars = exchange.fetch_ohlcv(symbol, timeframe='1h', limit=20)
         df = pd.DataFrame(bars, columns=['time', 'open', 'high', 'low', 'close', 'vol'])
         
         # RSI Calculation
@@ -82,23 +86,24 @@ def analyze_trade(symbol):
         if rsi_val < 30: signal = "🟢 BUY"
         elif rsi_val > 70: signal = "🔴 SELL"
         
-        return f"{signal} | RSI: {rsi_val:.0f} | ATR: {atr:.2f}"
+        return f"{signal} | RSI:{rsi_val:.0f} ATR:{atr:.2f}"
     except Exception as e:
-        return f"Err: {type(e).__name__}"
+        return f"Err: {str(e)[:15]}"
 
 def get_coinglass_data(symbol):
     try:
-        if symbol == 'XAU': return "Manual"
-        # Public API request
+        if symbol == 'XAU': return "N/A"
+        # Adding a User-Agent to the request to avoid being blocked by CoinGlass
+        headers = {'User-Agent': 'Mozilla/5.0'}
         url = f"https://open-api.coinglass.com/public/v2/liquidation_pair?pair={symbol}USDT"
-        res = requests.get(url, timeout=10).json()
+        res = requests.get(url, headers=headers, timeout=10).json()
         data = res.get('data', [])
-        return f"🔥 Liq: {data[0].get('liquidation', '0')}" if data else "No Data"
-    except: return "Conn Err"
+        return f"🔥 Liq: {data[0].get('liquidation', '0')}" if data else "0"
+    except: return "No Data"
 
 def generate_and_send():
     try:
-        report = "<b>🚀 MARKET ANALYSIS (RSI + ATR)</b>\n\n<b>📊 PRICES:</b>\n"
+        report = "<b>🚀 MARKET ANALYSIS</b>\n\n<b>📊 PRICES:</b>\n"
         for s in ['BTC', 'XRP', 'SOL']:
             report += f"🔹 {s}: {get_market_price(s)}\n"
         
@@ -106,8 +111,8 @@ def generate_and_send():
         for s in ['BTC/USDT', 'SOL/USDT']:
             report += f"🔹 {s}: {analyze_trade(s)}\n"
         
-        report += "\n<b>💎 COINGLASS INSIGHTS:</b>\n"
-        for s in ['BTC', 'XRP', 'SOL', 'XAU']:
+        report += "\n<b>💎 COINGLASS:</b>\n"
+        for s in ['BTC', 'XRP', 'SOL']:
             report += f"🔹 {s}: {get_coinglass_data(s)}\n"
         
         if CHAT_ID:
@@ -118,4 +123,3 @@ def generate_and_send():
 
 if __name__ == "__main__":
     generate_and_send()
-
