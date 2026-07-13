@@ -3,5 +3,3 @@ requests
 ccxt
 pandas
 ccxt
-os
-telebot
