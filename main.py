@@ -48,19 +48,23 @@ import telebot
 TOKEN = os.environ.get('TELEGRAM_TOKEN')
 CHAT_ID = os.environ.get('CHAT_ID')
 bot = telebot.TeleBot(TOKEN)
-exchange = ccxt.binance()
+
+# Timeout aur connection retry settings
+exchange = ccxt.binance({'timeout': 30000, 'enableRateLimit': True})
 
 # --- FUNCTIONS ---
 
 def get_market_price(s):
     try:
         ticker = exchange.fetch_ticker(f"{s}/USDT")
-        return f"${ticker['last']}"
-    except: return "N/A"
+        price = ticker.get('last')
+        return f"${float(price):,.2f}"
+    except Exception as e:
+        return f"Err: {type(e).__name__}"
 
 def analyze_trade(symbol):
     try:
-        bars = exchange.fetch_ohlcv(symbol, timeframe='1h', limit=20)
+        bars = exchange.fetch_ohlcv(symbol, timeframe='1h', limit=25)
         df = pd.DataFrame(bars, columns=['time', 'open', 'high', 'low', 'close', 'vol'])
         
         # RSI Calculation
@@ -70,49 +74,48 @@ def analyze_trade(symbol):
         rsi = 100 - (100 / (1 + (gain / loss)))
         
         # ATR Calculation
-        high_low = df['high'] - df['low']
-        high_close = abs(df['high'] - df['close'].shift())
-        low_close = abs(df['low'] - df['close'].shift())
-        tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
-        atr = tr.rolling(window=14).mean().iloc[-1]
+        df['tr'] = pd.concat([df['high']-df['low'], abs(df['high']-df['close'].shift()), abs(df['low']-df['close'].shift())], axis=1).max(axis=1)
+        atr = df['tr'].rolling(window=14).mean().iloc[-1]
         
         rsi_val = rsi.iloc[-1]
-        signal = "🟡 Wait"
+        signal = "🟡 Neutral"
         if rsi_val < 30: signal = "🟢 BUY"
         elif rsi_val > 70: signal = "🔴 SELL"
         
-        return f"{signal} | RSI: {rsi_val:.1f} | ATR: {atr:.2f}"
-    except: return "Error"
+        return f"{signal} | RSI: {rsi_val:.0f} | ATR: {atr:.2f}"
+    except Exception as e:
+        return f"Err: {type(e).__name__}"
 
 def get_coinglass_data(symbol):
     try:
-        if symbol == 'XAU': return "N/A"
+        if symbol == 'XAU': return "Manual"
+        # Public API request
         url = f"https://open-api.coinglass.com/public/v2/liquidation_pair?pair={symbol}USDT"
-        res = requests.get(url).json()
-        liq = res.get('data', [{}])[0].get('liquidation', '0')
-        return f"🔥 Liq: {liq}"
-    except: return "N/A"
-
-def get_market_updates():
-    report = "\n💎 COINGLASS INSIGHTS:\n"
-    for asset in ['BTC', 'XRP', 'SOL', 'XAU']:
-        report += f"🔹 {asset}: {get_coinglass_data(asset)}\n"
-    return report
+        res = requests.get(url, timeout=10).json()
+        data = res.get('data', [])
+        return f"🔥 Liq: {data[0].get('liquidation', '0')}" if data else "No Data"
+    except: return "Conn Err"
 
 def generate_and_send():
-    report = "🚀 MARKET ANALYSIS (RSI + ATR):\n\n📊 PRICES:\n"
-    for s in ['BTC', 'XRP', 'SOL']:
-        report += f"🔹 {s}: {get_market_price(s)}\n"
-    
-    report += "\n🎯 SIGNALS:\n"
-    for s in ['BTC/USDT', 'SOL/USDT']:
-        report += f"🔹 {s}: {analyze_trade(s)}\n"
-    
-    report += get_market_updates()
-    
-    if CHAT_ID:
-        bot.send_message(CHAT_ID, report)
-        print("Success!")
+    try:
+        report = "<b>🚀 MARKET ANALYSIS (RSI + ATR)</b>\n\n<b>📊 PRICES:</b>\n"
+        for s in ['BTC', 'XRP', 'SOL']:
+            report += f"🔹 {s}: {get_market_price(s)}\n"
+        
+        report += "\n<b>🎯 SIGNALS (1H):</b>\n"
+        for s in ['BTC/USDT', 'SOL/USDT']:
+            report += f"🔹 {s}: {analyze_trade(s)}\n"
+        
+        report += "\n<b>💎 COINGLASS INSIGHTS:</b>\n"
+        for s in ['BTC', 'XRP', 'SOL', 'XAU']:
+            report += f"🔹 {s}: {get_coinglass_data(s)}\n"
+        
+        if CHAT_ID:
+            bot.send_message(CHAT_ID, report, parse_mode='HTML')
+            print("Success!")
+    except Exception as e:
+        print(f"Failed: {e}")
 
 if __name__ == "__main__":
     generate_and_send()
+
