@@ -3,6 +3,5 @@ requests
 ccxt
 pandas
 ccxt
-pandas as pd
 os
 telebot
