@@ -48,72 +48,36 @@ import telebot
 TOKEN = os.environ.get('TELEGRAM_TOKEN')
 CHAT_ID = os.environ.get('CHAT_ID')
 bot = telebot.TeleBot(TOKEN)
-
-# Switch to a more public-friendly exchange connection
-exchange = ccxt.binance({
-    'enableRateLimit': True,
-    'options': {'defaultType': 'future'} 
-})
+exchange = ccxt.kucoin({'enableRateLimit': True})
 
 # --- FUNCTIONS ---
 
-def get_market_price(s):
+def get_liquidation_heatmap(symbol):
+    """
+    CoinGlass API se Liquidation Level fetch karein
+    """
     try:
-        # Trying a different approach to fetch ticker
-        ticker = exchange.fetch_ticker(f"{s}/USDT")
-        return f"${float(ticker['last']):,.2f}"
-    except Exception as e:
-        return f"Err: {str(e)[:15]}"
-
-def analyze_trade(symbol):
-    try:
-        # Ensure we are fetching data correctly
-        bars = exchange.fetch_ohlcv(symbol, timeframe='1h', limit=20)
-        df = pd.DataFrame(bars, columns=['time', 'open', 'high', 'low', 'close', 'vol'])
-        
-        # RSI Calculation
-        delta = df['close'].diff()
-        gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
-        loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
-        rsi = 100 - (100 / (1 + (gain / loss)))
-        
-        # ATR Calculation
-        df['tr'] = pd.concat([df['high']-df['low'], abs(df['high']-df['close'].shift()), abs(df['low']-df['close'].shift())], axis=1).max(axis=1)
-        atr = df['tr'].rolling(window=14).mean().iloc[-1]
-        
-        rsi_val = rsi.iloc[-1]
-        signal = "🟡 Neutral"
-        if rsi_val < 30: signal = "🟢 BUY"
-        elif rsi_val > 70: signal = "🔴 SELL"
-        
-        return f"{signal} | RSI:{rsi_val:.0f} ATR:{atr:.2f}"
-    except Exception as e:
-        return f"Err: {str(e)[:15]}"
-
-def get_coinglass_data(symbol):
-    try:
-        if symbol == 'XAU': return "N/A"
-        # Adding a User-Agent to the request to avoid being blocked by CoinGlass
         headers = {'User-Agent': 'Mozilla/5.0'}
+        # Liquidation Heatmap level endpoint
         url = f"https://open-api.coinglass.com/public/v2/liquidation_pair?pair={symbol}USDT"
         res = requests.get(url, headers=headers, timeout=10).json()
+        
         data = res.get('data', [])
-        return f"🔥 Liq: {data[0].get('liquidation', '0')}" if data else "0"
-    except: return "No Data"
+        if data:
+            # Liquidation value aur Price Level
+            liq_val = data[0].get('liquidation', '0')
+            return f"🔥 Liq: {liq_val}"
+        return "No Data"
+    except:
+        return "Err"
 
 def generate_and_send():
     try:
-        report = "<b>🚀 MARKET ANALYSIS</b>\n\n<b>📊 PRICES:</b>\n"
-        for s in ['BTC', 'XRP', 'SOL']:
-            report += f"🔹 {s}: {get_market_price(s)}\n"
+        report = "<b>🚀 LIQUIDATION HEATMAP UPDATE</b>\n\n"
         
-        report += "\n<b>🎯 SIGNALS (1H):</b>\n"
-        for s in ['BTC/USDT', 'SOL/USDT']:
-            report += f"🔹 {s}: {analyze_trade(s)}\n"
-        
-        report += "\n<b>💎 COINGLASS:</b>\n"
-        for s in ['BTC', 'XRP', 'SOL']:
-            report += f"🔹 {s}: {get_coinglass_data(s)}\n"
+        for s in ['BTC', 'SOL', 'ETH']:
+            liq_info = get_liquidation_heatmap(s)
+            report += f"🔹 {s}: {liq_info}\n"
         
         if CHAT_ID:
             bot.send_message(CHAT_ID, report, parse_mode='HTML')
