@@ -52,18 +52,17 @@ CHAT_ID = int(raw_chat_id) if raw_chat_id else None
 bot = telebot.TeleBot(TOKEN)
 exchange = ccxt.binance()
 
-# --- 2. FUNCTIONS (Inhe hamesha sabse upar rakhein) ---
+# --- 2. FUNCTIONS ---
 
 def get_market_price(s):
-    # Apna existing logic yahan rakhein
+    # Yahan apna real price logic add karein
     return "Price Data"
 
 def analyze_trade(s):
-    # Apna existing logic yahan rakhein
+    # Yahan apna real signal logic add karein
     return "Signal Data"
 
 def get_coinglass_data(symbol):
-    # CoinGlass Data Logic
     try:
         url = f"https://open-api.coinglass.com/public/v2/liquidation_pair?pair={symbol}USDT"
         res = requests.get(url).json()
@@ -79,7 +78,7 @@ def get_market_updates():
         report += f"🔹 {asset}: {get_coinglass_data(asset)}\n"
     return report
 
-# --- 3. MAIN LOGIC (Yeh saare functions ke niche hona chahiye) ---
+# --- 3. MAIN LOGIC ---
 
 def generate_and_send():
     try:
@@ -91,7 +90,6 @@ def generate_and_send():
         for s in ['BTC/USDT', 'SOL/USDT']:
             report += f"🔹 {s}: {analyze_trade(s)}\n"
         
-        # CoinGlass update add karna
         report += get_market_updates()
         
         if CHAT_ID:
@@ -103,5 +101,6 @@ def generate_and_send():
 # --- 4. EXECUTION ---
 if __name__ == "__main__":
     generate_and_send()
+
 
 
