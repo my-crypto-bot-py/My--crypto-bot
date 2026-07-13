@@ -21,3 +21,37 @@ def test_connection():
 
 if __name__ == "__main__":
     test_connection()
+# --- AUTOMATION & COMMANDS (Paste this at the end of your file) ---
+
+import schedule
+import time
+
+# 1. /start command
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    bot.reply_to(message, "✅ Bot is active and running! You will receive updates every hour.")
+
+# 2. Hourly Scheduled Task
+def hourly_update():
+    print("Running scheduled hourly update...")
+    generate_and_send() # Yeh aapka pehle wala function hai
+
+# 3. Background Threading for Polling (Command Handling)
+def run_bot_polling():
+    print("Bot polling started in background...")
+    bot.polling(none_stop=True)
+
+# 4. Main Execution Block
+if __name__ == "__main__":
+    # Schedule hourly task
+    schedule.every(1).hours.do(hourly_update)
+    
+    # Start polling in a separate thread so it doesn't block the scheduler
+    import threading
+    polling_thread = threading.Thread(target=run_bot_polling)
+    polling_thread.start()
+    
+    # Keep the script running
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
