@@ -57,3 +57,46 @@ def generate_and_send():
 if __name__ == "__main__":
     # GitHub Action ise har ghante chalayega, humein sirf ek baar report bhejni hai.
     generate_and_send()
+# --- COINGLASS DATA MODULE ---
+
+def get_coinglass_data(symbol):
+    """
+    CoinGlass API se Liquidation aur Order Flow data fetch karne ka function.
+    """
+    # Note: CoinGlass Public API ke endpoints
+    headers = {
+        'coinglassSecret': 'PASTE_YOUR_COINGLASS_API_KEY_IF_YOU_HAVE' # Agar free use kar rahe hain toh header ki zaroorat nahi hoti
+    }
+    
+    try:
+        # Liquidation Data (Heatmap mock/public)
+        liq_url = f"https://open-api.coinglass.com/public/v2/liquidation_pair?pair={symbol}USDT"
+        liq_res = requests.get(liq_url).json()
+        
+        # Order Book / Order Flow summary
+        order_url = f"https://open-api.coinglass.com/public/v2/order_book?pair={symbol}USDT"
+        order_res = requests.get(order_url).json()
+        
+        # Data processing
+        liq_val = liq_res['data'][0]['liquidation'] if 'data' in liq_res else "N/A"
+        order_val = order_res['data']['buyVol'] if 'data' in order_res else "N/A"
+        
+        return f"🔥 Liq: {liq_val} | 📊 Flow: {order_val}"
+    
+    except Exception as e:
+        return "Data Fetch Error"
+
+def get_market_updates():
+    """
+    Yeh function aapke main report mein add hoga.
+    """
+    assets = ['BTC', 'XRP', 'SOL', 'XAU'] # XAU (Gold) ke liye pair check karein
+    report = "\n💎 COINGLASS INSIGHTS:\n"
+    for asset in assets:
+        data = get_coinglass_data(asset)
+        report += f"🔹 {asset}: {data}\n"
+    return report
+
+# --- UPDATE GENERATE_AND_SEND FUNCTION ---
+# Apne purane generate_and_send mein niche wali line add karein:
+# report += get_market_updates()
