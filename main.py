@@ -3,8 +3,6 @@ import pandas as pd
 import requests
 import os
 import telebot
-import threading
-import time
 
 # --- Setup ---
 TOKEN = os.environ.get('TELEGRAM_TOKEN')
@@ -12,12 +10,12 @@ CHAT_ID = os.environ.get('CHAT_ID')
 bot = telebot.TeleBot(TOKEN)
 exchange = ccxt.binance()
 
-# ... (Apne sabhi functions: calculate_atr, fetch_data, get_coinglass_signal, analyze_trade, get_market_price yahan rakhein) ...
+# ... (Aapke baaki functions: calculate_atr, fetch_data, get_coinglass_signal, analyze_trade, get_market_price wahi rahenge) ...
 
 # --- COMMANDS ---
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    bot.reply_to(message, "Bot is active! Use /report to get current signals.")
+    bot.reply_to(message, "Bot is active! Your Chat ID is: " + str(message.chat.id))
 
 @bot.message_handler(commands=['report'])
 def manual_report(message):
@@ -25,6 +23,11 @@ def manual_report(message):
 
 def generate_and_send():
     try:
+        # 1. Identity Check
+        me = bot.get_me()
+        print(f"Bot connected: {me.username}")
+        
+        # 2. Report Generation
         report = "🚀 ADVANCED MARKET MONITOR:\n\n📊 PRICES:\n"
         for s in ['BTC', 'XRP', 'SOL']:
             report += f"🔹 {s}: {get_market_price(s)}\n"
@@ -32,18 +35,13 @@ def generate_and_send():
         for s in ['BTC/USDT', 'SOL/USDT']:
             report += f"🔹 {s}: {analyze_trade(s)}\n"
         
+        # 3. Sending Message
+        print(f"Attempting to send to CHAT_ID: {CHAT_ID}")
         bot.send_message(CHAT_ID, report)
         print("Success: Message sent!")
+        
     except Exception as e:
-        print(f"FAILED to send message. Error: {e}")
+        print(f"FAILED to send message. Error Details: {e}")
 
-# --- Combined Execution ---
 if __name__ == "__main__":
-    # 1. Agar hum GitHub Action chala rahe hain (jahan automation zaruri hai)
-    # Hum 'IS_GITHUB' environment variable check kar sakte hain ya sirf run karein.
-    print("Running scheduled report...")
     generate_and_send()
-    
-    # 2. Agar aap ise 24/7 server pe daalna chahein, toh ye uncomment karein:
-    # print("Bot polling started...")
-    # bot.polling(none_stop=True)
