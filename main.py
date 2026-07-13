@@ -47,34 +47,36 @@ import telebot
 # --- SETUP ---
 TOKEN = os.environ.get('TELEGRAM_TOKEN')
 CHAT_ID = os.environ.get('CHAT_ID')
+# Ye aapke GitHub Secret "COINGLASS_API_KEY" ko automatically utha lega
+COINGLASS_KEY = os.environ.get('COINGLASS_API_KEY') 
+
 bot = telebot.TeleBot(TOKEN)
 exchange = ccxt.kucoin({'enableRateLimit': True})
 
 # --- FUNCTIONS ---
 
 def get_liquidation_heatmap(symbol):
-    """
-    CoinGlass API se Liquidation Level fetch karein
-    """
     try:
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        # Liquidation Heatmap level endpoint
+        # Header mein API Key pass karna
+        headers = {
+            'coinglassSecret': COINGLASS_KEY,
+            'User-Agent': 'Mozilla/5.0'
+        }
         url = f"https://open-api.coinglass.com/public/v2/liquidation_pair?pair={symbol}USDT"
         res = requests.get(url, headers=headers, timeout=10).json()
         
         data = res.get('data', [])
         if data:
-            # Liquidation value aur Price Level
+            # Liquidation value
             liq_val = data[0].get('liquidation', '0')
             return f"🔥 Liq: {liq_val}"
         return "No Data"
-    except:
-        return "Err"
+    except Exception as e:
+        return f"Err: {e}"
 
 def generate_and_send():
     try:
-        report = "<b>🚀 LIQUIDATION HEATMAP UPDATE</b>\n\n"
-        
+        report = "<b>🚀 MARKET LIQUIDATION DATA</b>\n\n"
         for s in ['BTC', 'SOL', 'ETH']:
             liq_info = get_liquidation_heatmap(s)
             report += f"🔹 {s}: {liq_info}\n"
