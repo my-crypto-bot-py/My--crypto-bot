@@ -6,28 +6,18 @@ import telebot
 
 # --- Setup ---
 TOKEN = os.environ.get('TELEGRAM_TOKEN')
-CHAT_ID = os.environ.get('CHAT_ID')
+# Yahan CHAT_ID ko explicitly integer mein convert kiya gaya hai
+raw_chat_id = os.environ.get('CHAT_ID')
+CHAT_ID = int(raw_chat_id) if raw_chat_id else None
+
 bot = telebot.TeleBot(TOKEN)
 exchange = ccxt.binance()
 
-# ... (Aapke baaki functions: calculate_atr, fetch_data, get_coinglass_signal, analyze_trade, get_market_price wahi rahenge) ...
-
-# --- COMMANDS ---
-@bot.message_handler(commands=['start'])
-def send_welcome(message):
-    bot.reply_to(message, "Bot is active! Your Chat ID is: " + str(message.chat.id))
-
-@bot.message_handler(commands=['report'])
-def manual_report(message):
-    generate_and_send()
+# ... (Aapke baaki functions wahi rahenge) ...
 
 def generate_and_send():
     try:
-        # 1. Identity Check
-        me = bot.get_me()
-        print(f"Bot connected: {me.username}")
-        
-        # 2. Report Generation
+        # Report Generation logic
         report = "🚀 ADVANCED MARKET MONITOR:\n\n📊 PRICES:\n"
         for s in ['BTC', 'XRP', 'SOL']:
             report += f"🔹 {s}: {get_market_price(s)}\n"
@@ -35,13 +25,15 @@ def generate_and_send():
         for s in ['BTC/USDT', 'SOL/USDT']:
             report += f"🔹 {s}: {analyze_trade(s)}\n"
         
-        # 3. Sending Message
-        print(f"Attempting to send to CHAT_ID: {CHAT_ID}")
-        bot.send_message(CHAT_ID, report)
-        print("Success: Message sent!")
-        
+        # Message sending with explicit ID handling
+        if CHAT_ID:
+            bot.send_message(CHAT_ID, report)
+            print(f"Success: Message sent to {CHAT_ID}!")
+        else:
+            print("Error: CHAT_ID is not defined in environment variables.")
+            
     except Exception as e:
-        print(f"FAILED to send message. Error Details: {e}")
+        print(f"FAILED to send message. Error: {e}")
 
 if __name__ == "__main__":
     generate_and_send()
