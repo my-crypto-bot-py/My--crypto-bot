@@ -38,8 +38,8 @@ exchange = ccxt.binance()
 # --- Functions (Aapke purane functions yahan raheinge) ---
 # def get_market_price(s): ...
 # def analyze_trade(s): ...
-import os
 import requests
+import os
 
 COINGLASS_KEY = os.environ.get("COINGLASS_API_KEY")
 
@@ -47,9 +47,16 @@ headers = {
     "CG-API-KEY": COINGLASS_KEY
 }
 
-url = "https://open-api-v4.coinglass.com/api/futures/supported-coins"
+url = "https://open-api-v4.coinglass.com/api/futures/liquidation/pair-history"
 
-r = requests.get(url, headers=headers, timeout=10)
+params = {
+    "exchange": "Binance",
+    "symbol": "BTCUSDT",
+    "interval": "1h",
+    "limit": 1
+}
+
+r = requests.get(url, headers=headers, params=params)
 
 print(r.status_code)
 print(r.text)
