@@ -1,42 +1,86 @@
 import os
-import telebot
+
 from market import get_ohlcv
+from structure import find_swings, detect_bos, detect_mss
+from smartmoney import (
+    detect_liquidity_sweep,
+    detect_fvg,
+    detect_order_block,
+    get_premium_discount
+)
+from signal import generate_signal
+from telegram_bot import send_signal
 
-TOKEN = os.environ.get("TELEGRAM_TOKEN")
-CHAT_ID = os.environ.get("CHAT_ID")
 
-if not TOKEN or not CHAT_ID:
-    print("❌ TELEGRAM_TOKEN ya CHAT_ID missing!")
-    exit()
+def run_bot(symbol="BTC/USDT"):
 
-bot = telebot.TeleBot(TOKEN)
+    # 5 minute data
+    df = get_ohlcv(symbol, "5m")
 
-def run_test():
-    try:
-        df = get_ohlcv("BTC/USDT", "5m")
+    if df is None:
+        print("No market data")
+        return
 
-        if df is None:
-            bot.send_message(int(CHAT_ID), "❌ Binance Futures data fetch failed.")
-            return
 
-        last = df.iloc[-1]
+    # Structure
+    swing_highs, swing_lows = find_swings(df)
 
-        msg = (
-            "✅ Binance Futures Connected\n\n"
-            "BTC/USDT (5m)\n\n"
-            f"Time: {last['time']}\n"
-            f"Open: {last['open']}\n"
-            f"High: {last['high']}\n"
-            f"Low: {last['low']}\n"
-            f"Close: {last['close']}\n"
-            f"Volume: {last['volume']}"
-        )
+    bos = detect_bos(
+        df,
+        swing_highs,
+        swing_lows
+    )
 
-        bot.send_message(int(CHAT_ID), msg)
+    mss = detect_mss(
+        df,
+        swing_highs,
+        swing_lows
+    )
 
-    except Exception as e:
-        bot.send_message(int(CHAT_ID), f"❌ Error:\n{str(e)}")
+
+    # Smart Money
+    liquidity = detect_liquidity_sweep(df)
+
+    fvg = detect_fvg(df)
+
+    order_block = detect_order_block(df)
+
+    zone = get_premium_discount(df)
+
+
+    structure = mss if mss else (
+        bos[0] if bos else None
+    )
+
+
+    # Entry data
+    entry = df["close"].iloc[-1]
+
+    if structure and "Bullish" in str(structure):
+        sl = df["low"].tail(10).min()
+
+    else:
+        sl = df["high"].tail(10).max()
+
+
+    result = generate_signal(
+        structure,
+        liquidity,
+        fvg,
+        order_block,
+        zone,
+        entry,
+        sl
+    )
+
+
+    print(result)
+
+
+    if result["signal"] != "NO TRADE":
+        send_signal(result)
+
 
 
 if __name__ == "__main__":
-    run_test()
+    run_bot()
