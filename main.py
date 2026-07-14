@@ -1,4 +1,5 @@
 import os
+
 from scanner import get_best_symbol
 from market import get_market_data
 from structure import (
@@ -23,17 +24,17 @@ def run():
 
     print("Bot Started...")
 
-best = get_best_symbol()
+    best = get_best_symbol()
 
-if best is None:
-    print("No Bullish Trend Found")
-    return
+    if best is None:
+        print("No Bullish Trend Found")
+        return
 
-symbol = best["symbol"]
+    symbol = best["symbol"]
 
-print(f"Scanning: {symbol}")
+    print(f"Scanning: {symbol}")
 
-df = get_market_data(symbol, "5m")
+    df = get_market_data(symbol, "5m")
 
     if df is None or df.empty:
         print("Market Data Failed")
