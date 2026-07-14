@@ -1,40 +1,27 @@
-import ccxt
+import os
+import requests
 import pandas as pd
 
-exchange = ccxt.bybit({
-    "enableRateLimit": True,
-    "options": {
-        "defaultType": "linear"
+COINGLASS_API_KEY = os.environ.get("COINGLASS_API_KEY")
+
+HEADERS = {
+    "CG-API-KEY": COINGLASS_API_KEY
+}
+
+
+def get_liquidation_data(symbol="BTCUSDT"):
+    url = "https://open-api-v4.coinglass.com/api/futures/liquidation/pair-history"
+
+    params = {
+        "exchange": "Binance",
+        "symbol": symbol,
+        "interval": "5m",
+        "limit": 20
     }
-})
 
-def get_ohlcv(symbol, timeframe, limit=500):
-    try:
-        # Bybit symbol format
-        symbol = symbol.replace("/", "")
+    r = requests.get(url, headers=HEADERS, params=params, timeout=15)
 
-        ohlcv = exchange.fetch_ohlcv(
-            symbol=symbol,
-            timeframe=timeframe,
-            limit=limit
-        )
+    if r.status_code != 200:
+        raise Exception(f"CoinGlass Error {r.status_code}: {r.text}")
 
-        df = pd.DataFrame(
-            ohlcv,
-            columns=[
-                "time",
-                "open",
-                "high",
-                "low",
-                "close",
-                "volume"
-            ]
-        )
-
-        df["time"] = pd.to_datetime(df["time"], unit="ms")
-
-        return df
-
-    except Exception as e:
-        print(f"[ERROR] {symbol} {timeframe}: {e}")
-        raise
+    return r.json()
