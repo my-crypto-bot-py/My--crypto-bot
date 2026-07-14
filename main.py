@@ -1,5 +1,5 @@
 import os
-
+from scanner import get_best_symbol
 from market import get_market_data
 from structure import (
     find_swings,
@@ -23,7 +23,17 @@ def run():
 
     print("Bot Started...")
 
- df = get_market_data("BTC-USDT-SWAP", "5m")
+best = get_best_symbol()
+
+if best is None:
+    print("No Bullish Trend Found")
+    return
+
+symbol = best["symbol"]
+
+print(f"Scanning: {symbol}")
+
+df = get_market_data(symbol, "5m")
 
     if df is None or df.empty:
         print("Market Data Failed")
