@@ -22,9 +22,11 @@ from telegram_bot import send_signal
 
 def run():
 
-    print("Bot Started...")
+    print("========== BOT STARTED ==========")
 
     best = get_best_symbol()
+
+    print("Best Symbol:", best)
 
     if best is None:
         print("No Bullish Trend Found")
@@ -39,6 +41,8 @@ def run():
     if df is None or df.empty:
         print("Market Data Failed")
         return
+
+    print("Market Data Loaded")
 
     swing_highs, swing_lows = find_swings(df)
 
@@ -76,9 +80,15 @@ def run():
         "reasons": ", ".join(confidence["reasons"])
     }
 
+    print("Generated Signal:")
     print(signal)
 
-    send_signal(signal)
+    try:
+        print("Sending Telegram Message...")
+        send_signal(signal)
+        print("Telegram Message Sent Successfully.")
+    except Exception as e:
+        print("Telegram Error:", e)
 
 
 if __name__ == "__main__":
