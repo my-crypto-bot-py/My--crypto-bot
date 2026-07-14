@@ -60,4 +60,41 @@ def detect_fvg(df):
 
     return None
 
+def detect_order_block(df, lookback=20):
+    """
+    Basic Order Block detection.
+    """
 
+    if len(df) < lookback:
+        return None
+
+    data = df.iloc[-lookback:]
+
+    for i in range(len(data)-2, 0, -1):
+
+        candle = data.iloc[i]
+        next_candle = data.iloc[i+1]
+
+        # Bullish Order Block
+        if (
+            candle["close"] < candle["open"]
+            and next_candle["close"] > candle["high"]
+        ):
+            return {
+                "type": "Bullish Order Block",
+                "high": candle["high"],
+                "low": candle["low"]
+            }
+
+        # Bearish Order Block
+        if (
+            candle["close"] > candle["open"]
+            and next_candle["close"] < candle["low"]
+        ):
+            return {
+                "type": "Bearish Order Block",
+                "high": candle["high"],
+                "low": candle["low"]
+            }
+
+    return None
