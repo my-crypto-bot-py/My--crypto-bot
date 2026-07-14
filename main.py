@@ -28,9 +28,14 @@ def run():
 
     print("Best Symbol:", best)
 
+    # TEST MODE
     if best is None:
         print("No Bullish Trend Found")
-        return
+        print("Using BTC-USDT-SWAP for testing...")
+
+        best = {
+            "symbol": "BTC-USDT-SWAP"
+        }
 
     symbol = best["symbol"]
 
