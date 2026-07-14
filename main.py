@@ -5,25 +5,42 @@ from market import get_market_data
 TOKEN = os.environ.get("TELEGRAM_TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
 
+if not TOKEN or not CHAT_ID:
+    print("❌ TELEGRAM_TOKEN ya CHAT_ID missing!")
+    exit()
+
 bot = telebot.TeleBot(TOKEN)
+
 
 def run():
 
     try:
 
-        data = get_market_data("BTCUSDT")
+        df = get_market_data("BTC-USDT-SWAP", "5m")
 
-        if data is None:
+        if df is None or df.empty:
             bot.send_message(
                 int(CHAT_ID),
-                "❌ Market Data Fetch Failed."
+                "❌ OKX Market Data Fetch Failed."
             )
             return
 
-        bot.send_message(
-            int(CHAT_ID),
-            f"✅ Market Connected\n\n{str(data)[:1000]}"
-        )
+        last = df.iloc[-1]
+
+        message = f"""
+✅ OKX Connected
+
+BTC-USDT-SWAP (5m)
+
+Time: {last['time']}
+Open: {last['open']}
+High: {last['high']}
+Low: {last['low']}
+Close: {last['close']}
+Volume: {last['volume']}
+"""
+
+        bot.send_message(int(CHAT_ID), message)
 
         print("Success")
 
@@ -33,7 +50,7 @@ def run():
 
         bot.send_message(
             int(CHAT_ID),
-            f"❌ Error\n\n{e}"
+            f"❌ Error:\n{e}"
         )
 
 
