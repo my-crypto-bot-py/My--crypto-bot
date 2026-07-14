@@ -4,11 +4,16 @@ import telebot
 TOKEN = os.environ.get("TELEGRAM_TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
 
+if not TOKEN:
+    raise Exception("TELEGRAM_TOKEN missing!")
+
+if not CHAT_ID:
+    raise Exception("CHAT_ID missing!")
+
 bot = telebot.TeleBot(TOKEN)
 
+
 def send_signal(data):
-    if not CHAT_ID:
-        return
 
     message = f"""
 🚀 TRADING SIGNAL
@@ -26,4 +31,16 @@ Reasons:
 {data.get('reasons')}
 """
 
-    bot.send_message(int(CHAT_ID), message)
+    try:
+        print("Sending message to Telegram...")
+        print("CHAT_ID:", CHAT_ID)
+
+        result = bot.send_message(int(CHAT_ID), message)
+
+        print("Telegram Success")
+        print(result)
+
+    except Exception as e:
+        print("Telegram Failed")
+        print(e)
+        raise
