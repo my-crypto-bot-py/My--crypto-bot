@@ -30,3 +30,34 @@ def detect_liquidity_sweep(df, lookback=20):
         }
 
     return None
+def detect_fvg(df):
+    """
+    Fair Value Gap detect karta hai.
+    """
+
+    if len(df) < 3:
+        return None
+
+    c1 = df.iloc[-3]
+    c2 = df.iloc[-2]
+    c3 = df.iloc[-1]
+
+    # Bullish FVG
+    if c1["high"] < c3["low"]:
+        return {
+            "type": "Bullish FVG",
+            "top": c3["low"],
+            "bottom": c1["high"]
+        }
+
+    # Bearish FVG
+    if c1["low"] > c3["high"]:
+        return {
+            "type": "Bearish FVG",
+            "top": c1["low"],
+            "bottom": c3["high"]
+        }
+
+    return None
+
+
