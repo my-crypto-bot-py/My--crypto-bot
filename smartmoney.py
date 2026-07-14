@@ -98,3 +98,30 @@ def detect_order_block(df, lookback=20):
             }
 
     return None
+def get_premium_discount(df):
+    """
+    Premium / Discount zone detect karta hai.
+    """
+
+    if len(df) < 20:
+        return None
+
+    high = df["high"].tail(20).max()
+    low = df["low"].tail(20).min()
+
+    equilibrium = (high + low) / 2
+    price = df["close"].iloc[-1]
+
+    if price > equilibrium:
+        zone = "Premium"
+
+    else:
+        zone = "Discount"
+
+    return {
+        "zone": zone,
+        "high": high,
+        "low": low,
+        "equilibrium": equilibrium,
+        "price": price
+    }
