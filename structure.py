@@ -80,3 +80,31 @@ def detect_mss(df, swing_highs, swing_lows):
         }
 
     return None
+def detect_choch(df, swing_highs, swing_lows):
+    """
+    CHoCH (Change of Character) detect karta hai.
+    """
+
+    if len(swing_highs) < 2 or len(swing_lows) < 2:
+        return None
+
+    last_close = df["close"].iloc[-1]
+
+    last_high = swing_highs[-1][1]
+    last_low = swing_lows[-1][1]
+
+    # Bullish CHoCH
+    if last_close > last_high:
+        return {
+            "type": "Bullish CHoCH",
+            "level": last_high
+        }
+
+    # Bearish CHoCH
+    if last_close < last_low:
+        return {
+            "type": "Bearish CHoCH",
+            "level": last_low
+        }
+
+    return None
