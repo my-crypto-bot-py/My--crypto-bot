@@ -25,5 +25,5 @@ def get_ohlcv(symbol, timeframe, limit=500):
         return df
 
     except Exception as e:
-        print(f"[ERROR] {symbol} {timeframe}: {e}")
-        return None
+    print(f"[ERROR] {symbol} {timeframe}: {e}")
+    raise
