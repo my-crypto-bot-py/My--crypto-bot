@@ -37,7 +37,6 @@ Volume: {last['volume']}
         bot.send_message(int(CHAT_ID), msg)
 
     except Exception as e:
-        bot.send_message(int(CHAT_ID), f"❌ Error:\n{e}")
-
+    bot.send_message(int(CHAT_ID), f"❌ Error:\n{str(e)}")
 if __name__ == "__main__":
     run_test()
