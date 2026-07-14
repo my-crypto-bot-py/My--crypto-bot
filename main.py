@@ -1,62 +1,43 @@
 import os
 import telebot
+from market import get_ohlcv
 
-# Sirf credentials aur basic connection check
-TOKEN = os.environ.get('TELEGRAM_TOKEN')
-CHAT_ID = os.environ.get('CHAT_ID')
+TOKEN = os.environ.get("TELEGRAM_TOKEN")
+CHAT_ID = os.environ.get("CHAT_ID")
 
 if not TOKEN or not CHAT_ID:
-    print("Error: TOKEN or CHAT_ID missing!")
+    print("❌ TELEGRAM_TOKEN ya CHAT_ID missing!")
     exit()
 
 bot = telebot.TeleBot(TOKEN)
 
-def test_connection():
+def run_test():
     try:
-        print(f"Testing connection to CHAT_ID: {CHAT_ID}")
-        bot.send_message(int(CHAT_ID), "✅ Base Connection Test: Success!")
-        print("Test Message sent successfully.")
+        df = get_ohlcv("BTC/USDT", "5m")
+
+        if df is None:
+            bot.send_message(int(CHAT_ID), "❌ Binance Futures data fetch failed.")
+            return
+
+        last = df.iloc[-1]
+
+        msg = f"""
+✅ Binance Futures Connected
+
+BTC/USDT (5m)
+
+Time: {last['time']}
+Open: {last['open']}
+High: {last['high']}
+Low: {last['low']}
+Close: {last['close']}
+Volume: {last['volume']}
+"""
+
+        bot.send_message(int(CHAT_ID), msg)
+
     except Exception as e:
-        print(f"Test Failed: {e}")
+        bot.send_message(int(CHAT_ID), f"❌ Error:\n{e}")
 
 if __name__ == "__main__":
-    test_connection()
-
-import ccxt
-import pandas as pd
-import requests
-import os
-import telebot
-
-# --- Setup ---
-TOKEN = os.environ.get('TELEGRAM_TOKEN')
-raw_chat_id = os.environ.get('CHAT_ID')
-CHAT_ID = int(raw_chat_id) if raw_chat_id else None
-bot = telebot.TeleBot(TOKEN)
-exchange = ccxt.binance()
-
-# --- Functions (Aapke purane functions yahan raheinge) ---
-# def get_market_price(s): ...
-# def analyze_trade(s): ...
-import requests
-import os
-
-COINGLASS_KEY = os.environ.get("COINGLASS_API_KEY")
-
-headers = {
-    "CG-API-KEY": COINGLASS_KEY
-}
-
-url = "https://open-api-v4.coinglass.com/api/futures/liquidation/pair-history"
-
-params = {
-    "exchange": "Binance",
-    "symbol": "BTCUSDT",
-    "interval": "1h",
-    "limit": 1
-}
-
-r = requests.get(url, headers=headers, params=params)
-
-print(r.status_code)
-print(r.text)
+    run_test()
