@@ -38,54 +38,18 @@ exchange = ccxt.binance()
 # --- Functions (Aapke purane functions yahan raheinge) ---
 # def get_market_price(s): ...
 # def analyze_trade(s): ...
-import ccxt
-import pandas as pd
-import requests
 import os
-import telebot
+import requests
 
-# --- SETUP ---
-TOKEN = os.environ.get('TELEGRAM_TOKEN')
-CHAT_ID = os.environ.get('CHAT_ID')
-# Ye aapke GitHub Secret "COINGLASS_API_KEY" ko automatically utha lega
-COINGLASS_KEY = os.environ.get('COINGLASS_API_KEY') 
+COINGLASS_KEY = os.environ.get("COINGLASS_API_KEY")
 
-bot = telebot.TeleBot(TOKEN)
-exchange = ccxt.kucoin({'enableRateLimit': True})
+headers = {
+    "CG-API-KEY": COINGLASS_KEY
+}
 
-# --- FUNCTIONS ---
+url = "https://open-api-v4.coinglass.com/api/futures/supported-coins"
 
-def get_liquidation_heatmap(symbol):
-    try:
-        # Header mein API Key pass karna
-        headers = {
-            'coinglassSecret': COINGLASS_KEY,
-            'User-Agent': 'Mozilla/5.0'
-        }
-        url = f"https://open-api.coinglass.com/public/v2/liquidation_pair?pair={symbol}USDT"
-        res = requests.get(url, headers=headers, timeout=10).json()
-        
-        data = res.get('data', [])
-        if data:
-            # Liquidation value
-            liq_val = data[0].get('liquidation', '0')
-            return f"🔥 Liq: {liq_val}"
-        return "No Data"
-    except Exception as e:
-        return f"Err: {e}"
+r = requests.get(url, headers=headers, timeout=10)
 
-def generate_and_send():
-    try:
-        report = "<b>🚀 MARKET LIQUIDATION DATA</b>\n\n"
-        for s in ['BTC', 'SOL', 'ETH']:
-            liq_info = get_liquidation_heatmap(s)
-            report += f"🔹 {s}: {liq_info}\n"
-        
-        if CHAT_ID:
-            bot.send_message(CHAT_ID, report, parse_mode='HTML')
-            print("Success!")
-    except Exception as e:
-        print(f"Failed: {e}")
-
-if __name__ == "__main__":
-    generate_and_send()
+print(r.status_code)
+print(r.text)
