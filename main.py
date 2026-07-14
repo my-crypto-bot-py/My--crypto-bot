@@ -1,57 +1,73 @@
 import os
-import telebot
+
 from market import get_market_data
+from structure import (
+    find_swings,
+    detect_bos,
+    detect_mss,
+    detect_choch
+)
 
-TOKEN = os.environ.get("TELEGRAM_TOKEN")
-CHAT_ID = os.environ.get("CHAT_ID")
+from smartmoney import (
+    detect_liquidity_sweep,
+    detect_fvg,
+    detect_order_block,
+    get_premium_discount
+)
 
-if not TOKEN or not CHAT_ID:
-    print("❌ TELEGRAM_TOKEN ya CHAT_ID missing!")
-    exit()
-
-bot = telebot.TeleBot(TOKEN)
+from confidence import calculate_confidence
+from telegram_bot import send_signal
 
 
 def run():
 
-    try:
+    print("Bot Started...")
 
-        df = get_market_data("BTC-USDT-SWAP", "5m")
+    df = get_market_data("BTC-USDT-SWAP", "5m")
 
-        if df is None or df.empty:
-            bot.send_message(
-                int(CHAT_ID),
-                "❌ OKX Market Data Fetch Failed."
-            )
-            return
+    if df is None or df.empty:
+        print("Market Data Failed")
+        return
 
-        last = df.iloc[-1]
+    swing_highs, swing_lows = find_swings(df)
 
-        message = f"""
-✅ OKX Connected
+    bos = detect_bos(df, swing_highs, swing_lows)
+    mss = detect_mss(df, swing_highs, swing_lows)
+    choch = detect_choch(df, swing_highs, swing_lows)
 
-BTC-USDT-SWAP (5m)
+    liquidity = detect_liquidity_sweep(df)
+    fvg = detect_fvg(df)
+    order_block = detect_order_block(df)
+    zone = get_premium_discount(df)
 
-Time: {last['time']}
-Open: {last['open']}
-High: {last['high']}
-Low: {last['low']}
-Close: {last['close']}
-Volume: {last['volume']}
-"""
+    confidence = calculate_confidence(
+        bias=True,
+        trend=True,
+        bos=bool(bos),
+        choch=bool(choch),
+        mss=bool(mss),
+        liquidity=bool(liquidity),
+        fvg=bool(fvg),
+        order_block=bool(order_block),
+        btc=True,
+        volume=True
+    )
 
-        bot.send_message(int(CHAT_ID), message)
+    last = df.iloc[-1]
 
-        print("Success")
+    signal = {
+        "signal": "BUY" if confidence["score"] >= 85 else "NO TRADE",
+        "entry": round(last["close"], 2),
+        "sl": round(last["close"] * 0.995, 2),
+        "tp1": round(last["close"] * 1.015, 2),
+        "tp2": round(last["close"] * 1.020, 2),
+        "score": confidence["score"],
+        "reasons": ", ".join(confidence["reasons"])
+    }
 
-    except Exception as e:
+    print(signal)
 
-        print(e)
-
-        bot.send_message(
-            int(CHAT_ID),
-            f"❌ Error:\n{e}"
-        )
+    send_signal(signal)
 
 
 if __name__ == "__main__":
