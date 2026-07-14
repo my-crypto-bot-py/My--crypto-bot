@@ -1,15 +1,18 @@
 import ccxt
 import pandas as pd
 
-exchange = ccxt.binance({
+exchange = ccxt.bybit({
     "enableRateLimit": True,
     "options": {
-        "defaultType": "future"
+        "defaultType": "linear"
     }
 })
 
 def get_ohlcv(symbol, timeframe, limit=500):
     try:
+        # Bybit symbol format
+        symbol = symbol.replace("/", "")
+
         ohlcv = exchange.fetch_ohlcv(
             symbol=symbol,
             timeframe=timeframe,
