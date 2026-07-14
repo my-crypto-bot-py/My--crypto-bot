@@ -1,5 +1,6 @@
-pyTelegramBotAPI
-requests
 ccxt
 pandas
-ccxt
+numpy
+requests
+pyTelegramBotAPI
+python-dotenv
