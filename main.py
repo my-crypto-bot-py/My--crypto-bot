@@ -21,22 +21,22 @@ def run_test():
 
         last = df.iloc[-1]
 
-        msg = f"""
-✅ Binance Futures Connected
-
-BTC/USDT (5m)
-
-Time: {last['time']}
-Open: {last['open']}
-High: {last['high']}
-Low: {last['low']}
-Close: {last['close']}
-Volume: {last['volume']}
-"""
+        msg = (
+            "✅ Binance Futures Connected\n\n"
+            "BTC/USDT (5m)\n\n"
+            f"Time: {last['time']}\n"
+            f"Open: {last['open']}\n"
+            f"High: {last['high']}\n"
+            f"Low: {last['low']}\n"
+            f"Close: {last['close']}\n"
+            f"Volume: {last['volume']}"
+        )
 
         bot.send_message(int(CHAT_ID), msg)
 
     except Exception as e:
-    bot.send_message(int(CHAT_ID), f"❌ Error:\n{str(e)}")
+        bot.send_message(int(CHAT_ID), f"❌ Error:\n{str(e)}")
+
+
 if __name__ == "__main__":
     run_test()
