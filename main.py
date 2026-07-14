@@ -23,7 +23,7 @@ def run():
 
     print("Bot Started...")
 
-    df = get_market_data("BTC-USDT-SWAP", "5m")
+    from scanner import get_best_symbol
 
     if df is None or df.empty:
         print("Market Data Failed")
