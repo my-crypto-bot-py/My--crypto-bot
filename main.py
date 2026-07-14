@@ -76,7 +76,7 @@ def run():
     last = df.iloc[-1]
 
     signal = {
-        "signal": "BUY" if confidence["score"] >= 85 else "NO TRADE",
+        "signal": "BUY" if confidence["score"] >= 80 else "NO TRADE",
         "entry": round(last["close"], 2),
         "sl": round(last["close"] * 0.995, 2),
         "tp1": round(last["close"] * 1.015, 2),
