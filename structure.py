@@ -48,3 +48,35 @@ def detect_bos(df, swing_highs, swing_lows):
                 })
 
     return signals
+
+def detect_mss(df, swing_highs, swing_lows):
+    """
+    MSS (Market Structure Shift)
+    """
+
+    if len(swing_highs) < 2 or len(swing_lows) < 2:
+        return None
+
+    last_close = df["close"].iloc[-1]
+
+    last_high = swing_highs[-1][1]
+    prev_high = swing_highs[-2][1]
+
+    last_low = swing_lows[-1][1]
+    prev_low = swing_lows[-2][1]
+
+    # Bullish MSS
+    if last_close > prev_high:
+        return {
+            "type": "Bullish MSS",
+            "level": prev_high
+        }
+
+    # Bearish MSS
+    if last_close < prev_low:
+        return {
+            "type": "Bearish MSS",
+            "level": prev_low
+        }
+
+    return None
