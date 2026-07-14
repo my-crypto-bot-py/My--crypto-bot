@@ -88,6 +88,27 @@ def run():
     print("Generated Signal:")
     print(signal)
 
+print("Generated Signal:")
+print(signal)
+
+if signal["signal"] == "NO TRADE":
+    print("No Trade Signal - Telegram skipped.")
+    return
+
+try:
+    print("Sending Telegram Message...")
+    send_signal(signal)
+  
+    print("Telegram Message Sent Successfully.")
+except Exception as e:
+    print("Telegram Error:", e)
+try:
+    print("Sending Telegram Message...")
+   
+    send_signal(signal)
+    print("Telegram Message Sent Successfully.")
+except Exception as e:
+    print("Telegram Error:", e)
     try:
         print("Sending Telegram Message...")
         send_signal(signal)
