@@ -1,46 +1,59 @@
-import os
 import requests
 import pandas as pd
 
-COINGLASS_API_KEY = os.environ.get("COINGLASS_API_KEY")
 
-HEADERS = {
-    "CG-API-KEY": COINGLASS_API_KEY,
-    "Accept": "application/json"
-}
+def get_market_data(symbol="BTC-USDT-SWAP", timeframe="5m", limit=100):
 
+    url = "https://www.okx.com/api/v5/market/candles"
 
-def get_market_data(symbol="BTCUSDT"):
-    """
-    Future market data.
-    फिलहाल CoinGlass Free API पर test करेंगे.
-    बाद में KuCoin / OKX / Paid CoinGlass आसानी से add होंगे.
-    """
+    params = {
+        "instId": symbol,
+        "bar": timeframe,
+        "limit": limit
+    }
 
     try:
 
-        url = "https://open-api-v4.coinglass.com/api/futures/open-interest/history"
+        r = requests.get(url, params=params, timeout=20)
 
-        params = {
-            "symbol": symbol,
-            "interval": "5m",
-            "limit": 50
-        }
+        data = r.json()
 
-        r = requests.get(
-            url,
-            headers=HEADERS,
-            params=params,
-            timeout=20
-        )
-
-        print("Status:", r.status_code)
-
-        if r.status_code != 200:
-            print(r.text)
+        if data.get("code") != "0":
+            print(data)
             return None
 
-        return r.json()
+        candles = data["data"]
+
+        df = pd.DataFrame(
+            candles,
+            columns=[
+                "time",
+                "open",
+                "high",
+                "low",
+                "close",
+                "volume",
+                "volCcy",
+                "volCcyQuote",
+                "confirm"
+            ]
+        )
+
+        df = df[["time", "open", "high", "low", "close", "volume"]]
+
+        df["time"] = pd.to_datetime(df["time"].astype("int64"), unit="ms")
+
+        df = df.astype({
+            "open": float,
+            "high": float,
+            "low": float,
+            "close": float,
+            "volume": float
+        })
+
+        df = df.sort_values("time")
+
+        return df
 
     except Exception as e:
         print(e)
