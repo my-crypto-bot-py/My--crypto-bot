@@ -49,7 +49,6 @@ def run():
 
 
     if df is None or df.empty:
-
         print("Market Data Failed")
         return
 
@@ -63,25 +62,11 @@ def run():
     swing_highs, swing_lows = find_swings(df)
 
 
-    bos = detect_bos(
-        df,
-        swing_highs,
-        swing_lows
-    )
+    bos = detect_bos(df,swing_highs,swing_lows)
 
+    mss = detect_mss(df,swing_highs,swing_lows)
 
-    mss = detect_mss(
-        df,
-        swing_highs,
-        swing_lows
-    )
-
-
-    choch = detect_choch(
-        df,
-        swing_highs,
-        swing_lows
-    )
+    choch = detect_choch(df,swing_highs,swing_lows)
 
 
 
@@ -130,6 +115,7 @@ def run():
     )
 
 
+
     print("Confidence:",confidence)
 
 
@@ -140,58 +126,43 @@ def run():
 
 
 
-    # Backup
-
-    if direction == "NONE":
-
-        if bos and bos["direction"]=="BUY":
-            direction="BUY"
-
-        elif bos and bos["direction"]=="SELL":
-            direction="SELL"
-
-
-
     signal_type="NO TRADE"
 
 
 
-    # Final Logic
+    # Trend Follow
 
     if score >= 80:
 
-        # Trend follow
 
-        if trend=="BULLISH" and direction=="BUY":
+        if direction=="BUY":
 
             signal_type="BUY"
 
 
-        elif trend=="BEARISH" and direction=="SELL":
+        elif direction=="SELL":
 
             signal_type="SELL"
 
 
 
-    # Reversal Logic
+
+    # Strong Setup / Reversal
 
     elif score >=70:
 
 
-        if trend=="BEARISH" and direction=="BUY":
-
-            if choch or mss or bos:
-
-                signal_type="REVERSAL BUY"
+        if (bos or mss or choch):
 
 
+            if direction=="BUY":
 
-        elif trend=="BULLISH" and direction=="SELL":
+                signal_type="BUY"
 
-            if choch or mss or bos:
 
-                signal_type="REVERSAL SELL"
+            elif direction=="SELL":
 
+                signal_type="SELL"
 
 
 
@@ -202,23 +173,14 @@ def run():
 
 
 
-
     if signal_type=="NO TRADE":
 
 
-        signal={
+        print({
 
             "symbol":symbol,
 
             "signal":"NO TRADE",
-
-            "entry":None,
-
-            "sl":None,
-
-            "tp1":None,
-
-            "tp2":None,
 
             "score":score,
 
@@ -226,19 +188,14 @@ def run():
 
             "zone":zone,
 
-            "reasons":", ".join(
-                confidence["reasons"]
-            )
+            "reasons":", ".join(confidence["reasons"])
 
-        }
+        })
 
-
-        print(signal)
 
         print("No Trade Signal - Telegram skipped.")
 
         return
-
 
 
 
@@ -263,7 +220,6 @@ def run():
         print("Trade Level Failed")
 
         return
-
 
 
 
@@ -300,7 +256,6 @@ def run():
     print("Generated Signal:")
 
     print(signal)
-
 
 
 
