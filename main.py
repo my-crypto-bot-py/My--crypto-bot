@@ -1,7 +1,6 @@
-import os
-
 from scanner import get_best_symbol
 from market import get_market_data
+
 from structure import (
     find_swings,
     detect_bos,
@@ -32,10 +31,12 @@ def run():
         print("No Trend Found")
         return
 
+
     symbol = best["symbol"]
     trend = best["trend"]
 
-    print(f"Scanning: {symbol}")
+    print("Scanning:", symbol)
+
 
     df = get_market_data(symbol, "5m")
 
@@ -43,19 +44,27 @@ def run():
         print("Market Data Failed")
         return
 
+
     print("Market Data Loaded")
 
+
+    # Structure
     swing_highs, swing_lows = find_swings(df)
 
     bos = detect_bos(df, swing_highs, swing_lows)
     mss = detect_mss(df, swing_highs, swing_lows)
     choch = detect_choch(df, swing_highs, swing_lows)
 
+
+    # Smart Money
     liquidity = detect_liquidity_sweep(df)
     fvg = detect_fvg(df)
     order_block = detect_order_block(df)
+
     zone = get_premium_discount(df)
 
+
+    # Confidence
     confidence = calculate_confidence(
         bias=True,
         trend=True,
@@ -69,104 +78,188 @@ def run():
         volume=True
     )
 
+
     last = df.iloc[-1]
+
     entry = round(float(last["close"]), 2)
+
 
     buy_score = 0
     sell_score = 0
 
-    # Trend
+
+    # Trend Score
     if trend == "BULLISH":
         buy_score += 20
+
     elif trend == "BEARISH":
         sell_score += 20
 
+
+
     # BOS
     if bos:
-        for b in bos:
-            if "Bullish" in b["type"]:
-                buy_score += 15
-            elif "Bearish" in b["type"]:
-                sell_score += 15
+
+        if bos["direction"] == "BUY":
+            buy_score += 15
+
+        elif bos["direction"] == "SELL":
+            sell_score += 15
+
+
 
     # MSS
     if mss:
-        if "Bullish" in mss["type"]:
+
+        if mss["direction"] == "BUY":
             buy_score += 15
-        elif "Bearish" in mss["type"]:
+
+        elif mss["direction"] == "SELL":
             sell_score += 15
+
+
 
     # CHoCH
     if choch:
-        if "Bullish" in choch["type"]:
+
+        if choch["direction"] == "BUY":
             buy_score += 15
-        elif "Bearish" in choch["type"]:
+
+        elif choch["direction"] == "SELL":
             sell_score += 15
 
-    # Confirmations
+
+
+    # Liquidity
+
     if liquidity:
-        buy_score += 10
-        sell_score += 10
+
+        if "Buy Side" in liquidity["type"]:
+            sell_score += 10
+
+        elif "Sell Side" in liquidity["type"]:
+            buy_score += 10
+
+
+
+    # FVG
 
     if fvg:
-        buy_score += 10
-        sell_score += 10
+
+        if "Bullish" in fvg["type"]:
+            buy_score += 10
+
+        elif "Bearish" in fvg["type"]:
+            sell_score += 10
+
+
+
+    # Order Block
 
     if order_block:
+
         if "Bullish" in order_block["type"]:
             buy_score += 10
+
         elif "Bearish" in order_block["type"]:
             sell_score += 10
 
+
+
+    print("BUY SCORE:", buy_score)
+    print("SELL SCORE:", sell_score)
+
+
+
     signal_type = "NO TRADE"
 
+
     if confidence["score"] >= 80:
+
         if buy_score > sell_score:
             signal_type = "BUY"
+
         elif sell_score > buy_score:
             signal_type = "SELL"
 
+
+
+    # Risk
+
     if signal_type == "BUY":
+
         sl = round(entry * 0.995, 2)
         tp1 = round(entry * 1.015, 2)
         tp2 = round(entry * 1.020, 2)
 
+
     elif signal_type == "SELL":
+
         sl = round(entry * 1.005, 2)
         tp1 = round(entry * 0.985, 2)
         tp2 = round(entry * 0.980, 2)
 
+
     else:
+
         sl = None
         tp1 = None
         tp2 = None
 
+
+
     signal = {
+
         "symbol": symbol,
+
         "signal": signal_type,
+
         "entry": entry,
+
         "sl": sl,
+
         "tp1": tp1,
+
         "tp2": tp2,
+
         "score": confidence["score"],
+
         "trend": trend,
+
         "zone": zone["zone"] if zone else "UNKNOWN",
+
         "reasons": ", ".join(confidence["reasons"])
+
     }
+
+
 
     print("Generated Signal:")
     print(signal)
 
+
+
     if signal_type == "NO TRADE":
+
         print("No Trade Signal - Telegram skipped.")
+
         return
 
+
+
     try:
+
         print("Sending Telegram Message...")
+
         send_signal(signal)
+
         print("Telegram Message Sent Successfully.")
+
+
     except Exception as e:
+
         print("Telegram Error:", e)
+
 
 
 if __name__ == "__main__":
