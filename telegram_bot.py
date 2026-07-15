@@ -15,25 +15,36 @@ bot = telebot.TeleBot(TOKEN)
 
 def send_signal(data):
 
+    reasons = data.get("reasons", "")
+    reasons = reasons.replace(", ", "\n✔ ")
+
     message = f"""
-🚀 TRADING SIGNAL
+🚀 SMART MONEY SIGNAL
 
-Direction: {data.get('signal')}
-Entry: {data.get('entry')}
-SL: {data.get('sl')}
+🪙 Symbol: {data.get("symbol", "N/A")}
 
-TP1: {data.get('tp1')}
-TP2: {data.get('tp2')}
+📈 Direction: {data.get("signal", "N/A")}
+📊 Trend: {data.get("trend", "N/A")}
+📍 Zone: {data.get("zone", "N/A")}
 
-Score: {data.get('score')}
+🎯 Entry: {data.get("entry", "N/A")}
+🛑 Stop Loss: {data.get("sl", "N/A")}
 
-Reasons:
-{data.get('reasons')}
+✅ TP1: {data.get("tp1", "N/A")}
+✅ TP2: {data.get("tp2", "N/A")}
+
+🔥 Confidence: {data.get("score", "N/A")}%
+
+📋 Reasons:
+✔ {reasons}
 """
 
     try:
         print("Sending message to Telegram...")
         print("CHAT_ID:", CHAT_ID)
+        print("Symbol:", data.get("symbol"))
+        print("Trend:", data.get("trend"))
+        print("Zone:", data.get("zone"))
 
         result = bot.send_message(int(CHAT_ID), message)
 
