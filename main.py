@@ -70,7 +70,7 @@ def run():
     )
 
     last = df.iloc[-1]
-    entry = round(last["close"], 2)
+    entry = round(float(last["close"]), 2)
 
     buy_score = 0
     sell_score = 0
@@ -83,26 +83,27 @@ def run():
 
     # BOS
     if bos:
-        if bos["direction"] == "BUY":
-            buy_score += 15
-        elif bos["direction"] == "SELL":
-            sell_score += 15
+        for b in bos:
+            if "Bullish" in b["type"]:
+                buy_score += 15
+            elif "Bearish" in b["type"]:
+                sell_score += 15
 
     # MSS
     if mss:
-        if mss["direction"] == "BUY":
+        if "Bullish" in mss["type"]:
             buy_score += 15
-        elif mss["direction"] == "SELL":
+        elif "Bearish" in mss["type"]:
             sell_score += 15
 
     # CHoCH
     if choch:
-        if choch["direction"] == "BUY":
+        if "Bullish" in choch["type"]:
             buy_score += 15
-        elif choch["direction"] == "SELL":
+        elif "Bearish" in choch["type"]:
             sell_score += 15
 
-    # Other confirmations
+    # Confirmations
     if liquidity:
         buy_score += 10
         sell_score += 10
@@ -112,16 +113,16 @@ def run():
         sell_score += 10
 
     if order_block:
-        buy_score += 10
-        sell_score += 10
+        if "Bullish" in order_block["type"]:
+            buy_score += 10
+        elif "Bearish" in order_block["type"]:
+            sell_score += 10
 
     signal_type = "NO TRADE"
 
     if confidence["score"] >= 80:
-
         if buy_score > sell_score:
             signal_type = "BUY"
-
         elif sell_score > buy_score:
             signal_type = "SELL"
 
@@ -156,7 +157,7 @@ def run():
     print("Generated Signal:")
     print(signal)
 
-    if signal["signal"] == "NO TRADE":
+    if signal_type == "NO TRADE":
         print("No Trade Signal - Telegram skipped.")
         return
 
@@ -164,7 +165,6 @@ def run():
         print("Sending Telegram Message...")
         send_signal(signal)
         print("Telegram Message Sent Successfully.")
-
     except Exception as e:
         print("Telegram Error:", e)
 
