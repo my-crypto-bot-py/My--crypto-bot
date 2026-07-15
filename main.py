@@ -45,10 +45,7 @@ def run():
 
 
 
-    df = get_market_data(
-        symbol,
-        "5m"
-    )
+    df = get_market_data(symbol, "5m")
 
 
     if df is None or df.empty:
@@ -105,8 +102,7 @@ def run():
 
     zone_data = get_premium_discount(df)
 
-
-    zone="UNKNOWN"
+    zone = "UNKNOWN"
 
 
     if zone_data:
@@ -146,7 +142,7 @@ def run():
 
 
 
-    print("Confidence:",confidence)
+    print("Confidence:", confidence)
 
 
 
@@ -156,24 +152,30 @@ def run():
 
 
 
-    signal_type="NO TRADE"
+    signal_type = "NO TRADE"
 
 
 
-    # =====================
+    # ==========================
     # FINAL SMC FILTER
-    # =====================
+    # ==========================
+
 
     structure_confirm = (
+
         bos
+
         or
+
         mss
+
         or
+
         choch
+
     )
 
 
-    # Zone filter removed
     zone_ok = True
 
 
@@ -181,16 +183,19 @@ def run():
     smartmoney_confirm = (
 
         fvg
+
         or
+
         order_block
 
     )
 
 
 
+
     if (
 
-        score >=75
+        score >= 75
 
         and
 
@@ -200,61 +205,18 @@ def run():
 
         smartmoney_confirm
 
-        and
-
-        zone_ok
-
     ):
 
 
-        if direction=="BUY":
+        if direction == "BUY":
 
-            signal_type="BUY"
-
-
-        elif direction=="SELL":
-
-            signal_type="SELL"
-    
+            signal_type = "BUY"
 
 
 
+        elif direction == "SELL":
 
-        fvg
-        or
-        order_block
-
-    )
-
-
-
-    if (
-
-        score >=75
-
-        and
-
-        structure_confirm
-
-        and
-
-        smartmoney_confirm
-
-        and
-
-        zone_ok
-
-    ):
-
-
-        if direction=="BUY":
-
-            signal_type="BUY"
-
-
-        elif direction=="SELL":
-
-            signal_type="SELL"
+            signal_type = "SELL"
 
 
 
@@ -273,20 +235,20 @@ def run():
 
 
 
-    if signal_type=="NO TRADE":
+    if signal_type == "NO TRADE":
 
 
         print({
 
-            "symbol":symbol,
+            "symbol": symbol,
 
-            "signal":"NO TRADE",
+            "signal": "NO TRADE",
 
-            "score":score,
+            "score": score,
 
-            "trend":trend,
+            "trend": trend,
 
-            "zone":zone,
+            "zone": zone,
 
             "reasons":
             ", ".join(
@@ -300,6 +262,7 @@ def run():
             "No Trade Signal - Telegram skipped."
         )
 
+
         return
 
 
@@ -309,6 +272,7 @@ def run():
     # ==========================
     # ENTRY
     # ==========================
+
 
     levels = generate_trade_levels(
 
@@ -325,35 +289,33 @@ def run():
 
     if levels is None:
 
-        print(
-            "Trade Level Failed"
-        )
+        print("Trade Level Failed")
 
         return
 
 
 
 
-    signal={
+    signal = {
 
 
-        "symbol":symbol,
+        "symbol": symbol,
 
-        "signal":signal_type,
+        "signal": signal_type,
 
-        "entry":levels["entry"],
+        "entry": levels["entry"],
 
-        "sl":levels["sl"],
+        "sl": levels["sl"],
 
-        "tp1":levels["tp1"],
+        "tp1": levels["tp1"],
 
-        "tp2":levels["tp2"],
+        "tp2": levels["tp2"],
 
-        "score":score,
+        "score": score,
 
-        "trend":trend,
+        "trend": trend,
 
-        "zone":zone,
+        "zone": zone,
 
         "reasons":
         ", ".join(
@@ -364,10 +326,8 @@ def run():
 
 
 
-    print(
-        "Generated Signal:"
-    )
 
+    print("Generated Signal:")
 
     print(signal)
 
@@ -376,9 +336,7 @@ def run():
 
     try:
 
-        print(
-            "Sending Telegram Message..."
-        )
+        print("Sending Telegram Message...")
 
 
         send_signal(signal)
@@ -387,7 +345,6 @@ def run():
         print(
             "Telegram Message Sent Successfully."
         )
-
 
 
     except Exception as e:
@@ -401,6 +358,6 @@ def run():
 
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
 
     run()
