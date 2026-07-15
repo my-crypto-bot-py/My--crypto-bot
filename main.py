@@ -20,6 +20,7 @@ from confidence import calculate_confidence
 from telegram_bot import send_signal
 
 
+
 def run():
 
     print("========== BOT STARTED ==========")
@@ -35,6 +36,7 @@ def run():
         return
 
 
+
     symbol = best["symbol"]
     trend = best["trend"]
 
@@ -47,15 +49,17 @@ def run():
 
 
     if df is None or df.empty:
+
         print("Market Data Failed")
         return
+
 
 
     print("Market Data Loaded")
 
 
 
-    # Structure Detection
+    # Structure
 
     swing_highs, swing_lows = find_swings(df)
 
@@ -91,6 +95,7 @@ def run():
     order_block = detect_order_block(df)
 
 
+
     zone_data = get_premium_discount(df)
 
     zone = "UNKNOWN"
@@ -100,7 +105,8 @@ def run():
 
 
 
-    # Confidence Calculation
+
+    # Confidence
 
     confidence = calculate_confidence(
 
@@ -118,18 +124,17 @@ def run():
 
         order_block=order_block,
 
-        btc={
-            "direction": trend
-        },
+        zone=zone,
 
-        volume={
-            "direction": trend
-        }
+        btc=True,
+
+        volume=True
 
     )
 
 
     print("Confidence:", confidence)
+
 
 
 
@@ -139,25 +144,55 @@ def run():
 
     if confidence["score"] >= 80:
 
-
-        if confidence.get("direction"):
-
-            signal_type = confidence["direction"]
-
-
-        else:
-
-            if trend == "BULLISH":
-                signal_type = "BUY"
-
-            elif trend == "BEARISH":
-                signal_type = "SELL"
+        signal_type = confidence["direction"]
 
 
 
 
+    # NO TRADE EXIT
 
-    # Smart Money Entry / SL / TP
+    if signal_type == "NO TRADE" or signal_type == "NONE":
+
+        signal = {
+
+            "symbol": symbol,
+
+            "signal": "NO TRADE",
+
+            "entry": None,
+
+            "sl": None,
+
+            "tp1": None,
+
+            "tp2": None,
+
+            "score": confidence["score"],
+
+            "trend": trend,
+
+            "zone": zone,
+
+            "reasons": ", ".join(
+                confidence["reasons"]
+            )
+
+        }
+
+
+        print("Generated Signal:")
+        print(signal)
+
+
+        print("No Trade Signal - Telegram skipped.")
+
+        return
+
+
+
+
+
+    # Entry Engine only for BUY/SELL
 
     levels = generate_trade_levels(
 
@@ -173,35 +208,27 @@ def run():
 
 
 
+
     signal = {
 
 
         "symbol": symbol,
 
-
         "signal": signal_type,
-
 
         "entry": levels["entry"],
 
-
         "sl": levels["sl"],
-
 
         "tp1": levels["tp1"],
 
-
         "tp2": levels["tp2"],
-
 
         "score": confidence["score"],
 
-
         "trend": trend,
 
-
         "zone": zone,
-
 
         "reasons": ", ".join(
             confidence["reasons"]
@@ -211,17 +238,10 @@ def run():
 
 
 
+
     print("Generated Signal:")
 
     print(signal)
-
-
-
-    if signal_type == "NO TRADE":
-
-        print("No Trade Signal - Telegram skipped.")
-
-        return
 
 
 
