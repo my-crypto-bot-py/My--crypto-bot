@@ -18,14 +18,22 @@ def scan_market():
 
             trend = detect_trend(df)
 
+            strength = trend.get("strength", 0)
+
             results.append({
                 "symbol": symbol,
-                "trend": trend["trend"],
-                "strength": trend["strength"]
+                "trend": trend.get("trend", "UNKNOWN"),
+                "strength": strength
             })
 
         except Exception as e:
             print(symbol, e)
+
+    results = sorted(
+        results,
+        key=lambda x: x["strength"],
+        reverse=True
+    )
 
     return results
 
@@ -34,13 +42,17 @@ def get_best_symbol():
 
     data = scan_market()
 
-    bullish = [
-        x for x in data
-        if x["trend"] == "BULLISH"
-    ]
+    if len(data) == 0:
+        return None
 
-    if bullish:
+    print("Scanner Results:")
 
-        return bullish[0]
+    for coin in data:
+        print(
+            coin["symbol"],
+            coin["trend"],
+            coin["strength"]
+        )
 
-    return None
+    # Sabse strong coin return karega
+    return data[0]
