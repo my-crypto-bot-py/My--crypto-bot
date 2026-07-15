@@ -18,38 +18,46 @@ def calculate_confidence(
     sell_reasons = []
 
 
-    # Higher Timeframe Trend
+    # HTF Trend
 
     if trend == "BULLISH":
-        buy_score += 25
+
+        buy_score += 20
         buy_reasons.append("4H Bullish Trend")
 
+
     elif trend == "BEARISH":
-        sell_score += 25
+
+        sell_score += 20
         sell_reasons.append("4H Bearish Trend")
 
 
 
-    # Structure
+    # Market Structure
 
     for item in [bos, choch, mss]:
 
         if item:
 
-            if item.get("direction") == "BUY":
+            direction = item.get("direction")
+
+            name = item.get("type","Structure")
+
+
+            if direction == "BUY":
 
                 buy_score += 15
-                buy_reasons.append(item.get("type","Structure"))
+                buy_reasons.append(name)
 
 
-            elif item.get("direction") == "SELL":
+            elif direction == "SELL":
 
                 sell_score += 15
-                sell_reasons.append(item.get("type","Structure"))
+                sell_reasons.append(name)
 
 
 
-    # Liquidity Sweep
+    # Liquidity
 
     if liquidity:
 
@@ -115,36 +123,41 @@ def calculate_confidence(
 
 
 
-    # BTC Confirmation
+    # Confirmation
 
     if btc:
 
-        buy_score += 3
-        sell_score += 3
+        buy_score += 5
+        sell_score += 5
 
 
-    # Volume Confirmation
+        buy_reasons.append("BTC Confirmation")
+        sell_reasons.append("BTC Confirmation")
+
+
 
     if volume:
 
-        buy_score += 3
-        sell_score += 3
+        buy_score += 5
+        sell_score += 5
+
+
+        buy_reasons.append("Volume Confirmation")
+        sell_reasons.append("Volume Confirmation")
+
 
 
 
     # Final Direction
 
-    difference = abs(buy_score - sell_score)
-
-
-    if buy_score > sell_score and difference >= 15:
+    if buy_score > sell_score:
 
         direction = "BUY"
         score = buy_score
         reasons = buy_reasons
 
 
-    elif sell_score > buy_score and difference >= 15:
+    elif sell_score > buy_score:
 
         direction = "SELL"
         score = sell_score
@@ -154,7 +167,7 @@ def calculate_confidence(
     else:
 
         direction = "NONE"
-        score = max(buy_score, sell_score)
+        score = 0
         reasons = []
 
 
@@ -164,22 +177,34 @@ def calculate_confidence(
 
 
     if score >= 90:
-        quality = "A+"
 
-    elif score >= 80:
-        quality = "A"
+        quality="A+"
 
-    elif score >= 70:
-        quality = "B"
+
+    elif score >=80:
+
+        quality="A"
+
+
+    elif score>=70:
+
+        quality="B"
+
 
     else:
-        quality = "NO TRADE"
+
+        quality="NO TRADE"
 
 
 
     return {
-        "direction": direction,
-        "score": score,
-        "quality": quality,
-        "reasons": reasons
+
+        "direction":direction,
+
+        "score":score,
+
+        "quality":quality,
+
+        "reasons":reasons
+
     }
