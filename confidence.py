@@ -18,114 +18,100 @@ def calculate_confidence(
     sell_reasons = []
 
 
-    # Trend (20)
+    # Higher Timeframe Trend
 
     if trend == "BULLISH":
-
-        buy_score += 20
+        buy_score += 25
         buy_reasons.append("4H Bullish Trend")
 
-
     elif trend == "BEARISH":
-
-        sell_score += 20
+        sell_score += 25
         sell_reasons.append("4H Bearish Trend")
 
 
 
-    # Market Structure (15 each)
+    # Structure
 
     for item in [bos, choch, mss]:
 
         if item:
 
-            if item["direction"] == "BUY":
+            if item.get("direction") == "BUY":
 
                 buy_score += 15
-                buy_reasons.append(item["type"])
+                buy_reasons.append(item.get("type","Structure"))
 
 
-            elif item["direction"] == "SELL":
+            elif item.get("direction") == "SELL":
 
                 sell_score += 15
-                sell_reasons.append(item["type"])
+                sell_reasons.append(item.get("type","Structure"))
 
 
 
-
-    # Liquidity Sweep (15)
+    # Liquidity Sweep
 
     if liquidity:
 
-        if liquidity["direction"] == "BUY":
+        if liquidity.get("direction") == "BUY":
 
-            buy_score += 15
+            buy_score += 10
             buy_reasons.append("Liquidity Sweep")
 
 
-        elif liquidity["direction"] == "SELL":
+        elif liquidity.get("direction") == "SELL":
 
-            sell_score += 15
+            sell_score += 10
             sell_reasons.append("Liquidity Sweep")
 
 
 
-
-
-    # FVG (10)
+    # FVG
 
     if fvg:
 
-        if fvg["direction"] == "BUY":
+        if fvg.get("direction") == "BUY":
 
             buy_score += 10
             buy_reasons.append("Bullish FVG")
 
 
-        elif fvg["direction"] == "SELL":
+        elif fvg.get("direction") == "SELL":
 
             sell_score += 10
             sell_reasons.append("Bearish FVG")
 
 
 
-
-
-    # Order Block (10)
+    # Order Block
 
     if order_block:
 
-        if order_block["direction"] == "BUY":
+        if order_block.get("direction") == "BUY":
 
             buy_score += 10
             buy_reasons.append("Bullish Order Block")
 
 
-        elif order_block["direction"] == "SELL":
+        elif order_block.get("direction") == "SELL":
 
             sell_score += 10
             sell_reasons.append("Bearish Order Block")
 
 
 
+    # Premium Discount
+
+    if zone == "Discount":
+
+        buy_score += 5
+        buy_reasons.append("Discount Zone")
 
 
-    # Premium Discount Filter
+    elif zone == "Premium":
 
-    if zone:
-
-        if zone == "Discount":
-
-            buy_score += 10
-            buy_reasons.append("Discount Zone")
-
-
-        elif zone == "Premium":
-
-            sell_score += 10
-            sell_reasons.append("Premium Zone")
-
-
+        sell_score += 5
+        sell_reasons.append("Premium Zone")
 
 
 
@@ -133,39 +119,32 @@ def calculate_confidence(
 
     if btc:
 
-        buy_score += 5
-        sell_score += 5
-
-        buy_reasons.append("BTC Confirmation")
-        sell_reasons.append("BTC Confirmation")
+        buy_score += 3
+        sell_score += 3
 
 
-
-
-    # Volume
+    # Volume Confirmation
 
     if volume:
 
-        buy_score += 5
-        sell_score += 5
-
-        buy_reasons.append("Volume Confirmation")
-        sell_reasons.append("Volume Confirmation")
-
-
+        buy_score += 3
+        sell_score += 3
 
 
 
     # Final Direction
 
-    if buy_score > sell_score:
+    difference = abs(buy_score - sell_score)
+
+
+    if buy_score > sell_score and difference >= 15:
 
         direction = "BUY"
         score = buy_score
         reasons = buy_reasons
 
 
-    elif sell_score > buy_score:
+    elif sell_score > buy_score and difference >= 15:
 
         direction = "SELL"
         score = sell_score
@@ -175,7 +154,7 @@ def calculate_confidence(
     else:
 
         direction = "NONE"
-        score = 0
+        score = max(buy_score, sell_score)
         reasons = []
 
 
@@ -185,35 +164,22 @@ def calculate_confidence(
 
 
     if score >= 90:
-
         quality = "A+"
 
-
     elif score >= 80:
-
         quality = "A"
 
-
     elif score >= 70:
-
         quality = "B"
 
-
     else:
-
         quality = "NO TRADE"
 
 
 
-
     return {
-
         "direction": direction,
-
         "score": score,
-
         "quality": quality,
-
         "reasons": reasons
-
     }
