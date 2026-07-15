@@ -10,34 +10,52 @@ def detect_trend(df):
     Trend Detection using EMA 50 + EMA 200
     """
 
-    if df is None or len(df) < 200:
+    if df is None or len(df) < 50:
         return {
             "trend": "UNKNOWN",
-            "strength": "LOW"
+            "strength": 0
         }
 
     df = df.copy()
 
     df["EMA50"] = calculate_ema(df, 50)
-    df["EMA200"] = calculate_ema(df, 200)
 
-    last = df.iloc[-1]
+    if len(df) >= 200:
+        df["EMA200"] = calculate_ema(df, 200)
 
-    if last["EMA50"] > last["EMA200"]:
+        ema50 = df["EMA50"].iloc[-1]
+        ema200 = df["EMA200"].iloc[-1]
 
+        distance = abs(ema50 - ema200) / ema200 * 100
+
+        if ema50 > ema200:
+            return {
+                "trend": "BULLISH",
+                "strength": round(min(distance * 20, 100), 2)
+            }
+
+        elif ema50 < ema200:
+            return {
+                "trend": "BEARISH",
+                "strength": round(min(distance * 20, 100), 2)
+            }
+
+    last_close = df["close"].iloc[-1]
+    ema50 = df["EMA50"].iloc[-1]
+
+    if last_close > ema50:
         return {
             "trend": "BULLISH",
-            "strength": "HIGH"
+            "strength": 50
         }
 
-    elif last["EMA50"] < last["EMA200"]:
-
+    elif last_close < ema50:
         return {
             "trend": "BEARISH",
-            "strength": "HIGH"
+            "strength": 50
         }
 
     return {
         "trend": "SIDEWAYS",
-        "strength": "LOW"
+        "strength": 25
     }
