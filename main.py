@@ -12,7 +12,8 @@ from smartmoney import (
     detect_liquidity_sweep,
     detect_fvg,
     detect_order_block,
-    get_premium_discount
+    get_premium_discount,
+    generate_trade_levels
 )
 
 from confidence import calculate_confidence
@@ -23,35 +24,44 @@ def run():
 
     print("========== BOT STARTED ==========")
 
+
     best = get_best_symbol()
 
     print("Best Symbol:", best)
+
 
     if best is None:
         print("No Trend Found")
         return
 
 
+
     symbol = best["symbol"]
     trend = best["trend"]
 
+
     print("Scanning:", symbol)
+
 
 
     df = get_market_data(symbol, "5m")
 
 
     if df is None or df.empty:
+
         print("Market Data Failed")
         return
+
 
 
     print("Market Data Loaded")
 
 
+
     # Structure
 
     swing_highs, swing_lows = find_swings(df)
+
 
     bos = detect_bos(
         df,
@@ -59,17 +69,20 @@ def run():
         swing_lows
     )
 
+
     mss = detect_mss(
         df,
         swing_highs,
         swing_lows
     )
 
+
     choch = detect_choch(
         df,
         swing_highs,
         swing_lows
     )
+
 
 
     # Smart Money
@@ -80,13 +93,15 @@ def run():
 
     order_block = detect_order_block(df)
 
+
     zone_data = get_premium_discount(df)
 
-
-    zone = None
+    zone = "UNKNOWN"
 
     if zone_data:
         zone = zone_data["zone"]
+
+
 
 
     # Confidence
@@ -95,19 +110,17 @@ def run():
 
         trend=trend,
 
-        bos=bos,
+        bos=bool(bos),
 
-        choch=choch,
+        choch=bool(choch),
 
-        mss=mss,
+        mss=bool(mss),
 
-        liquidity=liquidity,
+        liquidity=bool(liquidity),
 
-        fvg=fvg,
+        fvg=bool(fvg),
 
-        order_block=order_block,
-
-        zone=zone,
+        order_block=bool(order_block),
 
         btc=True,
 
@@ -115,10 +128,6 @@ def run():
     )
 
 
-    print(
-        "Direction:",
-        confidence["direction"]
-    )
 
     print(
         "Confidence:",
@@ -126,88 +135,82 @@ def run():
     )
 
 
-    last = df.iloc[-1]
-
-    entry = round(
-        float(last["close"]),
-        2
-    )
-
 
     signal_type = "NO TRADE"
 
 
+
     if confidence["score"] >= 80:
 
-        signal_type = confidence["direction"]
+        if trend == "BULLISH":
+
+            signal_type = "BUY"
+
+
+        elif trend == "BEARISH":
+
+            signal_type = "SELL"
 
 
 
-    # Risk Management
 
-    if signal_type == "BUY":
+    # Smart Money Entry Engine
 
-        sl = round(
-            entry * 0.995,
-            2
-        )
+    levels = generate_trade_levels(
 
-        tp1 = round(
-            entry * 1.015,
-            2
-        )
+        df,
 
-        tp2 = round(
-            entry * 1.020,
-            2
-        )
+        signal_type,
+
+        fvg,
+
+        order_block
+
+    )
 
 
-    elif signal_type == "SELL":
 
-        sl = round(
-            entry * 1.005,
-            2
-        )
+    entry = levels["entry"]
 
-        tp1 = round(
-            entry * 0.985,
-            2
-        )
+    sl = levels["sl"]
 
-        tp2 = round(
-            entry * 0.980,
-            2
-        )
+    tp1 = levels["tp1"]
+
+    tp2 = levels["tp2"]
 
 
-    else:
-
-        sl = None
-        tp1 = None
-        tp2 = None
 
 
 
     signal = {
 
+
         "symbol": symbol,
+
 
         "signal": signal_type,
 
+
         "entry": entry,
+
 
         "sl": sl,
 
+
         "tp1": tp1,
+
 
         "tp2": tp2,
 
+
         "score": confidence["score"],
+
 
         "trend": trend,
 
-        "zone": zone if zone else "UNKNOWN",
+
+        "zone": zone,
+
 
         "reasons": ", ".join(
             confidence["reasons"]
@@ -216,8 +219,12 @@ def run():
     }
 
 
+
     print("Generated Signal:")
+
     print(signal)
+
+
 
 
 
@@ -231,11 +238,15 @@ def run():
 
 
 
+
+
     try:
+
 
         print(
             "Sending Telegram Message..."
         )
+
 
         send_signal(signal)
 
@@ -245,12 +256,15 @@ def run():
         )
 
 
+
     except Exception as e:
+
 
         print(
             "Telegram Error:",
             e
         )
+
 
 
 
