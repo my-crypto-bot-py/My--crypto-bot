@@ -28,16 +28,12 @@ def run():
 
     print("Best Symbol:", best)
 
-    # TEST MODE
     if best is None:
-        print("No Bullish Trend Found")
-        print("Using BTC-USDT-SWAP for testing...")
-
-        best = {
-            "symbol": "BTC-USDT-SWAP"
-        }
+        print("No Trend Found")
+        return
 
     symbol = best["symbol"]
+    trend = best["trend"]
 
     print(f"Scanning: {symbol}")
 
@@ -74,14 +70,46 @@ def run():
     )
 
     last = df.iloc[-1]
+    entry = round(last["close"], 2)
+
+    signal_type = "NO TRADE"
+
+    if confidence["score"] >= 80:
+
+        if trend == "BULLISH":
+            signal_type = "BUY"
+
+        elif trend == "BEARISH":
+            signal_type = "SELL"
+
+    if signal_type == "BUY":
+
+        sl = round(entry * 0.995, 2)
+        tp1 = round(entry * 1.015, 2)
+        tp2 = round(entry * 1.020, 2)
+
+    elif signal_type == "SELL":
+
+        sl = round(entry * 1.005, 2)
+        tp1 = round(entry * 0.985, 2)
+        tp2 = round(entry * 0.980, 2)
+
+    else:
+
+        sl = None
+        tp1 = None
+        tp2 = None
 
     signal = {
-        "signal": "BUY" if confidence["score"] >= 80 else "NO TRADE",
-        "entry": round(last["close"], 2),
-        "sl": round(last["close"] * 0.995, 2),
-        "tp1": round(last["close"] * 1.015, 2),
-        "tp2": round(last["close"] * 1.020, 2),
+        "symbol": symbol,
+        "signal": signal_type,
+        "entry": entry,
+        "sl": sl,
+        "tp1": tp1,
+        "tp2": tp2,
         "score": confidence["score"],
+        "trend": trend,
+        "zone": zone["zone"] if zone else "UNKNOWN",
         "reasons": ", ".join(confidence["reasons"])
     }
 
@@ -96,6 +124,7 @@ def run():
         print("Sending Telegram Message...")
         send_signal(signal)
         print("Telegram Message Sent Successfully.")
+
     except Exception as e:
         print("Telegram Error:", e)
 
