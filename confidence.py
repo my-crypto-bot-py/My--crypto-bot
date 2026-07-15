@@ -19,7 +19,7 @@ def calculate_confidence(
 
 
     # ==========================
-    # HTF TREND (25)
+    # HTF TREND
     # ==========================
 
     if trend == "BULLISH":
@@ -36,63 +36,27 @@ def calculate_confidence(
 
 
     # ==========================
-    # MARKET STRUCTURE
+    # STRUCTURE
     # ==========================
 
-    if bos:
+    for item in [bos, choch, mss]:
 
-        if bos.get("direction") == "BUY":
+        if item:
 
-            buy_score += 15
-            buy_reasons.append(
-                bos.get("type","Bullish BOS")
-            )
+            direction = item.get("direction")
+            name = item.get("type","Structure")
 
 
-        elif bos.get("direction") == "SELL":
+            if direction == "BUY":
 
-            sell_score += 15
-            sell_reasons.append(
-                bos.get("type","Bearish BOS")
-            )
+                buy_score += 12
+                buy_reasons.append(name)
 
 
+            elif direction == "SELL":
 
-    if choch:
-
-        if choch.get("direction") == "BUY":
-
-            buy_score += 15
-            buy_reasons.append(
-                choch.get("type","Bullish CHoCH")
-            )
-
-
-        elif choch.get("direction") == "SELL":
-
-            sell_score += 15
-            sell_reasons.append(
-                choch.get("type","Bearish CHoCH")
-            )
-
-
-
-    if mss:
-
-        if mss.get("direction") == "BUY":
-
-            buy_score += 10
-            buy_reasons.append(
-                mss.get("type","Bullish MSS")
-            )
-
-
-        elif mss.get("direction") == "SELL":
-
-            sell_score += 10
-            sell_reasons.append(
-                mss.get("type","Bearish MSS")
-            )
+                sell_score += 12
+                sell_reasons.append(name)
 
 
 
@@ -105,17 +69,13 @@ def calculate_confidence(
         if liquidity.get("direction") == "BUY":
 
             buy_score += 15
-            buy_reasons.append(
-                "Liquidity Sweep"
-            )
+            buy_reasons.append("Liquidity Sweep")
 
 
         elif liquidity.get("direction") == "SELL":
 
             sell_score += 15
-            sell_reasons.append(
-                "Liquidity Sweep"
-            )
+            sell_reasons.append("Liquidity Sweep")
 
 
 
@@ -128,17 +88,13 @@ def calculate_confidence(
         if fvg.get("direction") == "BUY":
 
             buy_score += 10
-            buy_reasons.append(
-                "Bullish FVG"
-            )
+            buy_reasons.append("Bullish FVG")
 
 
         elif fvg.get("direction") == "SELL":
 
             sell_score += 10
-            sell_reasons.append(
-                "Bearish FVG"
-            )
+            sell_reasons.append("Bearish FVG")
 
 
 
@@ -151,38 +107,34 @@ def calculate_confidence(
         if order_block.get("direction") == "BUY":
 
             buy_score += 10
-            buy_reasons.append(
-                "Bullish Order Block"
-            )
+            buy_reasons.append("Bullish Order Block")
 
 
         elif order_block.get("direction") == "SELL":
 
             sell_score += 10
-            sell_reasons.append(
-                "Bearish Order Block"
-            )
+            sell_reasons.append("Bearish Order Block")
 
 
 
     # ==========================
-    # PREMIUM DISCOUNT
+    # PREMIUM / DISCOUNT FILTER
     # ==========================
 
     if zone == "Discount":
 
         buy_score += 5
-        buy_reasons.append(
-            "Discount Zone"
-        )
+        buy_reasons.append("Discount Zone")
+
+        sell_score -= 10
 
 
     elif zone == "Premium":
 
         sell_score += 5
-        sell_reasons.append(
-            "Premium Zone"
-        )
+        sell_reasons.append("Premium Zone")
+
+        buy_score -= 10
 
 
 
@@ -195,15 +147,8 @@ def calculate_confidence(
         buy_score += 3
         sell_score += 3
 
-
-        buy_reasons.append(
-            "BTC Confirmation"
-        )
-
-        sell_reasons.append(
-            "BTC Confirmation"
-        )
-
+        buy_reasons.append("BTC Confirmation")
+        sell_reasons.append("BTC Confirmation")
 
 
     if volume:
@@ -211,91 +156,62 @@ def calculate_confidence(
         buy_score += 2
         sell_score += 2
 
-
-        buy_reasons.append(
-            "Volume Confirmation"
-        )
-
-        sell_reasons.append(
-            "Volume Confirmation"
-        )
+        buy_reasons.append("Volume Confirmation")
+        sell_reasons.append("Volume Confirmation")
 
 
 
     # ==========================
-    # FINAL DECISION
+    # FINAL
     # ==========================
 
-    difference = abs(
-        buy_score - sell_score
-    )
+    if buy_score > sell_score:
+
+        direction="BUY"
+        score=buy_score
+        reasons=buy_reasons
 
 
+    elif sell_score > buy_score:
 
-    if buy_score > sell_score and difference >= 15:
-
-        direction = "BUY"
-        score = buy_score
-        reasons = buy_reasons
-
-
-
-    elif sell_score > buy_score and difference >= 15:
-
-        direction = "SELL"
-        score = sell_score
-        reasons = sell_reasons
-
+        direction="SELL"
+        score=sell_score
+        reasons=sell_reasons
 
 
     else:
 
-        direction = "NONE"
-        score = max(
-            buy_score,
-            sell_score
-        )
-
-        reasons = []
+        direction="NONE"
+        score=0
+        reasons=[]
 
 
 
-    score = min(
-        score,
-        100
-    )
+    score=max(0,min(score,100))
 
 
+    if score >=90:
+        quality="A+"
 
-    if score >= 90:
+    elif score>=80:
+        quality="A"
 
-        quality = "A+"
-
-
-    elif score >= 80:
-
-        quality = "A"
-
-
-    elif score >= 70:
-
-        quality = "B"
-
+    elif score>=70:
+        quality="B"
 
     else:
-
-        quality = "NO TRADE"
+        quality="NO TRADE"
 
 
 
     return {
 
-        "direction": direction,
+        "direction":direction,
 
-        "score": score,
+        "score":score,
 
-        "quality": quality,
+        "quality":quality,
 
-        "reasons": reasons
+        "reasons":reasons
 
     }
