@@ -26,12 +26,15 @@ def run():
     print("========== BOT STARTED ==========")
 
 
+    # Scanner
+
     best = get_best_symbol()
 
     print("Best Symbol:", best)
 
 
     if best is None:
+
         print("No Trend Found")
         return
 
@@ -44,6 +47,8 @@ def run():
     print("Scanning:", symbol)
 
 
+
+    # Market Data
 
     df = get_market_data(symbol, "5m")
 
@@ -98,15 +103,18 @@ def run():
 
     zone_data = get_premium_discount(df)
 
+
     zone = "UNKNOWN"
 
+
     if zone_data:
+
         zone = zone_data["zone"]
 
 
 
 
-    # Confidence
+    # Confidence Engine
 
     confidence = calculate_confidence(
 
@@ -133,8 +141,14 @@ def run():
     )
 
 
+
     print("Confidence:", confidence)
 
+
+
+    direction = confidence["direction"]
+
+    score = confidence["score"]
 
 
 
@@ -142,16 +156,26 @@ def run():
 
 
 
-    if confidence["score"] >= 80:
+    # Entry Filter
 
-        signal_type = confidence["direction"]
+    if score >= 80:
+
+        if direction == "BUY":
+
+            signal_type = "BUY"
+
+
+        elif direction == "SELL":
+
+            signal_type = "SELL"
 
 
 
 
-    # NO TRADE EXIT
+    # No Trade
 
-    if signal_type == "NO TRADE" or signal_type == "NONE":
+    if signal_type == "NO TRADE":
+
 
         signal = {
 
@@ -167,7 +191,7 @@ def run():
 
             "tp2": None,
 
-            "score": confidence["score"],
+            "score": score,
 
             "trend": trend,
 
@@ -191,8 +215,7 @@ def run():
 
 
 
-
-    # Entry Engine only for BUY/SELL
+    # Trade Levels
 
     levels = generate_trade_levels(
 
@@ -208,27 +231,35 @@ def run():
 
 
 
-
     signal = {
 
 
         "symbol": symbol,
 
+
         "signal": signal_type,
+
 
         "entry": levels["entry"],
 
+
         "sl": levels["sl"],
+
 
         "tp1": levels["tp1"],
 
+
         "tp2": levels["tp2"],
 
-        "score": confidence["score"],
+
+        "score": score,
+
 
         "trend": trend,
 
+
         "zone": zone,
+
 
         "reasons": ", ".join(
             confidence["reasons"]
@@ -246,6 +277,8 @@ def run():
 
 
 
+    # Telegram
+
     try:
 
         print("Sending Telegram Message...")
@@ -254,13 +287,17 @@ def run():
         send_signal(signal)
 
 
-        print("Telegram Message Sent Successfully.")
-
+        print(
+            "Telegram Message Sent Successfully."
+        )
 
 
     except Exception as e:
 
-        print("Telegram Error:", e)
+        print(
+            "Telegram Error:",
+            e
+        )
 
 
 
