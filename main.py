@@ -156,7 +156,7 @@ def run():
 
 
 
-    # ==========================
+        # ==========================
     # FINAL SMC FILTER
     # ==========================
 
@@ -176,11 +176,12 @@ def run():
     )
 
 
-    zone_ok = True
-
-
 
     smartmoney_confirm = (
+
+        liquidity
+
+        or
 
         fvg
 
@@ -192,10 +193,28 @@ def run():
 
 
 
+    zone_ok = True
+
+
+
+    # Deep zone protection
+
+    if direction == "BUY" and zone == "Deep Premium":
+
+        zone_ok = False
+
+
+
+    if direction == "SELL" and zone == "Deep Discount":
+
+        zone_ok = False
+
+
+
 
     if (
 
-        score >= 75
+        score >= 70
 
         and
 
@@ -204,6 +223,10 @@ def run():
         and
 
         smartmoney_confirm
+
+        and
+
+        zone_ok
 
     ):
 
@@ -264,7 +287,6 @@ def run():
 
 
         return
-
 
 
 
