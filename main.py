@@ -45,32 +45,55 @@ def run():
 
 
 
-    df = get_market_data(symbol,"5m")
+    df = get_market_data(
+        symbol,
+        "5m"
+    )
 
 
     if df is None or df.empty:
+
         print("Market Data Failed")
         return
+
 
 
     print("Market Data Loaded")
 
 
 
-    # Structure
+    # ==========================
+    # STRUCTURE
+    # ==========================
 
     swing_highs, swing_lows = find_swings(df)
 
 
-    bos = detect_bos(df,swing_highs,swing_lows)
+    bos = detect_bos(
+        df,
+        swing_highs,
+        swing_lows
+    )
 
-    mss = detect_mss(df,swing_highs,swing_lows)
 
-    choch = detect_choch(df,swing_highs,swing_lows)
+    mss = detect_mss(
+        df,
+        swing_highs,
+        swing_lows
+    )
+
+
+    choch = detect_choch(
+        df,
+        swing_highs,
+        swing_lows
+    )
 
 
 
-    # Smart Money
+    # ==========================
+    # SMART MONEY
+    # ==========================
 
     liquidity = detect_liquidity_sweep(df)
 
@@ -82,13 +105,20 @@ def run():
 
     zone_data = get_premium_discount(df)
 
-    zone = "UNKNOWN"
+
+    zone="UNKNOWN"
+
 
     if zone_data:
+
         zone = zone_data["zone"]
 
 
 
+
+    # ==========================
+    # CONFIDENCE
+    # ==========================
 
     confidence = calculate_confidence(
 
@@ -130,9 +160,82 @@ def run():
 
 
 
-    # Trend Follow
+    # ==========================
+    # FINAL SMC FILTER
+    # ==========================
 
-    if score >= 80:
+
+    structure_confirm = (
+        bos
+        or
+        mss
+        or
+        choch
+    )
+
+
+    zone_ok = False
+
+
+    if direction=="BUY":
+
+        if zone=="Discount":
+
+            zone_ok=True
+
+
+        elif zone=="Premium":
+
+            print(
+                "BUY blocked: Premium Zone"
+            )
+
+
+
+    elif direction=="SELL":
+
+
+        if zone=="Premium":
+
+            zone_ok=True
+
+
+        elif zone=="Discount":
+
+            print(
+                "SELL blocked: Discount Zone"
+            )
+
+
+
+
+    smartmoney_confirm = (
+
+        fvg
+        or
+        order_block
+
+    )
+
+
+
+    if (
+
+        score >=75
+
+        and
+
+        structure_confirm
+
+        and
+
+        smartmoney_confirm
+
+        and
+
+        zone_ok
+
+    ):
 
 
         if direction=="BUY":
@@ -147,29 +250,17 @@ def run():
 
 
 
-    # Strong Setup / Reversal
-
-    elif score >=70:
-
-
-        if (bos or mss or choch):
+    print(
+        "Final Direction:",
+        direction
+    )
 
 
-            if direction=="BUY":
+    print(
+        "Final Signal:",
+        signal_type
+    )
 
-                signal_type="BUY"
-
-
-            elif direction=="SELL":
-
-                signal_type="SELL"
-
-
-
-
-    print("Final Direction:",direction)
-
-    print("Final Signal:",signal_type)
 
 
 
@@ -188,19 +279,27 @@ def run():
 
             "zone":zone,
 
-            "reasons":", ".join(confidence["reasons"])
+            "reasons":
+            ", ".join(
+                confidence["reasons"]
+            )
 
         })
 
 
-        print("No Trade Signal - Telegram skipped.")
+        print(
+            "No Trade Signal - Telegram skipped."
+        )
 
         return
 
 
 
 
-    # Entry Engine
+
+    # ==========================
+    # ENTRY
+    # ==========================
 
     levels = generate_trade_levels(
 
@@ -217,7 +316,9 @@ def run():
 
     if levels is None:
 
-        print("Trade Level Failed")
+        print(
+            "Trade Level Failed"
+        )
 
         return
 
@@ -245,7 +346,8 @@ def run():
 
         "zone":zone,
 
-        "reasons":", ".join(
+        "reasons":
+        ", ".join(
             confidence["reasons"]
         )
 
@@ -253,24 +355,39 @@ def run():
 
 
 
-    print("Generated Signal:")
+    print(
+        "Generated Signal:"
+    )
+
 
     print(signal)
 
 
 
+
     try:
 
-        print("Sending Telegram Message...")
+        print(
+            "Sending Telegram Message..."
+        )
+
 
         send_signal(signal)
 
-        print("Telegram Message Sent Successfully.")
+
+        print(
+            "Telegram Message Sent Successfully."
+        )
+
 
 
     except Exception as e:
 
-        print("Telegram Error:",e)
+        print(
+            "Telegram Error:",
+            e
+        )
+
 
 
 
