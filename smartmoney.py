@@ -3,26 +3,25 @@ import pandas as pd
 
 def detect_liquidity_sweep(df, lookback=20):
     """
-    Liquidity sweep detect karta hai.
+    Improved Liquidity Sweep Detection
     """
 
     if len(df) < lookback:
         return None
 
-    recent = df.iloc[-lookback:]
-    current = df.iloc[-1]
+    data = df.tail(lookback)
 
-    previous_high = recent["high"].max()
-    previous_low = recent["low"].min()
+    previous_high = data["high"][:-1].max()
+    previous_low = data["low"][:-1].min()
 
-    # Buy side liquidity sweep
+    current = data.iloc[-1]
+
     if current["high"] > previous_high and current["close"] < previous_high:
         return {
             "type": "Buy Side Liquidity Sweep",
             "level": previous_high
         }
 
-    # Sell side liquidity sweep
     if current["low"] < previous_low and current["close"] > previous_low:
         return {
             "type": "Sell Side Liquidity Sweep",
@@ -30,52 +29,58 @@ def detect_liquidity_sweep(df, lookback=20):
         }
 
     return None
-def detect_fvg(df):
+
+
+def detect_fvg(df, lookback=20):
     """
-    Fair Value Gap detect karta hai.
-    """
-
-    if len(df) < 3:
-        return None
-
-    c1 = df.iloc[-3]
-    c2 = df.iloc[-2]
-    c3 = df.iloc[-1]
-
-    # Bullish FVG
-    if c1["high"] < c3["low"]:
-        return {
-            "type": "Bullish FVG",
-            "top": c3["low"],
-            "bottom": c1["high"]
-        }
-
-    # Bearish FVG
-    if c1["low"] > c3["high"]:
-        return {
-            "type": "Bearish FVG",
-            "top": c1["low"],
-            "bottom": c3["high"]
-        }
-
-    return None
-
-def detect_order_block(df, lookback=20):
-    """
-    Basic Order Block detection.
+    Improved Fair Value Gap Detection
     """
 
     if len(df) < lookback:
         return None
 
-    data = df.iloc[-lookback:]
+    data = df.tail(lookback)
 
-    for i in range(len(data)-2, 0, -1):
+    for i in range(2, len(data)):
+
+        c1 = data.iloc[i - 2]
+        c2 = data.iloc[i - 1]
+        c3 = data.iloc[i]
+
+        if c1["high"] < c3["low"]:
+            return {
+                "type": "Bullish FVG",
+                "top": c3["low"],
+                "bottom": c1["high"],
+                "size": round(c3["low"] - c1["high"], 2)
+            }
+
+        if c1["low"] > c3["high"]:
+            return {
+                "type": "Bearish FVG",
+                "top": c1["low"],
+                "bottom": c3["high"],
+                "size": round(c1["low"] - c3["high"], 2)
+            }
+
+    return None
+
+
+def detect_order_block(df, lookback=20):
+    """
+    Improved Order Block Detection
+    """
+
+    if len(df) < lookback:
+        return None
+
+    data = df.tail(lookback)
+
+    for i in range(len(data) - 2):
 
         candle = data.iloc[i]
-        next_candle = data.iloc[i+1]
+        next_candle = data.iloc[i + 1]
 
-        # Bullish Order Block
         if (
             candle["close"] < candle["open"]
             and next_candle["close"] > candle["high"]
@@ -86,7 +91,6 @@ def detect_order_block(df, lookback=20):
                 "low": candle["low"]
             }
 
-        # Bearish Order Block
         if (
             candle["close"] > candle["open"]
             and next_candle["close"] < candle["low"]
@@ -98,9 +102,11 @@ def detect_order_block(df, lookback=20):
             }
 
     return None
+
+
 def get_premium_discount(df):
     """
-    Premium / Discount zone detect karta hai.
+    Premium / Discount Zone
     """
 
     if len(df) < 20:
@@ -112,11 +118,7 @@ def get_premium_discount(df):
     equilibrium = (high + low) / 2
     price = df["close"].iloc[-1]
 
-    if price > equilibrium:
-        zone = "Premium"
-
-    else:
-        zone = "Discount"
+    zone = "Premium" if price > equilibrium else "Discount"
 
     return {
         "zone": zone,
