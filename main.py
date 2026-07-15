@@ -160,10 +160,9 @@ def run():
 
 
 
-    # ==========================
+    # =====================
     # FINAL SMC FILTER
-    # ==========================
-
+    # =====================
 
     structure_confirm = (
         bos
@@ -174,52 +173,52 @@ def run():
     )
 
 
-    zone_ok = False
-
-
-    if direction=="BUY":
-
-    if zone in ["Discount", "Deep Discount"]:
-
-        zone_ok=True
-
-    elif zone=="Premium":
-
-        # normal premium में strong setup allow
-        if score >=85:
-            zone_ok=True
-
-        else:
-            print("BUY blocked: Premium Zone")
-
-    elif zone=="Deep Premium":
-
-        print("BUY blocked: Deep Premium")
-
-
-
-elif direction=="SELL":
-
-    if zone in ["Premium", "Deep Premium"]:
-
-        zone_ok=True
-
-    elif zone=="Discount":
-
-        if score >=85:
-            zone_ok=True
-
-        else:
-            print("SELL blocked: Discount Zone")
-
-    elif zone=="Deep Discount":
-
-        print("SELL blocked: Deep Discount")
-
+    # Zone filter removed
+    zone_ok = True
 
 
 
     smartmoney_confirm = (
+
+        fvg
+        or
+        order_block
+
+    )
+
+
+
+    if (
+
+        score >=75
+
+        and
+
+        structure_confirm
+
+        and
+
+        smartmoney_confirm
+
+        and
+
+        zone_ok
+
+    ):
+
+
+        if direction=="BUY":
+
+            signal_type="BUY"
+
+
+        elif direction=="SELL":
+
+            signal_type="SELL"
+    
+
+
+
 
         fvg
         or
