@@ -370,123 +370,215 @@ def get_premium_discount(df):
 
 
 # ==========================
-# TRADE LEVEL ENGINE
+# ADVANCED TRADE LEVEL ENGINE
 # ==========================
 
 def generate_trade_levels(
         df,
         signal,
         fvg=None,
-        order_block=None
+        order_block=None,
+        liquidity=None
 ):
 
 
-    price=float(
+    price = float(
         df["close"].iloc[-1]
     )
 
 
 
-    if signal=="BUY":
+    # ==========================
+    # BUY SETUP
+    # ==========================
+
+    if signal == "BUY":
 
 
-        entry=price
+        entry = price
 
 
 
-        if order_block and order_block["direction"]=="BUY":
+        # Priority:
+        # 1 Order Block
+        # 2 FVG
+        # 3 Current Price
 
-            entry=(
+
+        if order_block and order_block["direction"] == "BUY":
+
+
+            entry = (
                 order_block["high"]
                 +
                 order_block["low"]
-            )/2
+            ) / 2
 
 
 
-        elif fvg and fvg["direction"]=="BUY":
+            sl = (
+                order_block["low"]
+                * 0.998
+            )
 
-            entry=(
+
+        elif fvg and fvg["direction"] == "BUY":
+
+
+            entry = (
                 fvg["top"]
                 +
                 fvg["bottom"]
-            )/2
+            ) / 2
+
+
+
+            sl = (
+                fvg["bottom"]
+                * 0.998
+            )
+
+
+        else:
+
+
+            swing_low = float(
+                df["low"].tail(30).min()
+            )
+
+
+            sl = swing_low * 0.998
 
 
 
 
-        swing_low=float(
-            df["low"].tail(30).min()
-        )
 
+        risk = entry - sl
 
-        sl=swing_low*0.998
-
-
-
-        risk=entry-sl
 
 
         if risk <= 0:
+
             return None
 
 
 
-        tp1=entry+(risk*2)
 
-        tp2=entry+(risk*3)
+        # Liquidity based target
 
-
-
-
-    elif signal=="SELL":
-
-
-        entry=price
-
-
-
-        if order_block and order_block["direction"]=="SELL":
-
-            entry=(
-                order_block["high"]
-                +
-                order_block["low"]
-            )/2
-
-
-
-        elif fvg and fvg["direction"]=="SELL":
-
-            entry=(
-                fvg["top"]
-                +
-                fvg["bottom"]
-            )/2
-
-
-
-
-        swing_high=float(
-            df["high"].tail(30).max()
+        recent_high = float(
+            df["high"].tail(50).max()
         )
 
 
-        sl=swing_high*1.002
+
+        tp1 = recent_high
 
 
 
-        risk=sl-entry
+        if tp1 <= entry:
+
+            tp1 = entry + (risk*2)
+
+
+
+        tp2 = entry + (risk*3)
+
+
+
+
+
+    # ==========================
+    # SELL SETUP
+    # ==========================
+
+
+    elif signal == "SELL":
+
+
+        entry = price
+
+
+
+        if order_block and order_block["direction"] == "SELL":
+
+
+            entry = (
+                order_block["high"]
+                +
+                order_block["low"]
+            ) / 2
+
+
+
+            sl = (
+                order_block["high"]
+                * 1.002
+            )
+
+
+
+        elif fvg and fvg["direction"] == "SELL":
+
+
+            entry = (
+                fvg["top"]
+                +
+                fvg["bottom"]
+            ) / 2
+
+
+
+            sl = (
+                fvg["top"]
+                * 1.002
+            )
+
+
+
+        else:
+
+
+            swing_high = float(
+                df["high"].tail(30).max()
+            )
+
+
+            sl = swing_high * 1.002
+
+
+
+
+
+        risk = sl - entry
+
 
 
         if risk <= 0:
+
             return None
 
 
 
-        tp1=entry-(risk*2)
 
-        tp2=entry-(risk*3)
+        recent_low = float(
+            df["low"].tail(50).min()
+        )
+
+
+
+        tp1 = recent_low
+
+
+
+        if tp1 >= entry:
+
+            tp1 = entry - (risk*2)
+
+
+
+        tp2 = entry - (risk*3)
+
 
 
 
@@ -498,7 +590,9 @@ def generate_trade_levels(
 
 
 
+
     return {
+
 
         "entry":round(entry,4),
 
@@ -509,3 +603,6 @@ def generate_trade_levels(
         "tp2":round(tp2,4)
 
     }
+
+
+
