@@ -13,45 +13,25 @@ def calculate_confidence(
     score = 0
     reasons = []
 
-    if bias:
-        score += 15
-        reasons.append("1D Bias")
+    checks = [
+        (bias, 15, "1D Bias"),
+        (trend, 15, "4H Trend"),
+        (bos, 10, "BOS"),
+        (choch, 10, "CHoCH"),
+        (mss, 10, "MSS"),
+        (liquidity, 10, "Liquidity Sweep"),
+        (fvg, 10, "FVG"),
+        (order_block, 10, "Order Block"),
+        (btc, 5, "BTC Confirmation"),
+        (volume, 5, "Volume Confirmation"),
+    ]
 
-    if trend:
-        score += 15
-        reasons.append("4H Trend")
+    for condition, points, reason in checks:
+        if condition:
+            score += points
+            reasons.append(reason)
 
-    if bos:
-        score += 10
-        reasons.append("BOS")
-
-    if choch:
-        score += 10
-        reasons.append("CHoCH")
-
-    if mss:
-        score += 10
-        reasons.append("MSS")
-
-    if liquidity:
-        score += 10
-        reasons.append("Liquidity Sweep")
-
-    if fvg:
-        score += 10
-        reasons.append("FVG")
-
-    if order_block:
-        score += 10
-        reasons.append("Order Block")
-
-    if btc:
-        score += 5
-        reasons.append("BTC Confirmation")
-
-    if volume:
-        score += 5
-        reasons.append("Volume Confirmation")
+    score = min(score, 100)
 
     if score >= 90:
         quality = "A+"
