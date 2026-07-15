@@ -26,8 +26,6 @@ def run():
     print("========== BOT STARTED ==========")
 
 
-    # Scanner
-
     best = get_best_symbol()
 
     print("Best Symbol:", best)
@@ -38,7 +36,6 @@ def run():
         return
 
 
-
     symbol = best["symbol"]
     trend = best["trend"]
 
@@ -47,16 +44,13 @@ def run():
 
 
 
-    # Market Data
-
-    df = get_market_data(symbol, "5m")
+    df = get_market_data(symbol,"5m")
 
 
     if df is None or df.empty:
 
         print("Market Data Failed")
         return
-
 
 
     print("Market Data Loaded")
@@ -99,7 +93,6 @@ def run():
     order_block = detect_order_block(df)
 
 
-
     zone_data = get_premium_discount(df)
 
     zone = "UNKNOWN"
@@ -109,8 +102,6 @@ def run():
 
 
 
-
-    # Confidence
 
     confidence = calculate_confidence(
 
@@ -133,11 +124,11 @@ def run():
         btc=True,
 
         volume=True
-
     )
 
 
-    print("Confidence:", confidence)
+
+    print("Confidence:",confidence)
 
 
 
@@ -147,71 +138,86 @@ def run():
 
 
 
+    # Backup direction
+
+    if direction == "NONE":
+
+
+        if trend == "BULLISH" and (bos or choch or mss):
+
+            direction = "BUY"
+
+
+        elif trend == "BEARISH" and (bos or choch or mss):
+
+            direction = "SELL"
+
+
+
     signal_type = "NO TRADE"
 
 
 
-    # FINAL TREND FILTER
+    # Final Entry Filter
 
-    if score >= 80:
-
-
-        if trend == "BULLISH" and direction == "BUY":
-
-            signal_type = "BUY"
+    if score >= 70:
 
 
+        if trend == "BULLISH" and direction=="BUY":
 
-        elif trend == "BEARISH" and direction == "SELL":
-
-            signal_type = "SELL"
-
+            signal_type="BUY"
 
 
-        else:
+        elif trend=="BEARISH" and direction=="SELL":
 
-            print(
-                "Counter Trend Setup Blocked"
-            )
+            signal_type="SELL"
 
 
 
 
-    # No Trade
+    print(
+        "Final Direction:",
+        direction
+    )
 
-    if signal_type == "NO TRADE":
+    print(
+        "Final Signal:",
+        signal_type
+    )
 
 
-        signal = {
 
-            "symbol": symbol,
+    if signal_type=="NO TRADE":
 
-            "signal": "NO TRADE",
 
-            "entry": None,
+        signal={
 
-            "sl": None,
+            "symbol":symbol,
 
-            "tp1": None,
+            "signal":"NO TRADE",
 
-            "tp2": None,
+            "entry":None,
 
-            "score": score,
+            "sl":None,
 
-            "trend": trend,
+            "tp1":None,
 
-            "zone": zone,
+            "tp2":None,
 
-            "reasons": ", ".join(
+            "score":score,
+
+            "trend":trend,
+
+            "zone":zone,
+
+            "reasons":", ".join(
                 confidence["reasons"]
             )
 
         }
 
 
-        print("Generated Signal:")
         print(signal)
-
 
         print(
             "No Trade Signal - Telegram skipped."
@@ -221,8 +227,6 @@ def run():
 
 
 
-
-    # Entry
 
     levels = generate_trade_levels(
 
@@ -237,39 +241,37 @@ def run():
     )
 
 
-
     if levels is None:
 
-        print(
-            "Trade Levels Failed"
-        )
+        print("Trade Level Failed")
 
         return
 
 
 
-    signal = {
+
+    signal={
 
 
-        "symbol": symbol,
+        "symbol":symbol,
 
-        "signal": signal_type,
+        "signal":signal_type,
 
-        "entry": levels["entry"],
+        "entry":levels["entry"],
 
-        "sl": levels["sl"],
+        "sl":levels["sl"],
 
-        "tp1": levels["tp1"],
+        "tp1":levels["tp1"],
 
-        "tp2": levels["tp2"],
+        "tp2":levels["tp2"],
 
-        "score": score,
+        "score":score,
 
-        "trend": trend,
+        "trend":trend,
 
-        "zone": zone,
+        "zone":zone,
 
-        "reasons": ", ".join(
+        "reasons":", ".join(
             confidence["reasons"]
         )
 
@@ -278,21 +280,13 @@ def run():
 
 
     print("Generated Signal:")
-
     print(signal)
-
 
 
 
     try:
 
-        print(
-            "Sending Telegram Message..."
-        )
-
-
         send_signal(signal)
-
 
         print(
             "Telegram Message Sent Successfully."
@@ -308,7 +302,5 @@ def run():
 
 
 
-
-if __name__ == "__main__":
-
+if __name__=="__main__":
     run()
