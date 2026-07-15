@@ -214,7 +214,7 @@ def run():
 
     if (
 
-        score >= 70
+        score >= 65
 
         and
 
