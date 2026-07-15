@@ -36,6 +36,7 @@ def run():
         return
 
 
+
     symbol = best["symbol"]
     trend = best["trend"]
 
@@ -93,6 +94,7 @@ def run():
     order_block = detect_order_block(df)
 
 
+
     zone_data = get_premium_discount(df)
 
     zone = "UNKNOWN"
@@ -124,8 +126,8 @@ def run():
         btc=True,
 
         volume=True
-    )
 
+    )
 
 
     print("Confidence:",confidence)
@@ -138,32 +140,29 @@ def run():
 
 
 
-    # Backup direction
+    # Backup
 
     if direction == "NONE":
 
+        if bos and bos["direction"]=="BUY":
+            direction="BUY"
 
-        if trend == "BULLISH" and (bos or choch or mss):
-
-            direction = "BUY"
-
-
-        elif trend == "BEARISH" and (bos or choch or mss):
-
-            direction = "SELL"
+        elif bos and bos["direction"]=="SELL":
+            direction="SELL"
 
 
 
-    signal_type = "NO TRADE"
+    signal_type="NO TRADE"
 
 
 
-    # Final Entry Filter
+    # Final Logic
 
-    if score >= 70:
+    if score >= 80:
 
+        # Trend follow
 
-        if trend == "BULLISH" and direction=="BUY":
+        if trend=="BULLISH" and direction=="BUY":
 
             signal_type="BUY"
 
@@ -174,16 +173,33 @@ def run():
 
 
 
+    # Reversal Logic
 
-    print(
-        "Final Direction:",
-        direction
-    )
+    elif score >=70:
 
-    print(
-        "Final Signal:",
-        signal_type
-    )
+
+        if trend=="BEARISH" and direction=="BUY":
+
+            if choch or mss or bos:
+
+                signal_type="REVERSAL BUY"
+
+
+
+        elif trend=="BULLISH" and direction=="SELL":
+
+            if choch or mss or bos:
+
+                signal_type="REVERSAL SELL"
+
+
+
+
+
+    print("Final Direction:",direction)
+
+    print("Final Signal:",signal_type)
+
 
 
 
@@ -219,14 +235,15 @@ def run():
 
         print(signal)
 
-        print(
-            "No Trade Signal - Telegram skipped."
-        )
+        print("No Trade Signal - Telegram skipped.")
 
         return
 
 
 
+
+
+    # Entry Engine
 
     levels = generate_trade_levels(
 
@@ -246,6 +263,7 @@ def run():
         print("Trade Level Failed")
 
         return
+
 
 
 
@@ -280,27 +298,28 @@ def run():
 
 
     print("Generated Signal:")
+
     print(signal)
+
 
 
 
     try:
 
+        print("Sending Telegram Message...")
+
         send_signal(signal)
 
-        print(
-            "Telegram Message Sent Successfully."
-        )
+        print("Telegram Message Sent Successfully.")
 
 
     except Exception as e:
 
-        print(
-            "Telegram Error:",
-            e
-        )
+        print("Telegram Error:",e)
+
 
 
 
 if __name__=="__main__":
+
     run()
