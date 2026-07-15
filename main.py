@@ -34,7 +34,6 @@ def run():
 
 
     if best is None:
-
         print("No Trend Found")
         return
 
@@ -103,18 +102,15 @@ def run():
 
     zone_data = get_premium_discount(df)
 
-
     zone = "UNKNOWN"
 
-
     if zone_data:
-
         zone = zone_data["zone"]
 
 
 
 
-    # Confidence Engine
+    # Confidence
 
     confidence = calculate_confidence(
 
@@ -141,7 +137,6 @@ def run():
     )
 
 
-
     print("Confidence:", confidence)
 
 
@@ -156,18 +151,28 @@ def run():
 
 
 
-    # Entry Filter
+    # FINAL TREND FILTER
 
     if score >= 80:
 
-        if direction == "BUY":
+
+        if trend == "BULLISH" and direction == "BUY":
 
             signal_type = "BUY"
 
 
-        elif direction == "SELL":
+
+        elif trend == "BEARISH" and direction == "SELL":
 
             signal_type = "SELL"
+
+
+
+        else:
+
+            print(
+                "Counter Trend Setup Blocked"
+            )
 
 
 
@@ -208,14 +213,16 @@ def run():
         print(signal)
 
 
-        print("No Trade Signal - Telegram skipped.")
+        print(
+            "No Trade Signal - Telegram skipped."
+        )
 
         return
 
 
 
 
-    # Trade Levels
+    # Entry
 
     levels = generate_trade_levels(
 
@@ -231,42 +238,42 @@ def run():
 
 
 
+    if levels is None:
+
+        print(
+            "Trade Levels Failed"
+        )
+
+        return
+
+
+
     signal = {
 
 
         "symbol": symbol,
 
-
         "signal": signal_type,
-
 
         "entry": levels["entry"],
 
-
         "sl": levels["sl"],
-
 
         "tp1": levels["tp1"],
 
-
         "tp2": levels["tp2"],
-
 
         "score": score,
 
-
         "trend": trend,
 
-
         "zone": zone,
-
 
         "reasons": ", ".join(
             confidence["reasons"]
         )
 
     }
-
 
 
 
@@ -277,11 +284,11 @@ def run():
 
 
 
-    # Telegram
-
     try:
 
-        print("Sending Telegram Message...")
+        print(
+            "Sending Telegram Message..."
+        )
 
 
         send_signal(signal)
