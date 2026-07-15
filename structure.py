@@ -1,78 +1,63 @@
 import pandas as pd
 
-def find_swings(df, left=2, right=2):
-    """
-    Swing High aur Swing Low detect karta hai.
-    """
 
-    highs = []
-    lows = []
+def find_swings(df, left=2, right=2):
+
+    swing_highs = []
+    swing_lows = []
 
     for i in range(left, len(df) - right):
 
-        high = df["high"].iloc[i]
-        low = df["low"].iloc[i]
+        if df["high"].iloc[i] == max(df["high"].iloc[i-left:i+right+1]):
+            swing_highs.append((i, df["high"].iloc[i]))
 
-        # Swing High
-        if high == max(df["high"].iloc[i-left:i+right+1]):
-            highs.append((i, high))
+        if df["low"].iloc[i] == min(df["low"].iloc[i-left:i+right+1]):
+            swing_lows.append((i, df["low"].iloc[i]))
 
-        # Swing Low
-        if low == min(df["low"].iloc[i-left:i+right+1]):
-            lows.append((i, low))
+    return swing_highs, swing_lows
 
-    return highs, lows
+
 def detect_bos(df, swing_highs, swing_lows):
-    """
-    BOS (Break of Structure) detect karta hai.
-    """
 
-    signals = []
+    if len(swing_highs) == 0 or len(swing_lows) == 0:
+        return None
 
-    # Bullish BOS
-    for i, high in swing_highs:
-        if i + 1 < len(df):
-            if df["close"].iloc[-1] > high:
-                signals.append({
-                    "type": "Bullish BOS",
-                    "level": high
-                })
+    last_close = df["close"].iloc[-1]
 
-    # Bearish BOS
-    for i, low in swing_lows:
-        if i + 1 < len(df):
-            if df["close"].iloc[-1] < low:
-                signals.append({
-                    "type": "Bearish BOS",
-                    "level": low
-                })
+    last_high = swing_highs[-1][1]
+    last_low = swing_lows[-1][1]
 
-    return signals
+    if last_close > last_high:
+        return {
+            "type": "Bullish BOS",
+            "level": last_high
+        }
+
+    if last_close < last_low:
+        return {
+            "type": "Bearish BOS",
+            "level": last_low
+        }
+
+    return None
+
 
 def detect_mss(df, swing_highs, swing_lows):
-    """
-    MSS (Market Structure Shift)
-    """
 
     if len(swing_highs) < 2 or len(swing_lows) < 2:
         return None
 
     last_close = df["close"].iloc[-1]
 
-    last_high = swing_highs[-1][1]
     prev_high = swing_highs[-2][1]
-
-    last_low = swing_lows[-1][1]
     prev_low = swing_lows[-2][1]
 
-    # Bullish MSS
     if last_close > prev_high:
         return {
             "type": "Bullish MSS",
             "level": prev_high
         }
 
-    # Bearish MSS
     if last_close < prev_low:
         return {
             "type": "Bearish MSS",
@@ -80,10 +65,9 @@ def detect_mss(df, swing_highs, swing_lows):
         }
 
     return None
+
+
 def detect_choch(df, swing_highs, swing_lows):
-    """
-    CHoCH (Change of Character) detect karta hai.
-    """
 
     if len(swing_highs) < 2 or len(swing_lows) < 2:
         return None
@@ -93,14 +77,12 @@ def detect_choch(df, swing_highs, swing_lows):
     last_high = swing_highs[-1][1]
     last_low = swing_lows[-1][1]
 
-    # Bullish CHoCH
     if last_close > last_high:
         return {
             "type": "Bullish CHoCH",
             "level": last_high
         }
 
-    # Bearish CHoCH
     if last_close < last_low:
         return {
             "type": "Bearish CHoCH",
