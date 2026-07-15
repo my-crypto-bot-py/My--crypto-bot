@@ -18,121 +18,202 @@ def calculate_confidence(
     sell_reasons = []
 
 
-    # Trend
+    # Trend (20)
+
     if trend == "BULLISH":
+
         buy_score += 20
         buy_reasons.append("4H Bullish Trend")
 
+
     elif trend == "BEARISH":
+
         sell_score += 20
         sell_reasons.append("4H Bearish Trend")
 
 
-    # Structure
-    structures = [bos, choch, mss]
 
-    for item in structures:
+    # Market Structure (15 each)
+
+    for item in [bos, choch, mss]:
 
         if item:
 
             if item["direction"] == "BUY":
-                buy_score += 10
+
+                buy_score += 15
                 buy_reasons.append(item["type"])
 
+
             elif item["direction"] == "SELL":
-                sell_score += 10
+
+                sell_score += 15
                 sell_reasons.append(item["type"])
 
 
-    # Liquidity
-    if liquidity:
-        if "Sell" in liquidity["type"]:
-            sell_score += 10
-            sell_reasons.append("Liquidity Sweep")
 
-        else:
-            buy_score += 10
+
+    # Liquidity Sweep (15)
+
+    if liquidity:
+
+        if liquidity["direction"] == "BUY":
+
+            buy_score += 15
             buy_reasons.append("Liquidity Sweep")
 
 
-    # FVG
+        elif liquidity["direction"] == "SELL":
+
+            sell_score += 15
+            sell_reasons.append("Liquidity Sweep")
+
+
+
+
+
+    # FVG (10)
+
     if fvg:
 
-        if "Bullish" in fvg["type"]:
+        if fvg["direction"] == "BUY":
+
             buy_score += 10
-            buy_reasons.append("FVG")
+            buy_reasons.append("Bullish FVG")
 
-        elif "Bearish" in fvg["type"]:
+
+        elif fvg["direction"] == "SELL":
+
             sell_score += 10
-            sell_reasons.append("FVG")
+            sell_reasons.append("Bearish FVG")
 
 
-    # Order Block
+
+
+
+    # Order Block (10)
+
     if order_block:
 
-        if "Bullish" in order_block["type"]:
+        if order_block["direction"] == "BUY":
+
             buy_score += 10
-            buy_reasons.append("Order Block")
+            buy_reasons.append("Bullish Order Block")
 
-        elif "Bearish" in order_block["type"]:
+
+        elif order_block["direction"] == "SELL":
+
             sell_score += 10
-            sell_reasons.append("Order Block")
+            sell_reasons.append("Bearish Order Block")
 
 
-    # Premium Discount
+
+
+
+    # Premium Discount Filter
+
     if zone:
 
         if zone == "Discount":
+
             buy_score += 10
             buy_reasons.append("Discount Zone")
 
+
         elif zone == "Premium":
+
             sell_score += 10
             sell_reasons.append("Premium Zone")
 
 
-    # BTC + Volume
+
+
+
+    # BTC Confirmation
+
     if btc:
+
         buy_score += 5
         sell_score += 5
+
+        buy_reasons.append("BTC Confirmation")
+        sell_reasons.append("BTC Confirmation")
+
+
+
+
+    # Volume
 
     if volume:
+
         buy_score += 5
         sell_score += 5
 
+        buy_reasons.append("Volume Confirmation")
+        sell_reasons.append("Volume Confirmation")
+
+
+
+
+
+    # Final Direction
 
     if buy_score > sell_score:
+
         direction = "BUY"
         score = buy_score
         reasons = buy_reasons
 
+
     elif sell_score > buy_score:
+
         direction = "SELL"
         score = sell_score
         reasons = sell_reasons
 
+
     else:
+
         direction = "NONE"
         score = 0
         reasons = []
 
 
+
     score = min(score,100)
 
 
+
     if score >= 90:
-        quality="A+"
-    elif score >=80:
-        quality="A"
-    elif score>=70:
-        quality="B"
+
+        quality = "A+"
+
+
+    elif score >= 80:
+
+        quality = "A"
+
+
+    elif score >= 70:
+
+        quality = "B"
+
+
     else:
-        quality="NO TRADE"
+
+        quality = "NO TRADE"
+
+
 
 
     return {
+
         "direction": direction,
+
         "score": score,
+
         "quality": quality,
+
         "reasons": reasons
+
     }
