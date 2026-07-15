@@ -35,7 +35,6 @@ def run():
         return
 
 
-
     symbol = best["symbol"]
     trend = best["trend"]
 
@@ -48,17 +47,15 @@ def run():
 
 
     if df is None or df.empty:
-
         print("Market Data Failed")
         return
-
 
 
     print("Market Data Loaded")
 
 
 
-    # Structure
+    # Structure Detection
 
     swing_highs, swing_lows = find_swings(df)
 
@@ -103,36 +100,36 @@ def run():
 
 
 
-
-    # Confidence
+    # Confidence Calculation
 
     confidence = calculate_confidence(
 
         trend=trend,
 
-        bos=bool(bos),
+        bos=bos,
 
-        choch=bool(choch),
+        choch=choch,
 
-        mss=bool(mss),
+        mss=mss,
 
-        liquidity=bool(liquidity),
+        liquidity=liquidity,
 
-        fvg=bool(fvg),
+        fvg=fvg,
 
-        order_block=bool(order_block),
+        order_block=order_block,
 
-        btc=True,
+        btc={
+            "direction": trend
+        },
 
-        volume=True
+        volume={
+            "direction": trend
+        }
+
     )
 
 
-
-    print(
-        "Confidence:",
-        confidence["score"]
-    )
+    print("Confidence:", confidence)
 
 
 
@@ -142,19 +139,25 @@ def run():
 
     if confidence["score"] >= 80:
 
-        if trend == "BULLISH":
 
-            signal_type = "BUY"
+        if confidence.get("direction"):
 
-
-        elif trend == "BEARISH":
-
-            signal_type = "SELL"
+            signal_type = confidence["direction"]
 
 
+        else:
+
+            if trend == "BULLISH":
+                signal_type = "BUY"
+
+            elif trend == "BEARISH":
+                signal_type = "SELL"
 
 
-    # Smart Money Entry Engine
+
+
+
+    # Smart Money Entry / SL / TP
 
     levels = generate_trade_levels(
 
@@ -170,18 +173,6 @@ def run():
 
 
 
-    entry = levels["entry"]
-
-    sl = levels["sl"]
-
-    tp1 = levels["tp1"]
-
-    tp2 = levels["tp2"]
-
-
-
-
-
     signal = {
 
 
@@ -191,16 +182,16 @@ def run():
         "signal": signal_type,
 
 
-        "entry": entry,
+        "entry": levels["entry"],
 
 
-        "sl": sl,
+        "sl": levels["sl"],
 
 
-        "tp1": tp1,
+        "tp1": levels["tp1"],
 
 
-        "tp2": tp2,
+        "tp2": levels["tp2"],
 
 
         "score": confidence["score"],
@@ -226,44 +217,30 @@ def run():
 
 
 
-
-
     if signal_type == "NO TRADE":
 
-        print(
-            "No Trade Signal - Telegram skipped."
-        )
+        print("No Trade Signal - Telegram skipped.")
 
         return
 
 
 
 
-
     try:
 
-
-        print(
-            "Sending Telegram Message..."
-        )
+        print("Sending Telegram Message...")
 
 
         send_signal(signal)
 
 
-        print(
-            "Telegram Message Sent Successfully."
-        )
+        print("Telegram Message Sent Successfully.")
 
 
 
     except Exception as e:
 
-
-        print(
-            "Telegram Error:",
-            e
-        )
+        print("Telegram Error:", e)
 
 
 
