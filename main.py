@@ -179,32 +179,42 @@ def run():
 
     if direction=="BUY":
 
-        if zone=="Discount":
+    if zone in ["Discount", "Deep Discount"]:
 
+        zone_ok=True
+
+    elif zone=="Premium":
+
+        # normal premium में strong setup allow
+        if score >=85:
             zone_ok=True
 
+        else:
+            print("BUY blocked: Premium Zone")
 
-        elif zone=="Premium":
+    elif zone=="Deep Premium":
 
-            print(
-                "BUY blocked: Premium Zone"
-            )
-
-
-
-    elif direction=="SELL":
+        print("BUY blocked: Deep Premium")
 
 
-        if zone=="Premium":
 
+elif direction=="SELL":
+
+    if zone in ["Premium", "Deep Premium"]:
+
+        zone_ok=True
+
+    elif zone=="Discount":
+
+        if score >=85:
             zone_ok=True
 
+        else:
+            print("SELL blocked: Discount Zone")
 
-        elif zone=="Discount":
+    elif zone=="Deep Discount":
 
-            print(
-                "SELL blocked: Discount Zone"
-            )
+        print("SELL blocked: Deep Discount")
 
 
 
