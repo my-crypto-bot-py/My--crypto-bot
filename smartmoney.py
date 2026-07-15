@@ -290,52 +290,78 @@ def detect_order_block(df, lookback=50):
 
 def get_premium_discount(df):
 
-
     if len(df) < 20:
         return None
 
 
-
-    high=float(
+    high = float(
         df["high"].tail(20).max()
     )
 
-
-    low=float(
+    low = float(
         df["low"].tail(20).min()
     )
 
 
-    equilibrium=(high+low)/2
-
-
-    price=float(
+    price = float(
         df["close"].iloc[-1]
     )
 
 
+    range_size = high - low
 
-    if price > equilibrium:
 
-        zone="Premium"
+    if range_size == 0:
+        return None
+
+
+
+    position = (
+        (price - low) / range_size
+    ) * 100
+
+
+
+    if position >= 75:
+
+        zone = "Deep Premium"
+
+
+    elif position >= 50:
+
+        zone = "Premium"
+
+
+    elif position <= 25:
+
+        zone = "Deep Discount"
+
 
     else:
 
-        zone="Discount"
+        zone = "Discount"
+
+
+
+    equilibrium = (
+        high + low
+    ) / 2
 
 
 
     return {
 
-        "zone":zone,
+        "zone": zone,
 
-        "high":high,
+        "high": high,
 
-        "low":low,
+        "low": low,
 
-        "equilibrium":equilibrium,
+        "equilibrium": equilibrium,
 
-        "price":price
+        "price": price,
+
+        "position": round(position,2)
 
     }
 
