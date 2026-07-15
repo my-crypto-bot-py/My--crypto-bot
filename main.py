@@ -40,6 +40,7 @@ def run():
 
     df = get_market_data(symbol, "5m")
 
+
     if df is None or df.empty:
         print("Market Data Failed")
         return
@@ -49,126 +50,88 @@ def run():
 
 
     # Structure
+
     swing_highs, swing_lows = find_swings(df)
 
-    bos = detect_bos(df, swing_highs, swing_lows)
-    mss = detect_mss(df, swing_highs, swing_lows)
-    choch = detect_choch(df, swing_highs, swing_lows)
+    bos = detect_bos(
+        df,
+        swing_highs,
+        swing_lows
+    )
+
+    mss = detect_mss(
+        df,
+        swing_highs,
+        swing_lows
+    )
+
+    choch = detect_choch(
+        df,
+        swing_highs,
+        swing_lows
+    )
 
 
     # Smart Money
+
     liquidity = detect_liquidity_sweep(df)
+
     fvg = detect_fvg(df)
+
     order_block = detect_order_block(df)
 
-    zone = get_premium_discount(df)
+    zone_data = get_premium_discount(df)
+
+
+    zone = None
+
+    if zone_data:
+        zone = zone_data["zone"]
 
 
     # Confidence
+
     confidence = calculate_confidence(
-        bias=True,
-        trend=True,
-        bos=bool(bos),
-        choch=bool(choch),
-        mss=bool(mss),
-        liquidity=bool(liquidity),
-        fvg=bool(fvg),
-        order_block=bool(order_block),
+
+        trend=trend,
+
+        bos=bos,
+
+        choch=choch,
+
+        mss=mss,
+
+        liquidity=liquidity,
+
+        fvg=fvg,
+
+        order_block=order_block,
+
+        zone=zone,
+
         btc=True,
+
         volume=True
+    )
+
+
+    print(
+        "Direction:",
+        confidence["direction"]
+    )
+
+    print(
+        "Confidence:",
+        confidence["score"]
     )
 
 
     last = df.iloc[-1]
 
-    entry = round(float(last["close"]), 2)
-
-
-    buy_score = 0
-    sell_score = 0
-
-
-    # Trend Score
-    if trend == "BULLISH":
-        buy_score += 20
-
-    elif trend == "BEARISH":
-        sell_score += 20
-
-
-
-    # BOS
-    if bos:
-
-        if bos["direction"] == "BUY":
-            buy_score += 15
-
-        elif bos["direction"] == "SELL":
-            sell_score += 15
-
-
-
-    # MSS
-    if mss:
-
-        if mss["direction"] == "BUY":
-            buy_score += 15
-
-        elif mss["direction"] == "SELL":
-            sell_score += 15
-
-
-
-    # CHoCH
-    if choch:
-
-        if choch["direction"] == "BUY":
-            buy_score += 15
-
-        elif choch["direction"] == "SELL":
-            sell_score += 15
-
-
-
-    # Liquidity
-
-    if liquidity:
-
-        if "Buy Side" in liquidity["type"]:
-            sell_score += 10
-
-        elif "Sell Side" in liquidity["type"]:
-            buy_score += 10
-
-
-
-    # FVG
-
-    if fvg:
-
-        if "Bullish" in fvg["type"]:
-            buy_score += 10
-
-        elif "Bearish" in fvg["type"]:
-            sell_score += 10
-
-
-
-    # Order Block
-
-    if order_block:
-
-        if "Bullish" in order_block["type"]:
-            buy_score += 10
-
-        elif "Bearish" in order_block["type"]:
-            sell_score += 10
-
-
-
-    print("BUY SCORE:", buy_score)
-    print("SELL SCORE:", sell_score)
-
+    entry = round(
+        float(last["close"]),
+        2
+    )
 
 
     signal_type = "NO TRADE"
@@ -176,28 +139,46 @@ def run():
 
     if confidence["score"] >= 80:
 
-        if buy_score > sell_score:
-            signal_type = "BUY"
-
-        elif sell_score > buy_score:
-            signal_type = "SELL"
+        signal_type = confidence["direction"]
 
 
 
-    # Risk
+    # Risk Management
 
     if signal_type == "BUY":
 
-        sl = round(entry * 0.995, 2)
-        tp1 = round(entry * 1.015, 2)
-        tp2 = round(entry * 1.020, 2)
+        sl = round(
+            entry * 0.995,
+            2
+        )
+
+        tp1 = round(
+            entry * 1.015,
+            2
+        )
+
+        tp2 = round(
+            entry * 1.020,
+            2
+        )
 
 
     elif signal_type == "SELL":
 
-        sl = round(entry * 1.005, 2)
-        tp1 = round(entry * 0.985, 2)
-        tp2 = round(entry * 0.980, 2)
+        sl = round(
+            entry * 1.005,
+            2
+        )
+
+        tp1 = round(
+            entry * 0.985,
+            2
+        )
+
+        tp2 = round(
+            entry * 0.980,
+            2
+        )
 
 
     else:
@@ -226,12 +207,13 @@ def run():
 
         "trend": trend,
 
-        "zone": zone["zone"] if zone else "UNKNOWN",
+        "zone": zone if zone else "UNKNOWN",
 
-        "reasons": ", ".join(confidence["reasons"])
+        "reasons": ", ".join(
+            confidence["reasons"]
+        )
 
     }
-
 
 
     print("Generated Signal:")
@@ -241,7 +223,9 @@ def run():
 
     if signal_type == "NO TRADE":
 
-        print("No Trade Signal - Telegram skipped.")
+        print(
+            "No Trade Signal - Telegram skipped."
+        )
 
         return
 
@@ -249,18 +233,27 @@ def run():
 
     try:
 
-        print("Sending Telegram Message...")
+        print(
+            "Sending Telegram Message..."
+        )
 
         send_signal(signal)
 
-        print("Telegram Message Sent Successfully.")
+
+        print(
+            "Telegram Message Sent Successfully."
+        )
 
 
     except Exception as e:
 
-        print("Telegram Error:", e)
+        print(
+            "Telegram Error:",
+            e
+        )
 
 
 
 if __name__ == "__main__":
+
     run()
