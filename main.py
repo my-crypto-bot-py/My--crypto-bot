@@ -355,24 +355,24 @@ if direction == "SELL" and order_block:
 
 
 
-      # ==========================
-      # ENTRY
-      # ==========================
+    # ==========================
+    # ENTRY
+    # ==========================
 
 
-       levels = generate_trade_levels(
+    levels = generate_trade_levels(
 
-          df,
+        df,
 
-          signal_type,
- 
-           fvg,
+        signal_type,
 
-           order_block,
+        fvg,
 
-            liquidity
+        order_block,
 
-      )
+        liquidity
+
+    )
 
 
     if levels is None:
@@ -380,9 +380,6 @@ if direction == "SELL" and order_block:
         print("Trade Level Failed")
 
         return
-
-
-
 
     signal = {
 
