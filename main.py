@@ -195,7 +195,10 @@ def run():
 
     zone_ok = True
 
-print("\n========== DEBUG ==========")
+
+    # Deep zone protection
+
+      print("\n========== DEBUG ==========")
 
 print("Trend:", trend)
 print("Direction:", direction)
@@ -219,9 +222,7 @@ print("Structure Confirm:", bool(structure_confirm))
 print("Smart Money Confirm:", bool(smartmoney_confirm))
 print("Zone OK:", zone_ok)
 print("===========================\n")
-
-    # Deep zone protection
-
+    
     if direction == "BUY" and zone == "Deep Premium":
 
         zone_ok = False
