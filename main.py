@@ -191,19 +191,18 @@ liquidity_grab = detect_liquidity_grab(
 
 
     smartmoney_confirm = (
-
-        liquidity
-
-        or
-
-        fvg
-
-        or
-
-        order_block
-
-    )
-
+    liquidity
+    or
+    fvg
+    or
+    order_block
+    or
+    equal_levels
+    or
+    displacement
+    or
+    liquidity_grab
+)
 
 
     zone_ok = True
