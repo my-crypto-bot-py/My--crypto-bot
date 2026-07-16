@@ -5,7 +5,10 @@ from structure import (
     find_swings,
     detect_bos,
     detect_mss,
-    detect_choch
+    detect_choch,
+    detect_equal_levels,
+    detect_displacement,
+    detect_liquidity_grab
 )
 
 from smartmoney import (
