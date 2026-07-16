@@ -195,7 +195,30 @@ def run():
 
     zone_ok = True
 
+print("\n========== DEBUG ==========")
 
+print("Trend:", trend)
+print("Direction:", direction)
+print("Score:", score)
+
+print("\n----- STRUCTURE -----")
+print("BOS:", bos)
+print("MSS:", mss)
+print("CHoCH:", choch)
+
+print("\n----- SMART MONEY -----")
+print("Liquidity:", liquidity)
+print("FVG:", fvg)
+print("Order Block:", order_block)
+
+print("\n----- ZONE -----")
+print("Zone:", zone)
+
+print("\n----- FILTER -----")
+print("Structure Confirm:", bool(structure_confirm))
+print("Smart Money Confirm:", bool(smartmoney_confirm))
+print("Zone OK:", zone_ok)
+print("===========================\n")
 
     # Deep zone protection
 
