@@ -119,3 +119,60 @@ def detect_mss(df, swing_highs, swing_lows):
         }
 
     return None
+
+def detect_choch(df, swing_highs, swing_lows):
+
+    if len(swing_highs) < 3 or len(swing_lows) < 3:
+        return None
+
+    close = float(df["close"].iloc[-1])
+
+    last_high = swing_highs[-1]["price"]
+    prev_high = swing_highs[-2]["price"]
+
+    last_low = swing_lows[-1]["price"]
+    prev_low = swing_lows[-2]["price"]
+
+    # Bullish CHoCH
+    if (
+
+        last_high < prev_high
+
+        and
+
+        close > last_high
+
+    ):
+
+        return {
+
+            "direction": "BUY",
+
+            "type": "Bullish CHoCH",
+
+            "level": last_high
+
+        }
+
+    # Bearish CHoCH
+    if (
+
+        last_low > prev_low
+
+        and
+
+        close < last_low
+
+    ):
+
+        return {
+
+            "direction": "SELL",
+
+            "type": "Bearish CHoCH",
+
+            "level": last_low
+
+        }
+
+    return None
