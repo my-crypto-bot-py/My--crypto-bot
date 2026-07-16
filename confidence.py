@@ -1,3 +1,4 @@
+
 def calculate_confidence(
     trend=None,
     bos=None,
@@ -6,11 +7,13 @@ def calculate_confidence(
     liquidity=None,
     fvg=None,
     order_block=None,
+    equal_levels=None,
+    displacement=None,
+    liquidity_grab=None,
     zone=None,
     btc=False,
     volume=False
 ):
-
     buy_score = 0
     sell_score = 0
 
