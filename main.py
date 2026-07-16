@@ -146,6 +146,12 @@ liquidity_grab = detect_liquidity_grab(
 
         order_block=order_block,
 
+        equal_levels=equal_levels,
+
+displacement=displacement,
+
+liquidity_grab=liquidity_grab,
+
         zone=zone,
 
         btc=True,
