@@ -102,18 +102,7 @@ def run():
     )
 
 
-    # ==========================
-    # SMART MONEY
-    # ==========================
-
-    liquidity = detect_liquidity_sweep(df)
-
-    fvg = detect_fvg(df)
-
-    order_block = detect_order_block(df)
-
-
-    zone_data = get_premium_discount(df)
+    
 
     # ==========================
     # SMART MONEY
