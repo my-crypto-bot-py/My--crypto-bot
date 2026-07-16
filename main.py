@@ -207,7 +207,16 @@ liquidity_grab=liquidity_grab,
 
     )
 
+if direction == "BUY" and order_block:
+    
+    if order_block.get("direction") == "SELL":
+        structure_confirm = False
 
+
+if direction == "SELL" and order_block:
+
+    if order_block.get("direction") == "BUY":
+        structure_confirm = False
 
     smartmoney_confirm = (
     liquidity
