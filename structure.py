@@ -1,185 +1,72 @@
-import pandas as pd
+def find_swings(df, left=3, right=3):
 
+    swing_highs = []
+    swing_lows = []
 
-def find_swings(df, left=5, right=5):
+    if len(df) < left + right + 5:
+        return swing_highs, swing_lows
 
-    highs = []
-    lows = []
+    for i in range(left, len(df) - right):
 
-    if len(df) < left + right + 10:
-        return highs, lows
+        current_high = float(df["high"].iloc[i])
+        current_low = float(df["low"].iloc[i])
 
+        left_high = df["high"].iloc[i-left:i].max()
+        right_high = df["high"].iloc[i+1:i+right+1].max()
 
-    for i in range(left, len(df)-right):
+        left_low = df["low"].iloc[i-left:i].min()
+        right_low = df["low"].iloc[i+1:i+right+1].min()
 
-        high = df["high"].iloc[i]
-        low = df["low"].iloc[i]
+        # Swing High
+        if current_high > left_high and current_high > right_high:
 
-        high_range = df["high"].iloc[i-left:i+right+1]
-        low_range = df["low"].iloc[i-left:i+right+1]
-
-
-        if high == high_range.max():
-
-            highs.append({
+            swing_highs.append({
                 "index": i,
-                "price": float(high)
+                "price": current_high,
+                "type": "SH"
             })
 
+        # Swing Low
+        if current_low < left_low and current_low < right_low:
 
-        if low == low_range.min():
-
-            lows.append({
+            swing_lows.append({
                 "index": i,
-                "price": float(low)
+                "price": current_low,
+                "type": "SL"
             })
 
-
-    return highs, lows
-
-
+    return swing_highs, swing_lows
 
 
 def detect_bos(df, swing_highs, swing_lows):
 
-
-    if not swing_highs and not swing_lows:
+    if len(swing_highs) < 2 or len(swing_lows) < 2:
         return None
-
 
     close = float(df["close"].iloc[-1])
-    previous_close = float(df["close"].iloc[-2])
 
+    last_high = swing_highs[-1]["price"]
+    prev_high = swing_highs[-2]["price"]
 
+    last_low = swing_lows[-1]["price"]
+    prev_low = swing_lows[-2]["price"]
 
     # Bullish BOS
+    if last_high > prev_high and close > last_high:
 
-    if swing_highs:
-
-        level = swing_highs[-1]["price"]
-
-
-        if previous_close <= level and close > level:
-
-            return {
-                "direction":"BUY",
-                "type":"Bullish BOS",
-                "level":level
-            }
-
-
-
+        return {
+            "direction": "BUY",
+            "type": "Bullish BOS",
+            "level": last_high
+        }
 
     # Bearish BOS
-
-    if swing_lows:
-
-        level = swing_lows[-1]["price"]
-
-
-        if previous_close >= level and close < level:
-
-            return {
-                "direction":"SELL",
-                "type":"Bearish BOS",
-                "level":level
-            }
-
-
-
-    return None
-
-
-
-
-
-def detect_mss(df, swing_highs, swing_lows):
-
-
-    if len(swing_highs)<2 or len(swing_lows)<2:
-        return None
-
-
-
-    close=float(df["close"].iloc[-1])
-
-
-    last_high=swing_highs[-2]["price"]
-    last_low=swing_lows[-2]["price"]
-
-
-
-    if close > last_high:
+    if last_low < prev_low and close < last_low:
 
         return {
-
-            "direction":"BUY",
-            "type":"Bullish MSS",
-            "level":last_high
-
+            "direction": "SELL",
+            "type": "Bearish BOS",
+            "level": last_low
         }
-
-
-
-    if close < last_low:
-
-        return {
-
-            "direction":"SELL",
-            "type":"Bearish MSS",
-            "level":last_low
-
-        }
-
-
-    return None
-
-
-
-
-
-def detect_choch(df, swing_highs, swing_lows):
-
-
-    if len(swing_highs)<2 or len(swing_lows)<2:
-        return None
-
-
-
-    close=float(df["close"].iloc[-1])
-
-
-
-    last_high=swing_highs[-1]["price"]
-
-    last_low=swing_lows[-1]["price"]
-
-
-
-    # Reversal confirmation only
-
-    if close > last_high:
-
-        return {
-
-            "direction":"BUY",
-            "type":"Bullish CHoCH",
-            "level":last_high
-
-        }
-
-
-
-    if close < last_low:
-
-        return {
-
-            "direction":"SELL",
-            "type":"Bearish CHoCH",
-            "level":last_low
-
-        }
-
-
 
     return None
