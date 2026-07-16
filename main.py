@@ -89,7 +89,18 @@ def run():
         swing_lows
     )
 
+equal_levels = detect_equal_levels(
+    swing_highs,
+    swing_lows
+)
 
+displacement = detect_displacement(df)
+
+liquidity_grab = detect_liquidity_grab(
+    df,
+    swing_highs,
+    swing_lows
+)
 
     # ==========================
     # SMART MONEY
