@@ -322,6 +322,8 @@ if direction == "SELL" and order_block:
 
 
 
+  
+    
     if signal_type == "NO TRADE":
 
 
@@ -335,7 +337,7 @@ if direction == "SELL" and order_block:
 
             "trend": trend,
 
-            "zone": zone,
+            "zone":  zone,
 
             "reasons":
             ", ".join(
