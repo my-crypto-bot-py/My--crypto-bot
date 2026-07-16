@@ -160,7 +160,6 @@ def run():
     # FINAL SMC FILTER
     # ==========================
 
-
     structure_confirm = (
 
         bos
@@ -196,33 +195,9 @@ def run():
     zone_ok = True
 
 
+
     # Deep zone protection
 
-      print("\n========== DEBUG ==========")
-
-print("Trend:", trend)
-print("Direction:", direction)
-print("Score:", score)
-
-print("\n----- STRUCTURE -----")
-print("BOS:", bos)
-print("MSS:", mss)
-print("CHoCH:", choch)
-
-print("\n----- SMART MONEY -----")
-print("Liquidity:", liquidity)
-print("FVG:", fvg)
-print("Order Block:", order_block)
-
-print("\n----- ZONE -----")
-print("Zone:", zone)
-
-print("\n----- FILTER -----")
-print("Structure Confirm:", bool(structure_confirm))
-print("Smart Money Confirm:", bool(smartmoney_confirm))
-print("Zone OK:", zone_ok)
-print("===========================\n")
-    
     if direction == "BUY" and zone == "Deep Premium":
 
         zone_ok = False
@@ -233,6 +208,32 @@ print("===========================\n")
 
         zone_ok = False
 
+
+
+    print("\n========== DEBUG ==========")
+
+    print("Trend:", trend)
+    print("Direction:", direction)
+    print("Score:", score)
+
+    print("\n----- STRUCTURE -----")
+    print("BOS:", bos)
+    print("MSS:", mss)
+    print("CHoCH:", choch)
+
+    print("\n----- SMART MONEY -----")
+    print("Liquidity:", liquidity)
+    print("FVG:", fvg)
+    print("Order Block:", order_block)
+
+    print("\n----- ZONE -----")
+    print("Zone:", zone)
+
+    print("\n----- FILTER -----")
+    print("Structure Confirm:", bool(structure_confirm))
+    print("Smart Money Confirm:", bool(smartmoney_confirm))
+    print("Zone OK:", zone_ok)
+    print("===========================\n")
 
 
 
@@ -267,7 +268,6 @@ print("===========================\n")
 
 
 
-
     print(
         "Final Direction:",
         direction
@@ -278,7 +278,6 @@ print("===========================\n")
         "Final Signal:",
         signal_type
     )
-
 
 
 
@@ -311,7 +310,7 @@ print("===========================\n")
 
 
         return
-
+    
 
 
 
