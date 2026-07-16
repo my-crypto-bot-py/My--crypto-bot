@@ -1,3 +1,4 @@
+import time
 from scanner import get_best_symbol
 from market import get_market_data
 
