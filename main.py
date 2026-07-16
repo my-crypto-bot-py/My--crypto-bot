@@ -82,27 +82,38 @@ def run():
         swing_lows
     )
 
-
     choch = detect_choch(
         df,
         swing_highs,
         swing_lows
     )
 
-equal_levels = detect_equal_levels(
-    swing_highs,
-    swing_lows
-)
+    equal_levels = detect_equal_levels(
+        swing_highs,
+        swing_lows
+    )
 
-    displacement =
-detect_displacement(df)
+    displacement = detect_displacement(df)
 
-     liquidity_grab =
-detect_liquidity_grab(
-    df,
-    swing_highs,
-    swing_lows
-)
+    liquidity_grab = detect_liquidity_grab(
+        df,
+        swing_highs,
+        swing_lows
+    )
+
+
+    # ==========================
+    # SMART MONEY
+    # ==========================
+
+    liquidity = detect_liquidity_sweep(df)
+
+    fvg = detect_fvg(df)
+
+    order_block = detect_order_block(df)
+
+
+    zone_data = get_premium_discount(df)
 
     # ==========================
     # SMART MONEY
