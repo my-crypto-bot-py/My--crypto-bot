@@ -42,24 +42,44 @@ def get_market_data(symbol="BTC-USDT-SWAP", timeframe="5m", limit=300):
             ]
         )
 
-        df = df[[
-            "time",
-            "open",
-            "high",
-            "low",
-            "close",
-            "volume"
-        ]]
+        df = df[
+            [
+                "time",
+                "open",
+                "high",
+                "low",
+                "close",
+                "volume"
+            ]
+        ]
 
         df["time"] = pd.to_datetime(
             df["time"].astype("int64"),
             unit="ms"
         )
 
-        for col in ["open", "high", "low", "close", "volume"]:
+        for col in [
+            "open",
+            "high",
+            "low",
+            "close",
+            "volume"
+        ]:
             df[col] = df[col].astype(float)
 
         df = df.sort_values("time").reset_index(drop=True)
+
+        # ==========================
+        # DEBUG
+        # ==========================
+        print("\n========== MARKET DEBUG ==========")
+        print("Symbol:", symbol)
+        print("Timeframe:", timeframe)
+        print("Candles:", len(df))
+        print("First Candle:", df["time"].iloc[0])
+        print("Last Candle:", df["time"].iloc[-1])
+        print("Last Close:", df["close"].iloc[-1])
+        print("==================================\n")
 
         return df
 
