@@ -71,7 +71,7 @@ def run():
 
     # BOS / MSS / CHoCH
     if bos or mss or choch:
-    structure_confirm = True
+      structure_confirm = True
 
     # FVG + Order Block same direction
     elif (
