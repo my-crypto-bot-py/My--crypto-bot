@@ -527,31 +527,5 @@ def run():
 # START BOT
 # ==========================
 
-
 if __name__ == "__main__":
-
-
-    while True:
-
-
-        try:
-
-
-            run()
-
-
-        except Exception as e:
-
-
-            print(
-                "ERROR:",
-                e
-            )
-
-
-        print(
-            "Waiting 300 seconds..."
-        )
-
-
-        time.sleep(300)
+    run()
