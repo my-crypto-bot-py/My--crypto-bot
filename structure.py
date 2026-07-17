@@ -40,7 +40,8 @@ def find_swings(df, left=5, right=5):
                 "price": low,
                 "type": "SL"
             })
-        return swing_highs, swing_lows
+
+    return swing_highs, swing_lows
 
 
 def detect_bos(df, swing_highs, swing_lows):
@@ -55,7 +56,32 @@ def detect_bos(df, swing_highs, swing_lows):
 
     last_low = swing_lows[-1]
     prev_low = swing_lows[-2]
-        return None
+
+    # Bullish BOS
+    if (
+        last_high["price"] > prev_high["price"]
+        and close > last_high["price"]
+        and last_high["index"] > prev_high["index"]
+    ):
+        return {
+            "direction": "BUY",
+            "type": "Bullish BOS",
+            "level": last_high["price"]
+        }
+
+    # Bearish BOS
+    if (
+        last_low["price"] < prev_low["price"]
+        and close < last_low["price"]
+        and last_low["index"] > prev_low["index"]
+    ):
+        return {
+            "direction": "SELL",
+            "type": "Bearish BOS",
+            "level": last_low["price"]
+        }
+
+    return None
 
     close = float(df["close"].iloc[-1])
 
@@ -127,9 +153,10 @@ def detect_mss(df, swing_highs, swing_lows):
             "level": last_low["price"]
         }
 
-    return None
-    def detect_choch(df, swing_highs, swing_lows):
+        return None
 
+
+def detect_choch(df, swing_highs, swing_lows):
     if len(swing_highs) < 3 or len(swing_lows) < 3:
         return None
 
@@ -195,7 +222,7 @@ def detect_equal_levels(
             result["equal_low"] = l1
 
     return result
-    # ==========================
+# ==========================
 # DISPLACEMENT
 # ==========================
 
