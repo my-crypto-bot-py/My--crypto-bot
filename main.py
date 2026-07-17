@@ -227,9 +227,9 @@ def run():
     ):
         structure_confirm = True
 
-    
+
     # ==========================
-    # SMART MONEY FILTER (UPGRADE)
+    # SMART MONEY FILTER (FINAL)
     # ==========================
 
     smartmoney_confirm = False
@@ -238,47 +238,49 @@ def run():
     # Liquidity + OB confirmation
     if (
         liquidity
-        and
-        order_block
-        and
-        liquidity.get("direction") == order_block.get("direction")
+        and order_block
+        and liquidity.get("direction") == order_block.get("direction")
     ):
         smartmoney_confirm = True
 
 
     # FVG + OB confirmation
-    elif (
+    if (
         fvg
-        and
-        order_block
-        and
-        fvg.get("direction") == order_block.get("direction")
+        and order_block
+        and fvg.get("direction") == order_block.get("direction")
     ):
         smartmoney_confirm = True
 
 
-    # Liquidity Grab + OB
-    elif (
-        liquidity_grab
-        and
-        order_block
-        and
-        liquidity_grab.get("direction") == order_block.get("direction")
-    ):
+    # Liquidity Grab
+    if liquidity_grab:
         smartmoney_confirm = True
 
 
-    # Strong Displacement + OB
-    elif (
+    # Displacement
+    if (
         displacement
-        and
-        order_block
-        and
-        displacement.get("strength", 0) >= 2
-        and
-        displacement.get("direction") == order_block.get("direction")
+        and displacement.get("strength", 0) >= 2
     ):
         smartmoney_confirm = True
+
+
+    # Trend + Order Block + Zone
+    if order_block:
+
+        if (
+            direction == "BUY"
+            and zone in ["Discount", "Deep Discount"]
+        ):
+            smartmoney_confirm = True
+
+
+        if (
+            direction == "SELL"
+            and zone in ["Premium", "Deep Premium"]
+        ):
+            smartmoney_confirm = True
     # ==========================
     # ZONE FILTER
     # ==========================
