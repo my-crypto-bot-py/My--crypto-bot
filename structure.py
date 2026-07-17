@@ -44,6 +44,7 @@ def find_swings(df, left=5, right=5):
             })
 
     return swing_highs, swing_lows
+
     def detect_bos(df, swing_highs, swing_lows):
 
     if len(swing_highs) < 2 or len(swing_lows) < 2:
