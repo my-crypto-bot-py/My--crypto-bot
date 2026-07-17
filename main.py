@@ -1,6 +1,8 @@
 import time
+
 from scanner import get_best_symbol
 from market import get_market_data
+
 
 from structure import (
     find_swings,
@@ -12,6 +14,7 @@ from structure import (
     detect_liquidity_grab
 )
 
+
 from smartmoney import (
     detect_liquidity_sweep,
     detect_fvg,
@@ -19,6 +22,7 @@ from smartmoney import (
     get_premium_discount,
     generate_trade_levels
 )
+
 
 from confidence import calculate_confidence
 from telegram_bot import send_signal
@@ -30,18 +34,25 @@ def run():
     print("========== BOT STARTED ==========")
 
 
+    # ==========================
+    # SCANNER
+    # ==========================
+
     best = get_best_symbol()
 
     print("Best Symbol:", best)
 
 
     if best is None:
+
         print("No Trend Found")
+
         return
 
 
 
     symbol = best["symbol"]
+
     trend = best["trend"]
 
 
@@ -49,12 +60,20 @@ def run():
 
 
 
-    df = get_market_data(symbol, "5m")
+    # ==========================
+    # MARKET DATA
+    # ==========================
+
+    df = get_market_data(
+        symbol,
+        "5m"
+    )
 
 
     if df is None or df.empty:
 
         print("Market Data Failed")
+
         return
 
 
@@ -64,43 +83,61 @@ def run():
 
 
     # ==========================
-    # STRUCTURE FILTER
+    # STRUCTURE ANALYSIS
     # ==========================
 
-        structure_confirm = False
 
-    # BOS / MSS / CHoCH
-    if bos or mss or choch:
-        structure_confirm = True
+    swing_highs, swing_lows = find_swings(df)
 
-    # FVG + Order Block same direction
-    elif (
-        fvg
-        and
-        order_block
-        and
-        fvg.get("direction") == order_block.get("direction")
-    ):
-        structure_confirm = True
 
-    # Liquidity + Order Block same direction
-    elif (
-        liquidity
-        and
-        order_block
-        and
-        liquidity.get("direction") == order_block.get("direction")
-    ):
-        structure_confirm = True
-    
+    bos = detect_bos(
+        df,
+        swing_highs,
+        swing_lows
+    )
+
+
+    mss = detect_mss(
+        df,
+        swing_highs,
+        swing_lows
+    )
+
+
+    choch = detect_choch(
+        df,
+        swing_highs,
+        swing_lows
+    )
+
+
+    equal_levels = detect_equal_levels(
+        swing_highs,
+        swing_lows
+    )
+
+
+    displacement = detect_displacement(df)
+
+
+    liquidity_grab = detect_liquidity_grab(
+        df,
+        swing_highs,
+        swing_lows
+    )
+
+
 
     # ==========================
     # SMART MONEY
     # ==========================
 
+
     liquidity = detect_liquidity_sweep(df)
 
+
     fvg = detect_fvg(df)
+
 
     order_block = detect_order_block(df)
 
@@ -108,17 +145,17 @@ def run():
 
     zone_data = get_premium_discount(df)
 
+
     zone = "UNKNOWN"
 
 
     if zone_data:
 
-        zone = zone_data["zone"]
-
-
-
-
-    # ==========================
+        zone = zone_data.get(
+            "zone",
+            "UNKNOWN"
+        )
+            # ==========================
     # CONFIDENCE
     # ==========================
 
@@ -140,9 +177,9 @@ def run():
 
         equal_levels=equal_levels,
 
-displacement=displacement,
+        displacement=displacement,
 
-liquidity_grab=liquidity_grab,
+        liquidity_grab=liquidity_grab,
 
         zone=zone,
 
@@ -151,7 +188,6 @@ liquidity_grab=liquidity_grab,
         volume=True
 
     )
-
 
 
     print("Confidence:", confidence)
@@ -163,116 +199,130 @@ liquidity_grab=liquidity_grab,
     score = confidence["score"]
 
 
-
     signal_type = "NO TRADE"
 
 
 
-   
     # ==========================
-    # FINAL SMC FILTER
+    # SMART MONEY FILTER
     # ==========================
-
-
-    structure_confirm = (
-
-        bos
-
-        or
-
-        mss
-
-        or
-
-        choch
-
-    )
-
-
-    if direction == "BUY" and order_block:
-
-        if order_block.get("direction") == "SELL":
-
-            structure_confirm = False
-
-
-
-    if direction == "SELL" and order_block:
-
-        if order_block.get("direction") == "BUY":
-
-            structure_confirm = False
-
-
 
     smartmoney_confirm = (
 
         liquidity
-
         or
-
         fvg
-
         or
-
         order_block
-
         or
-
         equal_levels
-
         or
-
         displacement
-
         or
-
         liquidity_grab
 
     )
 
 
+
+    # ==========================
+    # ZONE FILTER
+    # ==========================
+
     zone_ok = True
 
-    # Deep zone protection
 
-    if direction == "BUY" and zone == "Deep Premium":
+    # Avoid buying in deep premium
+
+    if (
+        direction == "BUY"
+        and
+        zone == "Deep Premium"
+    ):
 
         zone_ok = False
 
 
 
-    if direction == "SELL" and zone == "Deep Discount":
+    # Avoid selling in deep discount
+
+    if (
+        direction == "SELL"
+        and
+        zone == "Deep Discount"
+    ):
 
         zone_ok = False
 
+
+
+    # ==========================
+    # DEBUG
+    # ==========================
 
 
     print("\n========== DEBUG ==========")
 
+
     print("Trend:", trend)
+
     print("Direction:", direction)
+
     print("Score:", score)
 
+
+
     print("\n----- STRUCTURE -----")
+
     print("BOS:", bos)
+
     print("MSS:", mss)
+
     print("CHoCH:", choch)
 
+
+
     print("\n----- SMART MONEY -----")
+
     print("Liquidity:", liquidity)
+
     print("FVG:", fvg)
+
     print("Order Block:", order_block)
 
+
+
     print("\n----- ZONE -----")
+
     print("Zone:", zone)
 
+
+
     print("\n----- FILTER -----")
-    print("Structure Confirm:", bool(structure_confirm))
-    print("Smart Money Confirm:", bool(smartmoney_confirm))
-    print("Zone OK:", zone_ok)
+
+    print(
+        "Structure Confirm:",
+        bool(structure_confirm)
+    )
+
+    print(
+        "Smart Money Confirm:",
+        bool(smartmoney_confirm)
+    )
+
+    print(
+        "Zone OK:",
+        zone_ok
+    )
+
+
     print("===========================\n")
 
+
+
+    # ==========================
+    # FINAL SIGNAL
+    # ==========================
 
 
     if (
@@ -299,7 +349,6 @@ liquidity_grab=liquidity_grab,
             signal_type = "BUY"
 
 
-
         elif direction == "SELL":
 
             signal_type = "SELL"
@@ -316,11 +365,11 @@ liquidity_grab=liquidity_grab,
         "Final Signal:",
         signal_type
     )
+        # ==========================
+    # NO TRADE CHECK
+    # ==========================
 
 
-
-  
-    
     if signal_type == "NO TRADE":
 
 
@@ -334,7 +383,7 @@ liquidity_grab=liquidity_grab,
 
             "trend": trend,
 
-            "zone":  zone,
+            "zone": zone,
 
             "reasons":
             ", ".join(
@@ -350,12 +399,12 @@ liquidity_grab=liquidity_grab,
 
 
         return
-    
+
 
 
 
     # ==========================
-    # ENTRY
+    # TRADE LEVELS
     # ==========================
 
 
@@ -376,30 +425,51 @@ liquidity_grab=liquidity_grab,
 
     if levels is None:
 
-        print("Trade Level Failed")
+
+        print(
+            "Trade Level Failed"
+        )
+
 
         return
+
+
+
+
+    # ==========================
+    # FINAL SIGNAL DATA
+    # ==========================
+
 
     signal = {
 
 
         "symbol": symbol,
 
+
         "signal": signal_type,
+
 
         "entry": levels["entry"],
 
+
         "sl": levels["sl"],
+
 
         "tp1": levels["tp1"],
 
+
         "tp2": levels["tp2"],
+
 
         "score": score,
 
+
         "trend": trend,
 
+
         "zone": zone,
+
 
         "reasons":
         ", ".join(
@@ -411,16 +481,27 @@ liquidity_grab=liquidity_grab,
 
 
 
-    print("Generated Signal:")
+    print(
+        "Generated Signal:"
+    )
+
 
     print(signal)
 
 
 
 
+    # ==========================
+    # TELEGRAM
+    # ==========================
+
+
     try:
 
-        print("Sending Telegram Message...")
+
+        print(
+            "Sending Telegram Message..."
+        )
 
 
         send_signal(signal)
@@ -433,6 +514,7 @@ liquidity_grab=liquidity_grab,
 
     except Exception as e:
 
+
         print(
             "Telegram Error:",
             e
@@ -441,6 +523,35 @@ liquidity_grab=liquidity_grab,
 
 
 
+# ==========================
+# START BOT
+# ==========================
+
 
 if __name__ == "__main__":
-    run()
+
+
+    while True:
+
+
+        try:
+
+
+            run()
+
+
+        except Exception as e:
+
+
+            print(
+                "ERROR:",
+                e
+            )
+
+
+        print(
+            "Waiting 300 seconds..."
+        )
+
+
+        time.sleep(300)
