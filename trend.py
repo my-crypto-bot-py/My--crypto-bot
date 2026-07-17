@@ -10,7 +10,7 @@ def calculate_ema(df, period):
 
 def detect_trend(df):
 
-    if df is None or len(df) < 50:
+    if df is None or len(df) < 200:
         return {
             "trend": "UNKNOWN",
             "strength": 0
@@ -18,7 +18,6 @@ def detect_trend(df):
 
     df = df.copy()
 
-    # EMA
     df["EMA50"] = calculate_ema(df, 50)
     df["EMA200"] = calculate_ema(df, 200)
 
@@ -26,76 +25,68 @@ def detect_trend(df):
     ema50 = float(df["EMA50"].iloc[-1])
     ema200 = float(df["EMA200"].iloc[-1])
 
-    # ==========================
-    # SWING STRUCTURE
-    # ==========================
+    highs = df["high"]
+    lows = df["low"]
 
-    recent = df.tail(60)
+    last_high = highs.iloc[-20:].max()
+    prev_high = highs.iloc[-40:-20].max()
 
-    last_high = recent["high"].iloc[-15:].max()
-    prev_high = recent["high"].iloc[-30:-15].max()
+    last_low = lows.iloc[-20:].min()
+    prev_low = lows.iloc[-40:-20].min()
 
-    last_low = recent["low"].iloc[-15:].min()
-    prev_low = recent["low"].iloc[-30:-15].min()
+    buy_score = 0
+    sell_score = 0
 
-    structure = "SIDEWAYS"
+    # EMA
+    if ema50 > ema200:
+        buy_score += 30
+    else:
+        sell_score += 30
 
-    if last_high > prev_high and last_low > prev_low:
-        structure = "BULLISH"
+    # Price Position
+    if close > ema50:
+        buy_score += 20
+    else:
+        sell_score += 20
 
-    elif last_high < prev_high and last_low < prev_low:
-        structure = "BEARISH"
+    # Market Structure
+    if last_high > prev_high:
+        buy_score += 15
+    else:
+        sell_score += 15
 
-    # ==========================
-    # EMA FILTER
-    # ==========================
+    if last_low > prev_low:
+        buy_score += 15
+    else:
+        sell_score += 15
 
-    ema_trend = "SIDEWAYS"
-
-    if ema50 > ema200 and close > ema50:
-        ema_trend = "BULLISH"
-
-    elif ema50 < ema200 and close < ema50:
-        ema_trend = "BEARISH"
-
-    # ==========================
-    # MOMENTUM
-    # ==========================
-
+    # Momentum
     change = (
-        close - float(df["close"].iloc[-20])
-    ) / float(df["close"].iloc[-20]) * 100
+        close - float(df["close"].iloc[-15])
+    ) / float(df["close"].iloc[-15]) * 100
 
-    # ==========================
-    # FINAL TREND
-    # ==========================
+    if change > 1:
+        buy_score += 20
 
-    if structure == ema_trend:
-        trend = structure
-        strength = 100
+    elif change < -1:
+        sell_score += 20
 
-    elif structure != "SIDEWAYS":
-        trend = structure
-        strength = 80
+    # Final Decision
+    if buy_score > sell_score:
+        trend = "BULLISH"
+        strength = buy_score
 
-    elif ema_trend != "SIDEWAYS":
-        trend = ema_trend
-        strength = 70
+    elif sell_score > buy_score:
+        trend = "BEARISH"
+        strength = sell_score
 
     else:
         trend = "SIDEWAYS"
-        strength = 40
+        strength = 50
 
-    # Momentum adjustment
-    if trend == "BULLISH" and change < -1:
-        strength -= 15
-
-    if trend == "BEARISH" and change > 1:
-        strength -= 15
-
-    strength = max(0, min(100, round(strength, 2)))
+    strength = max(0, min(100, strength))
 
     return {
         "trend": trend,
-        "strength": strength
+        "strength": round(strength, 2)
     }
