@@ -469,60 +469,73 @@ def run():
 
         return
 
+    # ==========================
+    # RISK REWARD FILTER
+    # ==========================
+
+    risk = abs(
+        levels["entry"] - levels["sl"]
+    )
+
+    reward = abs(
+        levels["tp2"] - levels["entry"]
+    )
+
+    if risk == 0:
+        print("Invalid Risk")
+        return
+
+    rr = reward / risk
+
+    print("Risk:", round(risk, 2))
+    print("Reward:", round(reward, 2))
+    print("RR:", round(rr, 2))
+
+    if rr < 3:
+
+        print("Rejected: Risk Reward less than 1:3")
+
+        return
 
 
 
     # ==========================
     # FINAL SIGNAL DATA
     # ==========================
-
-
     signal = {
 
+    "symbol": symbol,
 
-        "symbol": symbol,
+    "signal": signal_type,
 
+    "entry": levels["entry"],
 
-        "signal": signal_type,
+    "sl": levels["sl"],
 
+    "tp1": levels["tp1"],
 
-        "entry": levels["entry"],
+    "tp2": levels["tp2"],
 
+    "score": score,
 
-        "sl": levels["sl"],
+    "trend": trend,
 
+    "zone": zone,
 
-        "tp1": levels["tp1"],
+    "rr": round(rr, 2),
 
-
-        "tp2": levels["tp2"],
-
-
-        "score": score,
-
-
-        "trend": trend,
-
-
-        "zone": zone,
-
-
-        "reasons":
-        ", ".join(
-            confidence["reasons"]
-        )
-
-    }
-
-
-
-
-    print(
-        "Generated Signal:"
+    "reasons": ", ".join(
+        confidence["reasons"]
     )
+}
 
 
-    print(signal)
+print(
+    "Generated Signal:"
+)
+
+print(signal)
+
 
 
 
