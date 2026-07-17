@@ -67,31 +67,31 @@ def run():
     # STRUCTURE FILTER
     # ==========================
 
-    structure_confirm = False
+        structure_confirm = False
 
     # BOS / MSS / CHoCH
     if bos or mss or choch:
-      structure_confirm = True
+        structure_confirm = True
 
     # FVG + Order Block same direction
     elif (
-       fvg
-       and
-       order_block
-       and
-     fvg.get("direction") == order_block.get("direction")
-     ):
-       structure_confirm = True
+        fvg
+        and
+        order_block
+        and
+        fvg.get("direction") == order_block.get("direction")
+    ):
+        structure_confirm = True
 
-     # Liquidity + Order Block same direction
-     elif (
+    # Liquidity + Order Block same direction
+    elif (
         liquidity
         and
         order_block
         and
-    liquidity.get("direction") == order_block.get("direction")
+        liquidity.get("direction") == order_block.get("direction")
     ):
-         structure_confirm = True
+        structure_confirm = True
     
 
     # ==========================
