@@ -1,4 +1,5 @@
 import pandas as pd
+from daily_bias import get_daily_bias
 
 
 def calculate_ema(df, period):
