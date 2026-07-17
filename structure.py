@@ -40,12 +40,21 @@ def find_swings(df, left=5, right=5):
                 "price": low,
                 "type": "SL"
             })
+        return swing_highs, swing_lows
 
-    return swing_highs, swing_lows
 
-    def detect_bos(df, swing_highs, swing_lows):
+def detect_bos(df, swing_highs, swing_lows):
 
     if len(swing_highs) < 2 or len(swing_lows) < 2:
+        return None
+
+    close = float(df["close"].iloc[-1])
+
+    last_high = swing_highs[-1]
+    prev_high = swing_highs[-2]
+
+    last_low = swing_lows[-1]
+    prev_low = swing_lows[-2]
         return None
 
     close = float(df["close"].iloc[-1])
