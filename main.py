@@ -282,34 +282,38 @@ def run():
         ):
             smartmoney_confirm = True
     # ==========================
-    # ZONE FILTER
+    # ZONE FILTER (UPGRADE)
     # ==========================
 
     zone_ok = True
 
 
-    # Avoid buying in deep premium
-
-    if (
-        direction == "BUY"
-        and
-        zone == "Deep Premium"
-    ):
-
-        zone_ok = False
-
-
-
-    # Avoid selling in deep discount
-
+    # Normal SELL avoid deep discount
     if (
         direction == "SELL"
-        and
-        zone == "Deep Discount"
+        and zone == "Deep Discount"
     ):
 
-        zone_ok = False
+        if not (
+            mss
+            and fvg
+            and order_block
+        ):
+            zone_ok = False
 
+
+# Normal BUY avoid deep premium
+if (
+    direction == "BUY"
+    and zone == "Deep Premium"
+):
+
+    if not (
+        mss
+        and fvg
+        and order_block
+    ):
+        zone_ok = False
 
 
     # ==========================
