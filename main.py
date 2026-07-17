@@ -231,35 +231,35 @@ def run():
     # ==========================
     # SMART MONEY FILTER (UPGRADE)
     # ==========================
-     smartmoney_confirm = False
+
+    smartmoney_confirm = False
 
 
     # Liquidity + OB confirmation
     if (
-       liquidity
-       and
-       order_block
-   ):
-       if liquidity.get("direction") == order_block.get("direction"):
-           smartmoney_confirm = True
+        liquidity
+        and
+        order_block
+    ):
+        if liquidity.get("direction") == order_block.get("direction"):
+            smartmoney_confirm = True
 
 
-   # FVG + OB confirmation
-   elif (
-       fvg
-       and
-       order_block
-   ):
-       if fvg.get("direction") == order_block.get("direction"):
-           smartmoney_confirm = True
+    # FVG + OB confirmation
+    elif (
+        fvg
+        and
+        order_block
+    ):
+        if fvg.get("direction") == order_block.get("direction"):
+            smartmoney_confirm = True
 
 
-   # Strong displacement confirmation
-   elif displacement:
+    # Strong displacement confirmation
+    elif displacement:
 
-       if displacement.get("strength",0) >= 2:
-           smartmoney_confirm = True
-
+        if displacement.get("strength", 0) >= 2:
+            smartmoney_confirm = True
  
     # ==========================
     # ZONE FILTER
