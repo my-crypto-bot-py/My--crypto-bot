@@ -9,14 +9,47 @@ def calculate_ema(df, period):
 
 
 
-def detect_trend(df):
+  def detect_trend(df):
 
-    if df is None or len(df) < 50:
-
+    if df is None or len(df) < 30:
         return {
-            "trend":"UNKNOWN",
-            "strength":0
+            "trend": "UNKNOWN",
+            "strength": 0
         }
+
+    highs = df["high"].tolist()
+    lows = df["low"].tolist()
+
+    last_high = max(highs[-10:])
+    prev_high = max(highs[-20:-10])
+
+    last_low = min(lows[-10:])
+    prev_low = min(lows[-20:-10])
+
+    if last_high > prev_high and last_low > prev_low:
+        trend = "BULLISH"
+        strength = 100
+
+    elif last_high < prev_high and last_low < prev_low:
+        trend = "BEARISH"
+        strength = 100
+
+    elif last_high > prev_high:
+        trend = "BULLISH"
+        strength = 70
+
+    elif last_low < prev_low:
+        trend = "BEARISH"
+        strength = 70
+
+    else:
+        trend = "SIDEWAYS"
+        strength = 40
+
+    return {
+        "trend": trend,
+        "strength": strength
+    }
 
 
     df=df.copy()
