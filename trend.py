@@ -8,13 +8,15 @@ def calculate_ema(df, period):
     ).mean()
 
 
-def detect_trend(df):
+def detect_trend(df, symbol):
 
     if df is None or len(df) < 200:
         return {
             "trend": "UNKNOWN",
             "strength": 0
         }
+
+    daily_bias = get_daily_bias(symbol)
 
     df = df.copy()
 
@@ -71,20 +73,30 @@ def detect_trend(df):
     elif change < -1:
         sell_score += 20
 
+    # Daily Bias Filter
+    if daily_bias == "BULLISH":
+        buy_score += 15
+
+    elif daily_bias == "BEARISH":
+        sell_score += 15
+
     # Final Decision
     if buy_score > sell_score:
+
         trend = "BULLISH"
         strength = buy_score
 
     elif sell_score > buy_score:
+
         trend = "BEARISH"
         strength = sell_score
 
     else:
+
         trend = "SIDEWAYS"
         strength = 50
 
-    strength = max(0, min(100, strength))
+    strength = min(100, strength)
 
     return {
         "trend": trend,
