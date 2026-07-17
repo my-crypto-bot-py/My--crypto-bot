@@ -18,19 +18,24 @@ def scan_market():
 
             trend = detect_trend(df)
 
+            direction = trend.get("trend", "UNKNOWN")
             strength = trend.get("strength", 0)
+
+            # Sideways ignore
+            if direction == "SIDEWAYS":
+                continue
 
             results.append({
                 "symbol": symbol,
-                "trend": trend.get("trend", "UNKNOWN"),
+                "trend": direction,
                 "strength": strength
             })
 
         except Exception as e:
             print(symbol, e)
 
-    results = sorted(
-        results,
+    # Strongest first
+    results.sort(
         key=lambda x: x["strength"],
         reverse=True
     )
@@ -42,17 +47,19 @@ def get_best_symbol():
 
     data = scan_market()
 
-    if len(data) == 0:
+    if not data:
         return None
 
-    print("Scanner Results:")
+    print("\n========== SCANNER ==========")
 
     for coin in data:
+
         print(
-            coin["symbol"],
-            coin["trend"],
-            coin["strength"]
+            f'{coin["symbol"]} | '
+            f'{coin["trend"]} | '
+            f'{coin["strength"]}'
         )
 
-    # Sabse strong coin return karega
+    print("=============================\n")
+
     return data[0]
