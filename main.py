@@ -517,8 +517,7 @@ def run():
 
     if rr < 3:
 
-        print("Rejected: Risk Reward less 
-    than 1:3")
+        print("Rejected: Risk Reward less than 1:3")
 
         return
 
