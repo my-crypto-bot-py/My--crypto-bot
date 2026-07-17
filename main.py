@@ -302,18 +302,18 @@ def run():
             zone_ok = False
 
 
-# Normal BUY avoid deep premium
-if (
-    direction == "BUY"
-    and zone == "Deep Premium"
-):
-
-    if not (
-        mss
-        and fvg
-        and order_block
+    # Normal BUY avoid deep premium
+    if (
+        direction == "BUY"
+        and zone == "Deep Premium"
     ):
-        zone_ok = False
+
+        if not (
+            mss
+            and fvg
+            and order_block
+        ):
+            zone_ok = False
 
 
     # ==========================
@@ -425,7 +425,7 @@ if (
         "Final Signal:",
         signal_type
     )
-        # ==========================
+    # ==========================
     # NO TRADE CHECK
     # ==========================
 
