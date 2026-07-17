@@ -240,9 +240,10 @@ def run():
         liquidity
         and
         order_block
+        and
+        liquidity.get("direction") == order_block.get("direction")
     ):
-        if liquidity.get("direction") == order_block.get("direction"):
-            smartmoney_confirm = True
+        smartmoney_confirm = True
 
 
     # FVG + OB confirmation
@@ -250,17 +251,34 @@ def run():
         fvg
         and
         order_block
+        and
+        fvg.get("direction") == order_block.get("direction")
     ):
-        if fvg.get("direction") == order_block.get("direction"):
-            smartmoney_confirm = True
+        smartmoney_confirm = True
 
 
-    # Strong displacement confirmation
-    elif displacement:
+    # Liquidity Grab + OB
+    elif (
+        liquidity_grab
+        and
+        order_block
+        and
+        liquidity_grab.get("direction") == order_block.get("direction")
+    ):
+        smartmoney_confirm = True
 
-        if displacement.get("strength", 0) >= 2:
-            smartmoney_confirm = True
- 
+
+    # Strong Displacement + OB
+    elif (
+        displacement
+        and
+        order_block
+        and
+        displacement.get("strength", 0) >= 2
+        and
+        displacement.get("direction") == order_block.get("direction")
+    ):
+        smartmoney_confirm = True
     # ==========================
     # ZONE FILTER
     # ==========================
