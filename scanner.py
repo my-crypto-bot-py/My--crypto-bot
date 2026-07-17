@@ -16,7 +16,7 @@ def scan_market():
             if df is None or df.empty:
                 continue
 
-            trend = detect_trend(df)
+            trend = detect_trend(df, symbol)
 
             direction = trend.get("trend", "UNKNOWN")
             strength = trend.get("strength", 0)
