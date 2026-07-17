@@ -79,7 +79,7 @@ def run():
        and
        order_block
        and
-       fvg.get("direction") == order_block.get("direction")
+     fvg.get("direction") == order_block.get("direction")
      ):
        structure_confirm = True
 
@@ -89,7 +89,7 @@ def run():
         and
         order_block
         and
-        liquidity.get("direction") == order_block.get("direction")
+    liquidity.get("direction") == order_block.get("direction")
     ):
          structure_confirm = True
     
