@@ -158,29 +158,24 @@ def detect_trend(df):
     # FINAL TREND
     # ======================
 
-    if (
-        ema_trend=="BULLISH"
-        and
-        structure=="BULLISH"
-    ):
 
-        trend="BULLISH"
+   if ema_trend == structure:
 
+       trend = ema_trend
 
-    elif (
-        ema_trend=="BEARISH"
-        and
-        structure=="BEARISH"
-    ):
+   else:
 
-        trend="BEARISH"
+       if change > 1:
 
+           trend = "BULLISH"
 
-    else:
+       elif change < -1:
 
-        trend=ema_trend
+           trend = "BEARISH"
 
+       else:
 
+           trend = "SIDEWAYS"
 
 
     strength=round(
