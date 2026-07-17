@@ -21,7 +21,7 @@ def scan_market():
             direction = trend.get("trend", "UNKNOWN")
             strength = trend.get("strength", 0)
 
-            # Sideways ignore
+            # Sideways coins ignore
             if direction == "SIDEWAYS":
                 continue
 
@@ -34,7 +34,6 @@ def scan_market():
         except Exception as e:
             print(symbol, e)
 
-    # Strongest first
     results.sort(
         key=lambda x: x["strength"],
         reverse=True
@@ -55,9 +54,9 @@ def get_best_symbol():
     for coin in data:
 
         print(
-            f'{coin["symbol"]} | '
-            f'{coin["trend"]} | '
-            f'{coin["strength"]}'
+            coin["symbol"],
+            coin["trend"],
+            coin["strength"]
         )
 
     print("=============================\n")
