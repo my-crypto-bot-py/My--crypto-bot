@@ -155,7 +155,7 @@ def run():
             "zone",
             "UNKNOWN"
         )
-            # ==========================
+    # ==========================
     # CONFIDENCE
     # ==========================
 
@@ -227,28 +227,40 @@ def run():
     ):
         structure_confirm = True
 
+    
     # ==========================
-    # SMART MONEY FILTER
+    # SMART MONEY FILTER (UPGRADE)
     # ==========================
-
-    smartmoney_confirm = (
-
-        liquidity
-        or
-        fvg
-        or
-        order_block
-        or
-        equal_levels
-        or
-        displacement
-        or
-        liquidity_grab
-
-    )
+     smartmoney_confirm = False
 
 
+    # Liquidity + OB confirmation
+    if (
+       liquidity
+       and
+       order_block
+   ):
+       if liquidity.get("direction") == order_block.get("direction"):
+           smartmoney_confirm = True
 
+
+   # FVG + OB confirmation
+   elif (
+       fvg
+       and
+       order_block
+   ):
+       if fvg.get("direction") == order_block.get("direction"):
+           smartmoney_confirm = True
+
+
+   # Strong displacement confirmation
+   elif displacement:
+
+       if displacement.get("strength",0) >= 2:
+           smartmoney_confirm = True
+
+ 
     # ==========================
     # ZONE FILTER
     # ==========================
