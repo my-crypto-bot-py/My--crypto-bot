@@ -64,45 +64,34 @@ def run():
 
 
     # ==========================
-    # STRUCTURE
+    # STRUCTURE FILTER
     # ==========================
 
-    swing_highs, swing_lows = find_swings(df)
+    structure_confirm = False
 
+    # BOS / MSS / CHoCH
+    if bos or mss or choch:
+    structure_confirm = True
 
-    bos = detect_bos(
-        df,
-        swing_highs,
-        swing_lows
-    )
+    # FVG + Order Block same direction
+    elif (
+       fvg
+       and
+       order_block
+       and
+       fvg.get("direction") == order_block.get("direction")
+     ):
+       structure_confirm = True
 
-
-    mss = detect_mss(
-        df,
-        swing_highs,
-        swing_lows
-    )
-
-    choch = detect_choch(
-        df,
-        swing_highs,
-        swing_lows
-    )
-
-    equal_levels = detect_equal_levels(
-        swing_highs,
-        swing_lows
-    )
-
-    displacement = detect_displacement(df)
-
-    liquidity_grab = detect_liquidity_grab(
-        df,
-        swing_highs,
-        swing_lows
-    )
-
-
+     # Liquidity + Order Block same direction
+     elif (
+        liquidity
+        and
+        order_block
+        and
+        liquidity.get("direction") == order_block.get("direction")
+    ):
+         structure_confirm = True
     
 
     # ==========================
