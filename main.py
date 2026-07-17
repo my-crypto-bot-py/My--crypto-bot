@@ -568,36 +568,19 @@ def run():
     # TELEGRAM
     # ==========================
 
-
     try:
-
-
-        print(
-            "Sending Telegram Message..."
-        )
-
-
+        print("Sending Telegram Message...")
         send_signal(signal)
-
-
-        print(
-            "Telegram Message Sent Successfully."
-        )
-
+        print("Telegram Message Sent Successfully.")
 
     except Exception as e:
+        print("Telegram Error:", e)
 
 
-        print(
-            "Telegram Error:",
-            e
-        )
+    # ==========================
+    # START BOT
+    # ==========================
 
+    if __name__ == "__main__":
+        run()
 
-
-   # ==========================
-   # START BOT 
-   # ==========================
-  
-   if __name__ == "__main__":
-   run()
