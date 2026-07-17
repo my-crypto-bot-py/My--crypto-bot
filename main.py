@@ -502,39 +502,39 @@ def run():
     # ==========================
     # FINAL SIGNAL DATA
     # ==========================
-    signal = {
+        signal = {
 
-    "symbol": symbol,
+        "symbol": symbol,
 
-    "signal": signal_type,
+        "signal": signal_type,
 
-    "entry": levels["entry"],
+        "entry": levels["entry"],
 
-    "sl": levels["sl"],
+        "sl": levels["sl"],
 
-    "tp1": levels["tp1"],
+        "tp1": levels["tp1"],
 
-    "tp2": levels["tp2"],
+        "tp2": levels["tp2"],
 
-    "score": score,
+        "score": score,
 
-    "trend": trend,
+        "trend": trend,
 
-    "zone": zone,
+        "zone": zone,
 
-    "rr": round(rr, 2),
+        "rr": round(rr, 2),
 
-    "reasons": ", ".join(
-        confidence["reasons"]
+        "reasons": ", ".join(
+            confidence["reasons"]
+        ) 
+    }
+
+
+    print(
+        "Generated Signal:"
     )
-}
 
-
-print(
-    "Generated Signal:"
-)
-
-print(signal)
+    print(signal)
 
 
 
