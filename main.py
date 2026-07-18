@@ -243,7 +243,8 @@ def run():
     if (
         liquidity
         and order_block
-        and liquidity.get("direction") == order_block.get("direction")
+        and liquidity.get("direction") == 
+    order_block.get("direction")
     ):
         smartmoney_confirm = True
 
@@ -269,9 +270,10 @@ def run():
          and
          fresh_ob
          and
-    liquidity_grab.get("direction") == order_block.get("direction")
-   ):
-    smartmoney_confirm = True
+        liquidity_grab.get("direction") ==
+    order_block.get("direction")
+    ):
+        smartmoney_confirm = True
 
 
     # Displacement
