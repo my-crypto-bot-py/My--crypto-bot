@@ -270,7 +270,8 @@ def generate_trade_levels(
             tp1 = entry + (risk * 2)
 
         tp2 = entry + (risk * 3) 
-     elif signal == "SELL":
+     
+    elif signal == "SELL":
 
         entry = price
 
