@@ -136,19 +136,15 @@ def run():
     # SMART MONEY
     # ==========================
 
-
     liquidity = detect_liquidity_sweep(df)
-
 
     fvg = detect_fvg(df)
 
-
     order_block = detect_order_block(df)
 
-        fresh_ob = is_fresh_order_block(df,order_block)
+    fresh_ob = is_fresh_order_block(df, order_block)
 
     zone_data = get_premium_discount(df)
-
 
     zone = "UNKNOWN"
 
