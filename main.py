@@ -4,6 +4,8 @@ from scanner import get_best_symbol
 from market import get_market_data
 
 
+from market import get_market_data
+
 from structure import (
     find_swings,
     detect_bos,
@@ -14,15 +16,17 @@ from structure import (
     detect_liquidity_grab
 )
 
-
 from smartmoney import (
     detect_liquidity_sweep,
     detect_fvg,
     detect_order_block,
+    is_fresh_order_block,
     get_premium_discount,
     generate_trade_levels
 )
 
+from confidence import calculate_confidence
+from telegram_bot import send_signal
 
 from confidence import calculate_confidence
 from telegram_bot import send_signal
