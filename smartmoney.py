@@ -281,156 +281,94 @@ def detect_order_block(df, lookback=50):
     return None
 
 
+    # ==========================
+    # PREMIUM DISCOUNT
+    # ==========================
+
+    def get_premium_discount(df):
+
+        if len(df) < 20:
+            return None
+
+        high = float(df["high"].tail(20).max())
+        low = float(df["low"].tail(20).min())
+        price = float(df["close"].iloc[-1])
+
+        range_size = high - low
+
+        if range_size == 0:
+            return None
+
+        position = ((price - low) / range_size) * 100
+
+        if position >= 75:
+            zone = "Deep Premium"
+
+        elif position >= 50:
+            zone = "Premium"
+
+        elif position <= 25:
+            zone = "Deep Discount"
+
+        else:
+            zone = "Discount"
+
+        equilibrium = (high + low) / 2
+
+        return {
+            "zone": zone,
+            "high": high,
+            "low": low,
+            "equilibrium": equilibrium,
+            "price": price,
+            "position": round(position, 2)
+        }
 
 
+    # ==========================
+    # FRESH ORDER BLOCK
+    # ==========================
 
-# ==========================
-# PREMIUM DISCOUNT
-# ==========================
+    def is_fresh_order_block(df, order_block):
 
-def get_premium_discount(df):
-    if len(df) < 20:
-        return None
-
-    high = float(df["high"].tail(20).max())
-    low = float(df["low"].tail(20).min())
-    price = float(df["close"].iloc[-1])
-
-    range_size = high - low
-    if range_size == 0:
-        return None
-
-    position = ((price - low) / range_size) * 100
-
-    if position >= 75:
-        zone = "Deep Premium"
-    elif position >= 50:
-        zone = "Premium"
-    elif position <= 25:
-        zone = "Deep Discount"
-    else:
-        zone = "Discount"
-
-    equilibrium = (high + low) / 2
-
-    return {
-        "zone": zone,
-        "high": high,
-        "low": low,
-        "equilibrium": equilibrium,
-        "price": price,
-        "position": round(position, 2)
-    }
-    def is_fresh_order_block(df, 
-    order_block):
-    if order_block is None:
-        return False
-
-    high = order_block["high"]
-    low = order_block["low"]
-
-    recent = df.tail(5)
-
-    if order_block["direction"] == "BUY":
-        if recent["low"].min() < low:
+        if order_block is None:
             return False
 
-    if order_block["direction"] == "SELL":
-        if recent["high"].max() > high:
-            return False
+        high = order_block["high"]
+        low = order_block["low"]
 
-    return True
-    high = float(
-        df["high"].tail(20).max()
-    )
+        recent = df.tail(5)
 
-    low = float(
-        df["low"].tail(20).min()
-    )
+        if order_block["direction"] == "BUY":
+            if recent["low"].min() < low:
+                return False
 
+        if order_block["direction"] == "SELL":
+            if recent["high"].max() > high:
+                return False
 
-    price = float(
-        df["close"].iloc[-1]
-    )
-
-
-    range_size = high - low
-
-
-    if range_size == 0:
-        return None
-
-
-
-    position = (
-        (price - low) / range_size
-    ) * 100
-
-
-
-    if position >= 75:
-
-        zone = "Deep Premium"
-
-
-    elif position >= 50:
-
-        zone = "Premium"
-
-
-    elif position <= 25:
-
-        zone = "Deep Discount"
-
-
-    else:
-
-        zone = "Discount"
-
-
-
-    equilibrium = (
-        high + low
-    ) / 2
-
-
-
-    return {
-
-        "zone": zone,
-
-        "high": high,
-
-        "low": low,
-
-        "equilibrium": equilibrium,
-
-        "price": price,
-
-        "position": round(position,2)
-
-    }
+        return True
+        
 
 
 
 
+    # ==========================
+    # ADVANCED TRADE LEVEL ENGINE
+    # ==========================
 
-# ==========================
-# ADVANCED TRADE LEVEL ENGINE
-# ==========================
-
-def generate_trade_levels(
-        df,
-        signal,
-        fvg=None,
-        order_block=None,
-        liquidity=None
-):
+    def generate_trade_levels(
+            df,
+            signal,
+            fvg=None,
+            order_block=None,
+            liquidity=None
+    ):
 
 
-    price = float(
-        df["close"].iloc[-1]
-    )
+        price = float(
+            df["close"].iloc[-1]
+        )
 
 
 
