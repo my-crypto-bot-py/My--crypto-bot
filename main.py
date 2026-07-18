@@ -141,7 +141,7 @@ def run():
 
     order_block = detect_order_block(df)
 
-
+   fresh_ob = is_fresh_order_block(df, order_block)
 
     zone_data = get_premium_discount(df)
 
