@@ -249,17 +249,29 @@ def run():
 
 
     # FVG + OB confirmation
-    if (
-        fvg
-        and order_block
-        and fvg.get("direction") == order_block.get("direction")
-    ):
-        smartmoney_confirm = True
-
+    elif (
+         fvg
+         and
+         order_block
+         and
+         fresh_ob
+         and
+   fvg.get("direction") == order_block.get("direction")
+   ):
+            smartmoney_confirm = True
+        
 
     # Liquidity Grab
-    if liquidity_grab:
-        smartmoney_confirm = True
+    elif (
+         liquidity_grab
+         and
+         order_block
+         and
+         fresh_ob
+         and
+    liquidity_grab.get("direction") == order_block.get("direction")
+   ):
+    smartmoney_confirm = True
 
 
     # Displacement
