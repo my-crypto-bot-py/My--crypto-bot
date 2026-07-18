@@ -393,52 +393,28 @@ def run():
     print("===========================\n")
 
 
-
     # ==========================
     # FINAL SIGNAL
     # ==========================
 
+    signal_type = "NO TRADE"
 
     if (
-
         score >= 65
-
-        and
-
-        structure_confirm
-
-        and
-
-        smartmoney_confirm
-
-        and
-
-        zone_ok
-
+        and structure_confirm
+        and smartmoney_confirm
+        and zone_ok
     ):
 
-
         if direction == "BUY":
-
             signal_type = "BUY"
 
-
         elif direction == "SELL":
-
             signal_type = "SELL"
 
+    print("Final Direction:", direction)
+    print("Final Signal:", signal_type)
 
-
-    print(
-        "Final Direction:",
-        direction
-    )
-
-
-    print(
-        "Final Signal:",
-        signal_type
-    )
     # ==========================
     # NO TRADE CHECK
     # ==========================
