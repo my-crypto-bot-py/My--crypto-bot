@@ -329,7 +329,8 @@ def detect_order_block(df, lookback=50):
     # FRESH ORDER BLOCK
     # ==========================
 
-    def is_fresh_order_block(df, order_block):
+    def is_fresh_order_block(df, 
+    order_block):
 
         if order_block is None:
             return False
