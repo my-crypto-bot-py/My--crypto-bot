@@ -289,34 +289,56 @@ def detect_order_block(df, lookback=50):
 # ==========================
 
 def get_premium_discount(df):
-
     if len(df) < 20:
         return None
-def is_fresh_order_block(df, order_block):
 
+    high = float(df["high"].tail(20).max())
+    low = float(df["low"].tail(20).min())
+    price = float(df["close"].iloc[-1])
+
+    range_size = high - low
+    if range_size == 0:
+        return None
+
+    position = ((price - low) / range_size) * 100
+
+    if position >= 75:
+        zone = "Deep Premium"
+    elif position >= 50:
+        zone = "Premium"
+    elif position <= 25:
+        zone = "Deep Discount"
+    else:
+        zone = "Discount"
+
+    equilibrium = (high + low) / 2
+
+    return {
+        "zone": zone,
+        "high": high,
+        "low": low,
+        "equilibrium": equilibrium,
+        "price": price,
+        "position": round(position, 2)
+    }
+    def is_fresh_order_block(df, order_block):
     if order_block is None:
         return False
 
     high = order_block["high"]
     low = order_block["low"]
 
-    # Last 5 candles check
     recent = df.tail(5)
 
     if order_block["direction"] == "BUY":
-
-        # Agar price OB ke low ke niche chala gaya to OB invalid
         if recent["low"].min() < low:
             return False
 
     if order_block["direction"] == "SELL":
-
-        # Agar price OB ke high ke upar chala gaya to OB invalid
         if recent["high"].max() > high:
             return False
 
     return True
-
     high = float(
         df["high"].tail(20).max()
     )
