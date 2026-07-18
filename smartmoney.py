@@ -650,4 +650,3 @@ def generate_trade_levels(
     }
 
 
-
