@@ -198,8 +198,25 @@ def run():
 
     score = confidence["score"]
 
+    # ==========================
+    # SCORE BOOST
+    # ==========================
+
+    if order_block:
+        score += 15
+
+    if fvg:
+        score += 10
+
+    if liquidity:
+        score += 10
+
+    if score > 100:
+        score = 100
 
     signal_type = "NO TRADE"
+    
+    
 
     # ==========================
     # STRUCTURE FILTER
