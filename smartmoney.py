@@ -292,7 +292,30 @@ def get_premium_discount(df):
 
     if len(df) < 20:
         return None
+def is_fresh_order_block(df, order_block):
 
+    if order_block is None:
+        return False
+
+    high = order_block["high"]
+    low = order_block["low"]
+
+    # Last 5 candles check
+    recent = df.tail(5)
+
+    if order_block["direction"] == "BUY":
+
+        # Agar price OB ke low ke niche chala gaya to OB invalid
+        if recent["low"].min() < low:
+            return False
+
+    if order_block["direction"] == "SELL":
+
+        # Agar price OB ke high ke upar chala gaya to OB invalid
+        if recent["high"].max() > high:
+            return False
+
+    return True
 
     high = float(
         df["high"].tail(20).max()
