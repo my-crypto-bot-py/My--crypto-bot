@@ -321,7 +321,8 @@ def get_premium_discount(df):
         "price": price,
         "position": round(position, 2)
     }
-    def is_fresh_order_block(df, order_block):
+    def is_fresh_order_block(df, 
+    order_block):
     if order_block is None:
         return False
 
