@@ -240,7 +240,7 @@ def run():
 
 
     # Liquidity + OB confirmation
-    if (
+    elif (
         liquidity
         and order_block
         and liquidity.get("direction") == 
@@ -277,7 +277,7 @@ def run():
 
 
     # Displacement
-    if (
+    elif (
         displacement
         and displacement.get("strength", 0) >= 2
     ):
@@ -285,7 +285,7 @@ def run():
 
 
     # Trend + Order Block + Zone
-    if order_block:
+    elif order_block:
 
         if (
             direction == "BUY"
