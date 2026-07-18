@@ -240,7 +240,7 @@ def run():
 
 
     # Liquidity + OB confirmation
-    elif (
+    if (
         liquidity
         and order_block
         and liquidity.get("direction") == 
