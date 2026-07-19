@@ -13,40 +13,63 @@ SYMBOLS = [
 # TIMEFRAMES
 # ==========================
 
-HTF = "1D"
-TREND_TF = "4H"
-POI_TF = "1H"
+HTF = "1d"
+TREND_TF = "4h"
+POI_TF = "1h"
 ENTRY_TF = "5m"
+
+# ==========================
+# MARKET
+# ==========================
 
 LIMIT = 300
 
 # ==========================
-# STRUCTURE
+# SWINGS
 # ==========================
 
 SWING_LEFT = 5
 SWING_RIGHT = 5
 
-EQUAL_LEVEL_TOLERANCE = 0.001
-
 # ==========================
-# RISK MANAGEMENT
+# ATR
 # ==========================
-
-MIN_RR = 3.0
 
 ATR_PERIOD = 14
 ATR_MULTIPLIER = 1.5
 
-MAX_TRADES_PER_DAY = 3
+# ==========================
+# EMA
+# ==========================
 
-COOLDOWN_MINUTES = 60
+EMA_FAST = 20
+EMA_MID = 50
+EMA_SLOW = 200
 
 # ==========================
 # CONFIDENCE
 # ==========================
 
 MIN_SCORE = 70
+
+# ==========================
+# RISK
+# ==========================
+
+MIN_RR = 3.0
+RISK_PERCENT = 1
+
+# ==========================
+# BTC FILTER
+# ==========================
+
+BTC_CONFIRMATION = True
+
+# ==========================
+# VOLUME
+# ==========================
+
+VOLUME_CONFIRMATION = True
 
 # ==========================
 # SESSIONS
@@ -56,22 +79,10 @@ LONDON_SESSION = True
 NEWYORK_SESSION = True
 
 # ==========================
-# ICT FILTERS
+# DUPLICATE FILTER
 # ==========================
 
-BTC_CONFIRMATION = True
-VOLUME_CONFIRMATION = True
-SMT_CONFIRMATION = True
-OTE_CONFIRMATION = True
-
-# ==========================
-# TELEGRAM
-# ==========================
-
-SEND_NO_TRADE = False
-
-# ==========================
-# DEBUG
-# ==========================
-
-DEBUG = True
+COOLDOWN_MINUTES = 60
+MAX_TRADES_PER_DAY = 5
+MAX_DAILY_LOSS = 3
+MAX_CONSECUTIVE_LOSSES = 3
