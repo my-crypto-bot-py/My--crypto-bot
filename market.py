@@ -6,68 +6,164 @@ from config import *
 # OKX EXCHANGE
 # ==========================
 
-exchange = ccxt.okx({
-    "enableRateLimit": True,
-    "options": {
-        "defaultType": "swap"
+exchange = ccxt.okx(
+    {
+        "enableRateLimit": True,
+        "options": {
+            "defaultType": "swap"
+        }
     }
-})
+)
 
 # ==========================
 # LOAD MARKET DATA
 # ==========================
 
-def get_market_data(symbol, timeframe, limit=300):
+def get_market_data(
+
+    symbol,
+    timeframe,
+    limit=LIMIT
+
+):
 
     try:
 
-        ohlcv = exchange.fetch_ohlcv(
+        candles = exchange.fetch_ohlcv(
+
             symbol,
+
             timeframe=timeframe,
+
             limit=limit
+
         )
+
 
         df = pd.DataFrame(
-            ohlcv,
+
+            candles,
+
             columns=[
+
                 "timestamp",
+
                 "open",
+
                 "high",
+
                 "low",
+
                 "close",
+
                 "volume"
+
             ]
+
         )
+
 
         df["timestamp"] = pd.to_datetime(
+
             df["timestamp"],
+
             unit="ms"
+
         )
 
-        print("\n========== MARKET DEBUG ==========")
-        print("Symbol:", symbol)
-        print("Timeframe:", timeframe)
-        print("Candles:", len(df))
-        print("First Candle:", df["timestamp"].iloc[0])
-        print("Last Candle:", df["timestamp"].iloc[-1])
-        print("Last Close:", df["close"].iloc[-1])
-        print("==================================\n")
+
+        numeric = [
+
+            "open",
+
+            "high",
+
+            "low",
+
+            "close",
+
+            "volume"
+
+        ]
+
+
+        for col in numeric:
+
+            df[col] = df[col].astype(float)
+
 
         return df
 
+
     except Exception as e:
 
-        print("Market Error:", e)
+        print(
+
+            "Market Error:",
+
+            e
+
+        )
+
         return None
-        # ==========================
+
+
+# ==========================
+# MARKET DEBUG
+# ==========================
+
+def market_debug(
+
+    df,
+
+    symbol,
+
+    timeframe
+
+):
+
+    print()
+
+    print("========== MARKET DEBUG ==========")
+
+    print("Symbol:", symbol)
+
+    print("Timeframe:", timeframe)
+
+    print("Candles:", len(df))
+
+    print("First Candle:", df["timestamp"].iloc[0])
+
+    print("Last Candle:", df["timestamp"].iloc[-1])
+
+    print("Last Close:", df["close"].iloc[-1])
+
+    print("==================================")
+
+    print()
+    # ==========================
 # EMA
 # ==========================
 
 def add_ema(df):
 
-    df["ema20"] = df["close"].ewm(span=20).mean()
-    df["ema50"] = df["close"].ewm(span=50).mean()
-    df["ema200"] = df["close"].ewm(span=200).mean()
+    df["ema20"] = (
+        df["close"]
+        .ewm(span=20, adjust=False)
+        .mean()
+    )
+
+    df["ema50"] = (
+        df["close"]
+        .ewm(span=50, adjust=False)
+        .mean()
+    )
+
+    df["ema200"] = (
+        df["close"]
+        .ewm(span=200, adjust=False)
+        .mean()
+    )
 
     return df
 
@@ -76,24 +172,45 @@ def add_ema(df):
 # ATR
 # ==========================
 
-def add_atr(df, period=14):
+def add_atr(df, period=ATR_PERIOD):
 
     high_low = df["high"] - df["low"]
 
     high_close = (
-        df["high"] - df["close"].shift()
+        df["high"] -
+        df["close"].shift()
     ).abs()
 
     low_close = (
-        df["low"] - df["close"].shift()
+        df["low"] -
+        df["close"].shift()
     ).abs()
 
     tr = pd.concat(
-        [high_low, high_close, low_close],
+
+        [
+
+            high_low,
+
+            high_close,
+
+            low_close
+
+        ],
+
         axis=1
+
     ).max(axis=1)
 
-    df["atr"] = tr.rolling(period).mean()
+    df["atr"] = (
+
+        tr
+
+        .rolling(period)
+
+        .mean()
+
+    )
 
     return df
 
@@ -105,16 +222,84 @@ def add_atr(df, period=14):
 def add_volume(df):
 
     df["avg_volume"] = (
+
         df["volume"]
+
         .rolling(20)
+
         .mean()
+
     )
 
     return df
 
 
 # ==========================
-# INDICATORS
+# RSI
+# ==========================
+
+def add_rsi(df, period=14):
+
+    delta = df["close"].diff()
+
+    gain = delta.clip(lower=0)
+
+    loss = -delta.clip(upper=0)
+
+    avg_gain = gain.rolling(period).mean()
+
+    avg_loss = loss.rolling(period).mean()
+
+    rs = avg_gain / avg_loss
+
+    df["rsi"] = 100 - (
+
+        100 / (1 + rs)
+
+    )
+
+    return df
+
+
+# ==========================
+# VWAP
+# ==========================
+
+def add_vwap(df):
+
+    tp = (
+
+        df["high"]
+
+        + df["low"]
+
+        + df["close"]
+
+    ) / 3
+
+    cumulative_tp = (
+
+        tp * df["volume"]
+
+    ).cumsum()
+
+    cumulative_volume = (
+
+        df["volume"]
+
+    ).cumsum()
+
+    df["vwap"] = (
+
+        cumulative_tp /
+
+        cumulative_volume
+
+    )
+
+    return df
+    # ==========================
+# PREPARE MARKET
 # ==========================
 
 def prepare_market(df):
@@ -122,13 +307,19 @@ def prepare_market(df):
     df = add_ema(df)
     df = add_atr(df)
     df = add_volume(df)
+    df = add_rsi(df)
+    df = add_vwap(df)
 
     return df
-    # ==========================
+
+
+# ==========================
 # TREND
 # ==========================
 
-def get_trend(df):
+def detect_trend(df):
+
+    df = prepare_market(df)
 
     if len(df) < 200:
         return "SIDEWAYS"
@@ -152,7 +343,9 @@ def get_trend(df):
 # VOLUME CONFIRMATION
 # ==========================
 
-def volume_confirmation(df):
+def detect_volume_confirmation(df):
+
+    df = add_volume(df)
 
     if len(df) < 20:
         return False
@@ -167,9 +360,11 @@ def volume_confirmation(df):
 # STRONG CANDLE
 # ==========================
 
-def strong_candle(df):
+def detect_strong_candle(df):
 
-    if len(df) < 20:
+    df = add_atr(df)
+
+    if len(df) < ATR_PERIOD + 5:
         return False
 
     body = abs(
@@ -186,30 +381,30 @@ def strong_candle(df):
 # SESSION FILTER
 # ==========================
 
-def session_filter(df):
+def detect_session(df):
 
-    hour = df["timestamp"].iloc[-1].hour
+    hour = int(df["timestamp"].iloc[-1].hour)
 
-    if 7 <= hour <= 17:
-        return True
+    london = 7 <= hour <= 16
+    newyork = 13 <= hour <= 22
 
-    return False
+    return london or newyork
 
 
 # ==========================
-# MARKET FILTER
+# MARKET VALIDATION
 # ==========================
 
 def validate_market(df):
 
     return {
 
-        "trend": get_trend(df),
+        "trend": detect_trend(df),
 
-        "volume": volume_confirmation(df),
+        "volume": detect_volume_confirmation(df),
 
-        "strong_candle": strong_candle(df),
+        "strong_candle": detect_strong_candle(df),
 
-        "session": session_filter(df)
+        "session": detect_session(df)
 
     }
