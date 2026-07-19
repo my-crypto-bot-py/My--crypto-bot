@@ -1,5 +1,35 @@
 import pandas as pd
 
+# ==========================
+# ICT ADVANCED MODULES
+# ==========================
+
+from sessions import (
+    analyze_sessions
+)
+
+
+from pd_arrays import (
+    get_best_pd_array,
+    debug_pd_arrays
+)
+
+
+from ote import (
+    institutional_ote_entry
+)
+
+
+from smt import (
+    get_smt_confirmation
+)
+
+
+from execution import (
+    create_trade_package,
+    final_execution_gate
+)
+
 from config import *
 
 from market import (
@@ -41,7 +71,7 @@ print("========== BOT STARTED ==========")
 # ==========================
 
 def run():
-
+    
     # ==========================
     # SCAN MARKET
     # ==========================
@@ -77,7 +107,444 @@ def run():
         return
 
     print("Market Data Loaded")
+    # ==========================
+    # ICT DATA PREPARATION
+    # ==========================
 
+
+    print("ICT Analysis Started")
+
+
+    # Session Analysis
+
+    session_data = analyze_sessions(df)
+
+
+    print(
+        "Session Data:",
+        session_data
+    )
+
+
+
+    # Best PD Array
+
+    best_poi = get_best_pd_array(df)
+
+
+    print(
+        "Best PD Array:",
+        best_poi
+    )
+
+
+
+    # Debug PD Array
+
+    debug_pd_arrays(df)
+    # ==========================
+    # OTE + PD ARRAY ANALYSIS
+    # ==========================
+
+
+    ote_signal = None
+
+
+    if best_poi:
+
+    poi_high = best_poi["high"]
+
+    poi_low = best_poi["low"]
+
+
+    current_price = float(
+        df["close"].iloc[-1]
+    )
+
+
+    ote_signal = institutional_ote_entry(
+
+        price=current_price,
+
+        high=poi_high,
+
+        low=poi_low,
+
+        direction=direction,
+
+        bos=bos,
+
+        mss=mss,
+
+        choch=choch,
+
+        fvg=fvg,
+
+        order_block=order_block
+
+    )
+
+
+    print(
+        "OTE Signal:",
+        ote_signal
+    )
+
+# ==========================
+# SMT ANALYSIS
+# ==========================
+
+smt_result = None
+
+
+try:
+
+    # SMT only runs with BTC reference
+
+    if symbol == "BTC-USDT-SWAP":
+
+
+        eth_df = get_market_data(
+
+            "ETH-USDT-SWAP",
+
+            "5m"
+
+        )
+
+
+        sol_df = get_market_data(
+
+            "SOL-USDT-SWAP",
+
+            "5m"
+
+        )
+
+
+        smt_result = get_smt_confirmation(
+
+            btc_df=df,
+
+            eth_df=eth_df,
+
+            sol_df=sol_df
+
+        )
+
+
+    else:
+
+        smt_result = None
+
+
+
+except Exception as e:
+
+
+    print(
+        "SMT ERROR:",
+        e
+    )
+
+
+print(
+    "SMT RESULT:",
+    smt_result
+)
+ 
+
+
+
+# ==========================
+# EXECUTION VALIDATION
+# ==========================
+
+
+execution_result = execution_signal(
+
+    direction=direction,
+
+    price=float(
+        df["close"].iloc[-1]
+    ),
+
+    pd_array=best_poi,
+
+    ote=ote_signal,
+
+    structure=bos or mss or choch,
+
+    smt=smt_result
+
+)
+
+
+print(
+    "Execution Result:",
+    execution_result
+)
+# ==========================
+# CREATE FINAL TRADE
+# ==========================
+
+
+trade = None
+
+
+if execution_result["signal"] != "NO TRADE":
+
+
+    levels = generate_trade_levels(
+
+        df,
+
+        execution_result["signal"],
+
+        fvg,
+
+        order_block,
+
+        liquidity
+
+    )
+
+
+    if levels:
+
+
+        trade = create_trade_package(
+
+            direction=execution_result["signal"],
+
+            levels=levels,
+
+            score=execution_result["execution_score"],
+
+            reasons=confidence["reasons"]
+
+        )
+
+
+
+print(
+    "Trade Package:",
+    trade
+)
+
+
+
+# ==========================
+# FINAL EXECUTION GATE
+# ==========================
+
+
+if trade:
+
+
+    final_result = final_execution_gate(
+
+        trade
+
+    )
+
+
+    print(
+        "Final Execution:",
+        final_result
+    )
+
+
+else:
+
+
+    final_result = {
+
+        "approved": False,
+
+        "reason": "No Trade"
+
+    }
+
+
+    print(
+        final_result
+    )
+    # ==========================
+# TELEGRAM FINAL SIGNAL
+# ==========================
+
+
+if final_result["approved"]:
+
+
+    approved_trade = final_result["trade"]
+
+
+    telegram_signal = {
+
+
+        "symbol": symbol,
+
+
+        "signal": approved_trade["direction"],
+
+
+        "entry": approved_trade["entry"],
+
+
+        "sl": approved_trade["sl"],
+
+
+        "tp1": approved_trade["tp1"],
+
+
+        "tp2": approved_trade["tp2"],
+
+
+        "rr": approved_trade.get(
+            "rr",
+            None
+        ),
+
+
+        "score": approved_trade["score"],
+
+
+        "reasons": ", ".join(
+            approved_trade["reasons"]
+        ),
+
+
+        "ote": ote_signal,
+
+
+        "pd_array": best_poi,
+
+
+        "smt": smt_result
+
+    }
+
+
+
+    print(
+        "FINAL ICT SIGNAL:"
+    )
+
+
+    print(
+        telegram_signal
+    )
+
+
+
+    try:
+
+        send_signal(
+            telegram_signal
+        )
+
+
+        print(
+            "Telegram Sent Successfully"
+        )
+
+
+    except Exception as e:
+
+
+        print(
+            "Telegram Error:",
+            e
+        )
+
+
+
+else:
+
+
+    print(
+        "Trade Rejected - Telegram Skipped"
+    )
+    # ==========================
+# FINAL ICT DEBUG PANEL
+# ==========================
+
+print("\n========== ICT FINAL DEBUG ==========")
+
+
+print("Symbol:", symbol)
+
+print("Trend:", trend)
+
+print("Direction:", direction)
+
+print("Confidence Score:", score)
+
+print("Zone:", zone)
+
+
+print("\n--- Structure ---")
+
+print("BOS:", bos)
+
+print("MSS:", mss)
+
+print("CHoCH:", choch)
+
+
+
+print("\n--- PD ARRAY ---")
+
+print("Best POI:", best_poi)
+
+
+
+print("\n--- OTE ---")
+
+print("OTE Signal:", ote_signal)
+
+
+
+print("\n--- SMT ---")
+
+print("SMT:", smt_result)
+
+
+
+print("\n--- EXECUTION ---")
+
+print("Execution Result:", execution_result)
+
+
+
+print("\n--- FINAL ---")
+
+print("Final Result:", final_result)
+
+
+print("====================================\n")
+
+
+
+# ==========================
+# SAFE EXIT
+# ==========================
+
+if not final_result["approved"]:
+
+    print(
+        "NO VALID ICT TRADE"
+    )
+
+    return
+
+
+
+print(
+    "VALID ICT TRADE EXECUTED"
+)
     # ==========================
     # STRUCTURE
     # ==========================
