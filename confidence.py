@@ -1,188 +1,213 @@
+# ==========================
+# CONFIDENCE ENGINE
+# ==========================
+
 def calculate_confidence(
-    trend=None,
-    bos=None,
-    choch=None,
-    mss=None,
-    liquidity=None,
-    fvg=None,
-    order_block=None,
-    equal_levels=None,
-    displacement=None,
-    liquidity_grab=None,
-    zone=None,
-    btc=False,
-    volume=False
+
+    trend,
+    bos,
+    choch,
+    mss,
+    liquidity,
+    fvg,
+    order_block,
+    equal_levels,
+    displacement,
+    liquidity_grab,
+    zone,
+    btc=True,
+    volume=True
+
 ):
 
-    buy_score = 0
-    sell_score = 0
+    score = 0
+    reasons = []
+    direction = None
 
-    buy_reasons = []
-    sell_reasons = []
-
-    # ======================
-    # HTF TREND
-    # ======================
+    # ==========================
+    # TREND
+    # ==========================
 
     if trend == "BULLISH":
-        buy_score += 15
-        buy_reasons.append("4H Bullish Trend")
+
+        score += 20
+        direction = "BUY"
+        reasons.append("4H Bullish Trend")
 
     elif trend == "BEARISH":
-        sell_score += 15
-        sell_reasons.append("4H Bearish Trend")
 
-    # ======================
+        score += 20
+        direction = "SELL"
+        reasons.append("4H Bearish Trend")
+
+    # ==========================
     # BOS
-    # ======================
+    # ==========================
 
     if bos:
 
-        if bos["direction"] == "BUY":
-            buy_score += 20
-            buy_reasons.append("Bullish BOS")
+        score += 15
+        direction = bos["direction"]
+        reasons.append(bos["type"])
 
-        else:
-            sell_score += 20
-            sell_reasons.append("Bearish BOS")
-
-    # ======================
+    # ==========================
     # MSS
-    # ======================
+    # ==========================
 
     if mss:
 
-        if mss["direction"] == "BUY":
-            buy_score += 20
-            buy_reasons.append("Bullish MSS")
+        score += 15
+        direction = mss["direction"]
+        reasons.append(mss["type"])
 
-        else:
-            sell_score += 20
-            sell_reasons.append("Bearish MSS")
-
-    # ======================
+    # ==========================
     # CHOCH
-    # ======================
+    # ==========================
 
     if choch:
 
-        if choch["direction"] == "BUY":
-            buy_score += 20
-            buy_reasons.append("Bullish CHoCH")
-
-        else:
-            sell_score += 20
-            sell_reasons.append("Bearish CHoCH")
-
-    # ======================
+        score += 10
+        direction = choch["direction"]
+        reasons.append(choch["type"])
+            # ==========================
     # LIQUIDITY
-    # ======================
+    # ==========================
 
     if liquidity:
 
-        if liquidity["direction"] == "BUY":
-            buy_score += 10
-            buy_reasons.append("Liquidity Sweep")
+        score += 10
+        direction = liquidity["direction"]
+        reasons.append(liquidity["type"])
 
-        else:
-            sell_score += 10
-            sell_reasons.append("Liquidity Sweep")
-
-    # ======================
+    # ==========================
     # FVG
-    # ======================
+    # ==========================
 
     if fvg:
 
-        if fvg["direction"] == "BUY":
-            buy_score += 10
-            buy_reasons.append("Bullish FVG")
+        score += 10
+        direction = fvg["direction"]
+        reasons.append(fvg["type"])
 
-        else:
-            sell_score += 10
-            sell_reasons.append("Bearish FVG")
-
-    # ======================
+    # ==========================
     # ORDER BLOCK
-    # ======================
+    # ==========================
 
     if order_block:
 
-        if order_block["direction"] == "BUY":
-            buy_score += 15
-            buy_reasons.append("Bullish Order Block")
+        score += 10
+        direction = order_block["direction"]
+        reasons.append(order_block["type"])
 
-        else:
-            sell_score += 15
-            sell_reasons.append("Bearish Order Block")
+    # ==========================
+    # DISPLACEMENT
+    # ==========================
 
-    # ======================
-    # ZONE
-    # ======================
+    if displacement:
 
-    if zone in ["Discount", "Deep Discount"]:
-        buy_score += 10
-        buy_reasons.append(zone)
+        score += 5
+        direction = displacement["direction"]
+        reasons.append("Displacement")
 
-    elif zone in ["Premium", "Deep Premium"]:
-        sell_score += 10
-        sell_reasons.append(zone)
+    # ==========================
+    # LIQUIDITY GRAB
+    # ==========================
 
-    # ======================
-    # BTC
-    # ======================
+    if liquidity_grab:
+
+        score += 5
+        direction = liquidity_grab["direction"]
+        reasons.append(liquidity_grab["type"])
+
+    # ==========================
+    # EQUAL LEVELS
+    # ==========================
+
+    if equal_levels:
+
+        if equal_levels.get("equal_high"):
+            score += 3
+            reasons.append("Equal High")
+
+        if equal_levels.get("equal_low"):
+            score += 3
+            reasons.append("Equal Low")
+
+    # ==========================
+    # PREMIUM / DISCOUNT
+    # ==========================
+
+    if zone:
+
+        zone_name = zone["zone"]
+
+        if direction == "BUY":
+
+            if zone_name in ["Discount", "Deep Discount"]:
+                score += 5
+                reasons.append(zone_name)
+
+        elif direction == "SELL":
+
+            if zone_name in ["Premium", "Deep Premium"]:
+                score += 5
+                reasons.append(zone_name)
+
+    # ==========================
+    # BTC CONFIRMATION
+    # ==========================
 
     if btc:
-        buy_score += 5
-        sell_score += 5
 
-    # ======================
-    # VOLUME
-    # ======================
+        score += 5
+        reasons.append("BTC Confirmation")
+
+    # ==========================
+    # VOLUME CONFIRMATION
+    # ==========================
 
     if volume:
-        buy_score += 5
-        sell_score += 5
 
-    # ======================
-    # FINAL
-    # ======================
+        score += 4
+        reasons.append("Volume Confirmation")
+            # ==========================
+    # SCORE LIMIT
+    # ==========================
 
-    if buy_score > sell_score:
+    if score > 100:
+        score = 100
 
-        direction = "BUY"
-        score = buy_score
-        reasons = buy_reasons
+    # ==========================
+    # QUALITY
+    # ==========================
 
-    elif sell_score > buy_score:
+    if score >= 90:
+        quality = "A+"
 
-        direction = "SELL"
-        score = sell_score
-        reasons = sell_reasons
-
-    else:
-
-        direction = "NONE"
-        score = 0
-        reasons = []
-
-    score = min(score, 100)
-
-    if score >= 80:
+    elif score >= 80:
         quality = "A"
 
-    elif score >= 65:
+    elif score >= 70:
         quality = "B"
 
-    elif score >= 50:
+    elif score >= 60:
         quality = "C"
 
     else:
         quality = "NO TRADE"
 
+    # ==========================
+    # FINAL RETURN
+    # ==========================
+
     return {
+
         "direction": direction,
+
         "score": score,
+
         "quality": quality,
+
         "reasons": reasons
+
     }
