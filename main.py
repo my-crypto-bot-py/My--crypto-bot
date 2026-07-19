@@ -100,7 +100,11 @@ def run():
         swing_lows
     )
 
-
+    print("Swing Highs:", swing_highs[-2:])
+    print("Swing Lows:", swing_lows[-2:])
+    print("BOS:", bos)
+   
+    
     mss = detect_mss(
         df,
         swing_highs,
