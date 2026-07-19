@@ -1,169 +1,81 @@
 import ccxt
 import pandas as pd
-from config import *
 
 # ==========================
-# OKX EXCHANGE
+# OKX CONNECTION
 # ==========================
 
-exchange = ccxt.okx(
-    {
-        "enableRateLimit": True,
-        "options": {
-            "defaultType": "swap"
-        }
+exchange = ccxt.okx({
+    "enableRateLimit": True,
+    "options": {
+        "defaultType": "swap"
     }
-)
+})
 
 # ==========================
 # LOAD MARKET DATA
 # ==========================
 
-def get_market_data(
-
-    symbol,
-    timeframe,
-    limit=LIMIT
-
-):
+def get_market_data(symbol, timeframe, limit=300):
 
     try:
 
-        candles = exchange.fetch_ohlcv(
-
+        ohlcv = exchange.fetch_ohlcv(
             symbol,
-
             timeframe=timeframe,
-
             limit=limit
-
         )
-
 
         df = pd.DataFrame(
-
-            candles,
-
+            ohlcv,
             columns=[
-
                 "timestamp",
-
                 "open",
-
                 "high",
-
                 "low",
-
                 "close",
-
                 "volume"
-
             ]
-
         )
-
 
         df["timestamp"] = pd.to_datetime(
-
             df["timestamp"],
-
             unit="ms"
-
         )
-
-
-        numeric = [
-
-            "open",
-
-            "high",
-
-            "low",
-
-            "close",
-
-            "volume"
-
-        ]
-
-
-        for col in numeric:
-
-            df[col] = df[col].astype(float)
-
 
         return df
 
-
     except Exception as e:
 
-        print(
-
-            "Market Error:",
-
-            e
-
-        )
-
+        print(f"Market Error ({symbol}):", e)
         return None
 
 
 # ==========================
-# MARKET DEBUG
+# LOAD & PREPARE
 # ==========================
 
-def market_debug(
+def load_market(symbol, timeframe, limit=300):
 
-    df,
+    df = get_market_data(
+        symbol,
+        timeframe,
+        limit
+    )
 
-    symbol,
+    if df is None:
+        return None
 
-    timeframe
-
-):
-
-    print()
-
-    print("========== MARKET DEBUG ==========")
-
-    print("Symbol:", symbol)
-
-    print("Timeframe:", timeframe)
-
-    print("Candles:", len(df))
-
-    print("First Candle:", df["timestamp"].iloc[0])
-
-    print("Last Candle:", df["timestamp"].iloc[-1])
-
-    print("Last Close:", df["close"].iloc[-1])
-
-    print("==================================")
-
-    print()
+    return df
     # ==========================
 # EMA
 # ==========================
 
 def add_ema(df):
 
-    df["ema20"] = (
-        df["close"]
-        .ewm(span=20, adjust=False)
-        .mean()
-    )
-
-    df["ema50"] = (
-        df["close"]
-        .ewm(span=50, adjust=False)
-        .mean()
-    )
-
-    df["ema200"] = (
-        df["close"]
-        .ewm(span=200, adjust=False)
-        .mean()
-    )
+    df["ema20"] = df["close"].ewm(span=20).mean()
+    df["ema50"] = df["close"].ewm(span=50).mean()
+    df["ema200"] = df["close"].ewm(span=200).mean()
 
     return df
 
@@ -172,45 +84,28 @@ def add_ema(df):
 # ATR
 # ==========================
 
-def add_atr(df, period=ATR_PERIOD):
+def add_atr(df, period=14):
 
     high_low = df["high"] - df["low"]
 
     high_close = (
-        df["high"] -
-        df["close"].shift()
+        df["high"] - df["close"].shift()
     ).abs()
 
     low_close = (
-        df["low"] -
-        df["close"].shift()
+        df["low"] - df["close"].shift()
     ).abs()
 
     tr = pd.concat(
-
         [
-
             high_low,
-
             high_close,
-
             low_close
-
         ],
-
         axis=1
-
     ).max(axis=1)
 
-    df["atr"] = (
-
-        tr
-
-        .rolling(period)
-
-        .mean()
-
-    )
+    df["atr"] = tr.rolling(period).mean()
 
     return df
 
@@ -222,83 +117,15 @@ def add_atr(df, period=ATR_PERIOD):
 def add_volume(df):
 
     df["avg_volume"] = (
-
         df["volume"]
-
         .rolling(20)
-
         .mean()
-
     )
 
     return df
 
 
 # ==========================
-# RSI
-# ==========================
-
-def add_rsi(df, period=14):
-
-    delta = df["close"].diff()
-
-    gain = delta.clip(lower=0)
-
-    loss = -delta.clip(upper=0)
-
-    avg_gain = gain.rolling(period).mean()
-
-    avg_loss = loss.rolling(period).mean()
-
-    rs = avg_gain / avg_loss
-
-    df["rsi"] = 100 - (
-
-        100 / (1 + rs)
-
-    )
-
-    return df
-
-
-# ==========================
-# VWAP
-# ==========================
-
-def add_vwap(df):
-
-    tp = (
-
-        df["high"]
-
-        + df["low"]
-
-        + df["close"]
-
-    ) / 3
-
-    cumulative_tp = (
-
-        tp * df["volume"]
-
-    ).cumsum()
-
-    cumulative_volume = (
-
-        df["volume"]
-
-    ).cumsum()
-
-    df["vwap"] = (
-
-        cumulative_tp /
-
-        cumulative_volume
-
-    )
-
-    return df
-    # ==========================
 # PREPARE MARKET
 # ==========================
 
@@ -307,13 +134,9 @@ def prepare_market(df):
     df = add_ema(df)
     df = add_atr(df)
     df = add_volume(df)
-    df = add_rsi(df)
-    df = add_vwap(df)
 
     return df
-
-
-# ==========================
+    # ==========================
 # TREND
 # ==========================
 
@@ -322,7 +145,10 @@ def detect_trend(df):
     df = prepare_market(df)
 
     if len(df) < 200:
-        return "SIDEWAYS"
+        return {
+            "trend": "SIDEWAYS",
+            "strength": 0
+        }
 
     price = float(df["close"].iloc[-1])
 
@@ -331,12 +157,23 @@ def detect_trend(df):
     ema200 = float(df["ema200"].iloc[-1])
 
     if price > ema20 > ema50 > ema200:
-        return "BULLISH"
+
+        return {
+            "trend": "BULLISH",
+            "strength": 100
+        }
 
     elif price < ema20 < ema50 < ema200:
-        return "BEARISH"
 
-    return "SIDEWAYS"
+        return {
+            "trend": "BEARISH",
+            "strength": 100
+        }
+
+    return {
+        "trend": "SIDEWAYS",
+        "strength": 40
+    }
 
 
 # ==========================
@@ -345,7 +182,7 @@ def detect_trend(df):
 
 def detect_volume_confirmation(df):
 
-    df = add_volume(df)
+    df = prepare_market(df)
 
     if len(df) < 20:
         return False
@@ -360,12 +197,9 @@ def detect_volume_confirmation(df):
 # STRONG CANDLE
 # ==========================
 
-def detect_strong_candle(df):
+def strong_candle(df):
 
-    df = add_atr(df)
-
-    if len(df) < ATR_PERIOD + 5:
-        return False
+    df = prepare_market(df)
 
     body = abs(
         float(df["close"].iloc[-1]) -
@@ -381,14 +215,11 @@ def detect_strong_candle(df):
 # SESSION FILTER
 # ==========================
 
-def detect_session(df):
+def session_filter(df):
 
-    hour = int(df["timestamp"].iloc[-1].hour)
+    hour = df["timestamp"].iloc[-1].hour
 
-    london = 7 <= hour <= 16
-    newyork = 13 <= hour <= 22
-
-    return london or newyork
+    return 7 <= hour <= 17
 
 
 # ==========================
@@ -403,8 +234,8 @@ def validate_market(df):
 
         "volume": detect_volume_confirmation(df),
 
-        "strong_candle": detect_strong_candle(df),
+        "strong_candle": strong_candle(df),
 
-        "session": detect_session(df)
+        "session": session_filter(df)
 
     }
