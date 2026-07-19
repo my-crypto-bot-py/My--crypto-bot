@@ -1,50 +1,37 @@
 # ==========================
-# SMT DIVERGENCE ENGINE
+# ICT SMT DIVERGENCE ENGINE V2
 # ==========================
 
 
 # ==========================
-# GET RECENT HIGH / LOW
+# GET SWING POINTS
 # ==========================
 
-def get_recent_high_low(df, lookback=50):
+def get_recent_high_low(
+    df,
+    lookback=50
+):
 
-    data = df.tail(lookback)
+    data = df.tail(
+        lookback
+    )
 
-    high = float(data["high"].max())
-
-    low = float(data["low"].min())
 
     return {
 
-        "high": high,
+        "high":
+        float(data["high"].max()),
 
-        "low": low
+
+        "low":
+        float(data["low"].min())
 
     }
 
 
 
 # ==========================
-# MARKET STRUCTURE POINT
-# ==========================
-
-def get_market_points(df):
-
-    recent = get_recent_high_low(df)
-
-    return {
-
-        "high": recent["high"],
-
-        "low": recent["low"]
-
-    }
-
-
-
-# ==========================
-# COMPARE TWO MARKETS
+# COMPARE MARKETS
 # ==========================
 
 def compare_markets(
@@ -52,99 +39,154 @@ def compare_markets(
     compare_df
 ):
 
-    main = get_market_points(main_df)
+    main = get_recent_high_low(
+        main_df
+    )
 
-    comp = get_market_points(compare_df)
+
+    comp = get_recent_high_low(
+        compare_df
+    )
 
 
     return {
 
-        "main_high": main["high"],
+        "main_high":
+        main["high"],
 
-        "main_low": main["low"],
 
-        "compare_high": comp["high"],
+        "main_low":
+        main["low"],
 
-        "compare_low": comp["low"]
+
+        "compare_high":
+        comp["high"],
+
+
+        "compare_low":
+        comp["low"]
 
     }
-  # ==========================
+
+
+
+# ==========================
 # BULLISH SMT
 # ==========================
 
 def detect_bullish_smt(
+
     main_df,
+
     compare_df
+
 ):
 
     data = compare_markets(
+
         main_df,
+
         compare_df
+
     )
 
 
-    # Main market makes lower low
-    # Compare market fails to make lower low
+    # Main takes low liquidity
+    # Compare fails to take low
+
 
     if (
-        data["main_low"] < data["compare_low"]
+
+        data["main_low"]
+        <
+        data["compare_low"]
+
         and
-        data["compare_low"] > data["main_low"]
+
+        data["compare_low"]
+        >
+        data["main_low"]
+
     ):
+
 
         return {
 
-            "direction": "BUY",
+            "direction":
+            "BUY",
 
-            "type": "Bullish SMT",
+            "type":
+            "Bullish SMT",
 
             "reason":
-            "Lower Low divergence"
+            "Main market lower low, second market no confirmation",
+
+            "confirm":
+            True
 
         }
 
 
     return None
-
-
-
-# ==========================
+    # ==========================
 # BEARISH SMT
 # ==========================
 
 def detect_bearish_smt(
+
     main_df,
+
     compare_df
+
 ):
 
     data = compare_markets(
+
         main_df,
+
         compare_df
+
     )
 
 
-    # Main market makes higher high
-    # Compare market fails to make higher high
+    # Main takes high liquidity
+    # Compare fails to take high
+
 
     if (
-        data["main_high"] > data["compare_high"]
+
+        data["main_high"]
+        >
+        data["compare_high"]
+
         and
-        data["compare_high"] < data["main_high"]
+
+        data["compare_high"]
+        <
+        data["main_high"]
+
     ):
+
 
         return {
 
-            "direction": "SELL",
+            "direction":
+            "SELL",
 
-            "type": "Bearish SMT",
+            "type":
+            "Bearish SMT",
 
             "reason":
-            "Higher High divergence"
+            "Main market higher high, second market no confirmation",
+
+            "confirm":
+            True
 
         }
 
 
     return None
+
 
 
 
@@ -153,13 +195,20 @@ def detect_bearish_smt(
 # ==========================
 
 def detect_smt(
+
     main_df,
+
     compare_df
+
 ):
 
+
     bullish = detect_bullish_smt(
+
         main_df,
+
         compare_df
+
     )
 
 
@@ -168,9 +217,13 @@ def detect_smt(
         return bullish
 
 
+
     bearish = detect_bearish_smt(
+
         main_df,
+
         compare_df
+
     )
 
 
@@ -179,116 +232,172 @@ def detect_smt(
         return bearish
 
 
-    return None
-  # ==========================
-# BULLISH SMT
+
+    return {
+
+        "confirm":
+        False,
+
+        "direction":
+        None,
+
+        "reason":
+        "No SMT Divergence"
+
+    }
+
+
+
+
+# ==========================
+# MULTI MARKET SMT
 # ==========================
 
-def detect_bullish_smt(
-    main_df,
-    compare_df
+def get_smt_confirmation(
+
+    btc_df,
+
+    eth_df=None,
+
+    sol_df=None
+
 ):
 
-    data = compare_markets(
-        main_df,
-        compare_df
-    )
+
+    results = []
 
 
-    # Main market makes lower low
-    # Compare market fails to make lower low
 
-    if (
-        data["main_low"] < data["compare_low"]
-        and
-        data["compare_low"] > data["main_low"]
-    ):
+    if eth_df is not None:
+
+
+        eth_smt = detect_smt(
+
+            btc_df,
+
+            eth_df
+
+        )
+
+
+        if eth_smt.get("confirm"):
+
+            results.append(
+                eth_smt
+            )
+
+
+
+    if sol_df is not None:
+
+
+        sol_smt = detect_smt(
+
+            btc_df,
+
+            sol_df
+
+        )
+
+
+        if sol_smt.get("confirm"):
+
+            results.append(
+                sol_smt
+            )
+
+
+
+    if len(results) == 0:
+
 
         return {
 
-            "direction": "BUY",
+            "confirm":
+            False,
 
-            "type": "Bullish SMT",
+            "direction":
+            None,
 
             "reason":
-            "Lower Low divergence"
+            "No SMT Confirmation"
 
         }
 
 
-    return None
+
+    # Same direction check
+
+    buy = 0
+    sell = 0
 
 
 
-# ==========================
-# BEARISH SMT
-# ==========================
-
-def detect_bearish_smt(
-    main_df,
-    compare_df
-):
-
-    data = compare_markets(
-        main_df,
-        compare_df
-    )
+    for r in results:
 
 
-    # Main market makes higher high
-    # Compare market fails to make higher high
+        if r["direction"] == "BUY":
 
-    if (
-        data["main_high"] > data["compare_high"]
-        and
-        data["compare_high"] < data["main_high"]
-    ):
+            buy += 1
+
+
+        elif r["direction"] == "SELL":
+
+            sell += 1
+
+
+
+    if buy > sell:
+
 
         return {
 
-            "direction": "SELL",
+            "confirm":
+            True,
 
-            "type": "Bearish SMT",
+            "direction":
+            "BUY",
 
-            "reason":
-            "Higher High divergence"
+            "type":
+            "Multi Market Bullish SMT",
+
+            "strength":
+            buy
 
         }
 
 
-    return None
+
+    elif sell > buy:
+
+
+        return {
+
+            "confirm":
+            True,
+
+            "direction":
+            "SELL",
+
+            "type":
+            "Multi Market Bearish SMT",
+
+            "strength":
+            sell
+
+        }
 
 
 
-# ==========================
-# FINAL SMT CHECK
-# ==========================
+    return {
 
-def detect_smt(
-    main_df,
-    compare_df
-):
+        "confirm":
+        False,
 
-    bullish = detect_bullish_smt(
-        main_df,
-        compare_df
-    )
+        "direction":
+        None,
 
+        "reason":
+        "SMT Conflict"
 
-    if bullish:
-
-        return bullish
-
-
-    bearish = detect_bearish_smt(
-        main_df,
-        compare_df
-    )
-
-
-    if bearish:
-
-        return bearish
-
-
-    return None
+    }
