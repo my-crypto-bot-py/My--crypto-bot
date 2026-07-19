@@ -220,7 +220,7 @@ def detect_equal_low(swing_lows, tolerance=0.001):
         }
 
     return None
-    # ==========================
+# ==========================
 # BULLISH BOS
 # ==========================
 
@@ -278,7 +278,30 @@ def detect_bearish_bos(df, swing_lows):
         }
 
     return None
-            # ==========================
+# ==========================
+# FINAL BOS
+# ==========================
+
+def detect_bos(df, swing_highs, swing_lows):
+
+    bullish = detect_bullish_bos(
+        df,
+        swing_highs
+    )
+
+    if bullish:
+        return bullish
+
+    bearish = detect_bearish_bos(
+        df,
+        swing_lows
+    )
+
+    if bearish:
+        return bearish
+
+    return None
+# ==========================
 # CHoCH
 # ==========================
 
@@ -382,7 +405,7 @@ def detect_mss(df, bos=None, choch=None):
 
 
     return None
-    # ==========================
+# ==========================
 # STRONG SWING FILTER
 # ==========================
 
@@ -477,7 +500,7 @@ def get_structure_direction(
         return bos["direction"]
 
     return None
-    # ==========================
+# ==========================
 # COMPLETE STRUCTURE ANALYSIS
 # ==========================
 
@@ -576,7 +599,7 @@ def debug_structure(df):
     print("Swing Lows :", len(result["swing_lows"]))
 
     print("===========================\n")
-    # ==========================
+# ==========================
 # BOS CONFIRMATION
 # ==========================
 
