@@ -1,3 +1,9 @@
+import pandas as pd
+
+# ==========================
+# FIND SWINGS
+# ==========================
+
 def find_swings(df, left=5, right=5):
 
     swing_highs = []
@@ -17,11 +23,13 @@ def find_swings(df, left=5, right=5):
         left_low = df["low"].iloc[i-left:i].min()
         right_low = df["low"].iloc[i+1:i+right+1].min()
 
+        candle_size = high - low
+
         # Strong Swing High
         if (
             high > left_high
             and high > right_high
-            and (high - low) > high * 0.002
+            and candle_size > high * 0.002
         ):
             swing_highs.append({
                 "index": i,
@@ -33,7 +41,7 @@ def find_swings(df, left=5, right=5):
         if (
             low < left_low
             and low < right_low
-            and (high - low) > low * 0.002
+            and candle_size > low * 0.002
         ):
             swing_lows.append({
                 "index": i,
@@ -43,6 +51,32 @@ def find_swings(df, left=5, right=5):
 
     return swing_highs, swing_lows
 
+
+# ==========================
+# LAST SWING
+# ==========================
+
+def get_last_swing(swing_list):
+
+    if len(swing_list) == 0:
+        return None
+
+    return swing_list[-1]
+
+
+# ==========================
+# PREVIOUS SWING
+# ==========================
+
+def get_previous_swing(swing_list):
+
+    if len(swing_list) < 2:
+        return None
+
+    return swing_list[-2]
+    # ==========================
+# BREAK OF STRUCTURE (BOS)
+# ==========================
 
 def detect_bos(df, swing_highs, swing_lows):
 
@@ -83,40 +117,10 @@ def detect_bos(df, swing_highs, swing_lows):
 
     return None
 
-    close = float(df["close"].iloc[-1])
 
-    last_high = swing_highs[-1]
-    prev_high = swing_highs[-2]
-
-    last_low = swing_lows[-1]
-    prev_low = swing_lows[-2]
-
-    # Bullish BOS
-    if (
-        last_high["price"] > prev_high["price"]
-        and close > last_high["price"]
-        and last_high["index"] > prev_high["index"]
-    ):
-        return {
-            "direction": "BUY",
-            "type": "Bullish BOS",
-            "level": last_high["price"]
-        }
-
-    # Bearish BOS
-    if (
-        last_low["price"] < prev_low["price"]
-        and close < last_low["price"]
-        and last_low["index"] > prev_low["index"]
-    ):
-        return {
-            "direction": "SELL",
-            "type": "Bearish BOS",
-            "level": last_low["price"]
-        }
-
-    return None
-
+# ==========================
+# MARKET STRUCTURE SHIFT (MSS)
+# ==========================
 
 def detect_mss(df, swing_highs, swing_lows):
 
@@ -153,10 +157,15 @@ def detect_mss(df, swing_highs, swing_lows):
             "level": last_low["price"]
         }
 
-        return None
+    return None
 
+
+# ==========================
+# CHANGE OF CHARACTER (CHOCH)
+# ==========================
 
 def detect_choch(df, swing_highs, swing_lows):
+
     if len(swing_highs) < 3 or len(swing_lows) < 3:
         return None
 
@@ -191,9 +200,7 @@ def detect_choch(df, swing_highs, swing_lows):
         }
 
     return None
-
-
-# ==========================
+    # ==========================
 # EQUAL HIGH / EQUAL LOW
 # ==========================
 
@@ -222,82 +229,44 @@ def detect_equal_levels(
             result["equal_low"] = l1
 
     return result
+
+
 # ==========================
-# DISPLACEMENT
+# STRUCTURE SUMMARY
 # ==========================
 
-def detect_displacement(df):
+def analyze_structure(df):
 
-    if len(df) < 20:
-        return None
+    swing_highs, swing_lows = find_swings(df)
 
-    body = abs(
-        float(df["close"].iloc[-1]) -
-        float(df["open"].iloc[-1])
+    bos = detect_bos(
+        df,
+        swing_highs,
+        swing_lows
     )
 
-    avg_body = (
-        df["close"] -
-        df["open"]
-    ).abs().tail(20).mean()
+    mss = detect_mss(
+        df,
+        swing_highs,
+        swing_lows
+    )
 
-    if body >= avg_body * 2:
+    choch = detect_choch(
+        df,
+        swing_highs,
+        swing_lows
+    )
 
-        if df["close"].iloc[-1] > df["open"].iloc[-1]:
+    equal_levels = detect_equal_levels(
+        swing_highs,
+        swing_lows
+    )
 
-            return {
-                "direction": "BUY",
-                "strength": round(body / avg_body, 2)
-            }
-
-        else:
-
-            return {
-                "direction": "SELL",
-                "strength": round(body / avg_body, 2)
-            }
-
-    return None
-
-
-# ==========================
-# LIQUIDITY GRAB
-# ==========================
-
-def detect_liquidity_grab(
-    df,
-    swing_highs,
-    swing_lows
-):
-
-    if len(swing_highs) < 1 or len(swing_lows) < 1:
-        return None
-
-    last = df.iloc[-1]
-
-    last_high = swing_highs[-1]["price"]
-    last_low = swing_lows[-1]["price"]
-
-    # Buy-side Liquidity Grab
-    if (
-        float(last["high"]) > last_high
-        and float(last["close"]) < last_high
-    ):
-        return {
-            "direction": "SELL",
-            "type": "Buy Side Liquidity Grab"
-        }
-
-    # Sell-side Liquidity Grab
-    if (
-        float(last["low"]) < last_low
-        and float(last["close"]) > last_low
-    ):
-        return {
-            "direction": "BUY",
-            "type": "Sell Side Liquidity Grab"
-        }
-
-    return None
-
-    
+    return {
+        "swing_highs": swing_highs,
+        "swing_lows": swing_lows,
+        "bos": bos,
+        "mss": mss,
+        "choch": choch,
+        "equal_levels": equal_levels
+    }
