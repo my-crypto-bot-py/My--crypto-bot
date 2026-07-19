@@ -315,3 +315,167 @@ def detect_displacement(df):
 # ==========================
 
 def detect_break
+      # ==========================
+# TRADE LEVEL ENGINE
+# ==========================
+
+def generate_trade_levels(
+    df,
+    signal,
+    fvg=None,
+    order_block=None,
+    liquidity=None
+):
+
+    price = float(df["close"].iloc[-1])
+
+    if signal == "BUY":
+
+        entry = price
+
+        if order_block and order_block["direction"] == "BUY":
+
+            entry = (
+                order_block["high"] +
+                order_block["low"]
+            ) / 2
+
+            sl = order_block["low"] * 0.998
+
+        elif fvg and fvg["direction"] == "BUY":
+
+            entry = (
+                fvg["top"] +
+                fvg["bottom"]
+            ) / 2
+
+            sl = fvg["bottom"] * 0.998
+
+        else:
+
+            sl = float(df["low"].tail(30).min()) * 0.998
+
+        risk = entry - sl
+
+        if risk <= 0:
+            return None
+
+        tp1 = float(df["high"].tail(50).max())
+
+        if tp1 <= entry:
+            tp1 = entry + risk * 2
+
+        tp2 = entry + risk * 3
+
+    elif signal == "SELL":
+
+        entry = price
+
+        if order_block and order_block["direction"] == "SELL":
+
+            entry = (
+                order_block["high"] +
+                order_block["low"]
+            ) / 2
+
+            sl = order_block["high"] * 1.002
+
+        elif fvg and fvg["direction"] == "SELL":
+
+            entry = (
+                fvg["top"] +
+                fvg["bottom"]
+            ) / 2
+
+            sl = fvg["top"] * 1.002
+
+        else:
+
+            sl = float(df["high"].tail(30).max()) * 1.002
+
+        risk = sl - entry
+
+        if risk <= 0:
+            return None
+
+        tp1 = float(df["low"].tail(50).min())
+
+        if tp1 >= entry:
+            tp1 = entry - risk * 2
+
+        tp2 = entry - risk * 3
+
+    else:
+        return None
+
+    return {
+
+        "entry": round(entry,4),
+
+        "sl": round(sl,4),
+
+        "tp1": round(tp1,4),
+
+        "tp2": round(tp2,4)
+
+    }
+
+
+# ==========================
+# SMART MONEY SUMMARY
+# ==========================
+
+def analyze_smart_money(df):
+
+    liquidity = detect_liquidity_sweep(df)
+
+    fvg = detect_fvg(df)
+
+    order_block = detect_order_block(df)
+
+    fresh_ob = is_fresh_order_block(
+        df,
+        order_block
+    )
+
+    zone = get_premium_discount(df)
+
+    displacement = detect_displacement(df)
+
+    liquidity_grab = detect_liquidity_grab(df)
+
+    breaker = detect_breaker_block(
+        df,
+        order_block
+    )
+
+    mitigation = detect_mitigation_block(
+        df,
+        order_block
+    )
+
+    rejection = detect_rejection_block(df)
+
+    return {
+
+        "liquidity": liquidity,
+
+        "fvg": fvg,
+
+        "order_block": order_block,
+
+        "fresh_ob": fresh_ob,
+
+        "zone": zone,
+
+        "displacement": displacement,
+
+        "liquidity_grab": liquidity_grab,
+
+        "breaker": breaker,
+
+        "mitigation": mitigation,
+
+        "rejection": rejection
+
+    }
