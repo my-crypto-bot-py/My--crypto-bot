@@ -1,6 +1,5 @@
 from config import SYMBOLS
-from market import get_market_data
-from trend import detect_trend
+from market import get_market_data, detect_trend
 
 
 def scan_market():
@@ -16,27 +15,34 @@ def scan_market():
             if df is None or df.empty:
                 continue
 
-            trend = detect_trend(df, symbol)
+            trend_data = detect_trend(df)
 
-            direction = trend.get("trend", "UNKNOWN")
-            strength = trend.get("strength", 0)
+            direction = trend_data["trend"]
+            strength = trend_data["strength"]
 
-            # Sideways coins ignore
             if direction == "SIDEWAYS":
                 continue
 
             results.append({
+
                 "symbol": symbol,
+
                 "trend": direction,
+
                 "strength": strength
+
             })
 
         except Exception as e:
+
             print(symbol, e)
 
     results.sort(
+
         key=lambda x: x["strength"],
+
         reverse=True
+
     )
 
     return results
@@ -54,9 +60,13 @@ def get_best_symbol():
     for coin in data:
 
         print(
+
             coin["symbol"],
+
             coin["trend"],
+
             coin["strength"]
+
         )
 
     print("=============================\n")
