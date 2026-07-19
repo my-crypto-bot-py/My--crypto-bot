@@ -142,54 +142,52 @@ def run():
     # Debug PD Array
 
     debug_pd_arrays(df)
-    # ==========================
-    # OTE + PD ARRAY ANALYSIS
-    # ==========================
+# ==========================
+# OTE + PD ARRAY ANALYSIS
+# ==========================
+
+ote_signal = None
 
 
-    ote_signal = None
+if best_poi:
+
+    poi_high = best_poi["high"]
+
+    poi_low = best_poi["low"]
+
+    current_price = float(
+        df["close"].iloc[-1]
+    )
 
 
-    if best_poi:
+    ote_signal = institutional_ote_entry(
 
-        poi_high = best_poi["high"]
+        price=current_price,
 
-        poi_low = best_poi["low"]
+        high=poi_high,
 
+        low=poi_low,
 
-        current_price = float(
-            df["close"].iloc[-1]
-        )
+        direction=direction,
 
+        bos=bos,
 
-        ote_signal =
-    institutional_ote_entry(
+        mss=mss,
 
-            price=current_price,
+        choch=choch,
 
-            high=poi_high,
+        fvg=fvg,
 
-            low=poi_low,
+        order_block=order_block
 
-            direction=direction,
-
-            bos=bos,
-
-            mss=mss,
-
-            choch=choch,
-
-            fvg=fvg,
-
-            order_block=order_block
-
-        )
+    )
 
 
-        print(
-            "OTE Signal:",
-            ote_signal
-        )
+print(
+    "OTE Signal:",
+    ote_signal
+)
+
 
     # ==========================
     # SMT ANALYSIS
