@@ -1,28 +1,49 @@
 # ==========================
-# CONFIDENCE ENGINE
+# ICT CONFIDENCE ENGINE V2
 # ==========================
+
 
 def calculate_confidence(
 
     trend,
+
     bos,
+
     choch,
+
     mss,
+
     liquidity,
+
     fvg,
+
     order_block,
+
     equal_levels,
+
     displacement,
+
     liquidity_grab,
+
     zone,
+
     btc=True,
+
     volume=True
 
 ):
 
+
     score = 0
+
     reasons = []
-    direction = None
+
+
+    buy_points = 0
+
+    sell_points = 0
+
+
 
     # ==========================
     # TREND
@@ -30,64 +51,104 @@ def calculate_confidence(
 
     if trend == "BULLISH":
 
-        score += 20
-        direction = "BUY"
-        reasons.append("4H Bullish Trend")
+        buy_points += 20
+
+        reasons.append(
+            "4H Bullish Trend"
+        )
+
 
     elif trend == "BEARISH":
 
-        score += 20
-        direction = "SELL"
-        reasons.append("4H Bearish Trend")
+        sell_points += 20
+
+        reasons.append(
+            "4H Bearish Trend"
+        )
+
+
+
 
     # ==========================
-    # BOS
+    # STRUCTURE
     # ==========================
 
-    if bos:
+    structures = [
 
-        score += 15
-        direction = bos["direction"]
-        reasons.append(bos["type"])
+        bos,
+
+        mss,
+
+        choch
+
+    ]
+
+
+    for item in structures:
+
+
+        if item:
+
+
+            if item["direction"] == "BUY":
+
+                buy_points += 15
+
+
+            elif item["direction"] == "SELL":
+
+                sell_points += 15
+
+
+
+            reasons.append(
+                item["type"]
+            )
+
+
+
 
     # ==========================
-    # MSS
-    # ==========================
-
-    if mss:
-
-        score += 15
-        direction = mss["direction"]
-        reasons.append(mss["type"])
-
-    # ==========================
-    # CHOCH
-    # ==========================
-
-    if choch:
-
-        score += 10
-        direction = choch["direction"]
-        reasons.append(choch["type"])
-            # ==========================
     # LIQUIDITY
     # ==========================
 
     if liquidity:
 
-        score += 10
-        direction = liquidity["direction"]
-        reasons.append(liquidity["type"])
 
-    # ==========================
+        if liquidity["direction"] == "BUY":
+
+            buy_points += 10
+
+
+        else:
+
+            sell_points += 10
+
+
+
+        reasons.append(
+            liquidity["type"]
+        )
+            # ==========================
     # FVG
     # ==========================
 
     if fvg:
 
-        score += 10
-        direction = fvg["direction"]
-        reasons.append(fvg["type"])
+        if fvg["direction"] == "BUY":
+
+            buy_points += 10
+
+        else:
+
+            sell_points += 10
+
+
+        reasons.append(
+            fvg["type"]
+        )
+
+
 
     # ==========================
     # ORDER BLOCK
@@ -95,9 +156,20 @@ def calculate_confidence(
 
     if order_block:
 
-        score += 10
-        direction = order_block["direction"]
-        reasons.append(order_block["type"])
+        if order_block["direction"] == "BUY":
+
+            buy_points += 10
+
+        else:
+
+            sell_points += 10
+
+
+        reasons.append(
+            order_block["type"]
+        )
+
+
 
     # ==========================
     # DISPLACEMENT
@@ -105,9 +177,21 @@ def calculate_confidence(
 
     if displacement:
 
-        score += 5
-        direction = displacement["direction"]
-        reasons.append("Displacement")
+
+        if displacement["direction"] == "BUY":
+
+            buy_points += 5
+
+        else:
+
+            sell_points += 5
+
+
+        reasons.append(
+            "Displacement"
+        )
+
+
 
     # ==========================
     # LIQUIDITY GRAB
@@ -115,9 +199,21 @@ def calculate_confidence(
 
     if liquidity_grab:
 
-        score += 5
-        direction = liquidity_grab["direction"]
-        reasons.append(liquidity_grab["type"])
+
+        if liquidity_grab["direction"] == "BUY":
+
+            buy_points += 5
+
+        else:
+
+            sell_points += 5
+
+
+        reasons.append(
+            liquidity_grab["type"]
+        )
+
+
 
     # ==========================
     # EQUAL LEVELS
@@ -125,89 +221,160 @@ def calculate_confidence(
 
     if equal_levels:
 
-        if equal_levels.get("equal_high"):
-            score += 3
-            reasons.append("Equal High")
 
-        if equal_levels.get("equal_low"):
-            score += 3
-            reasons.append("Equal Low")
+        if equal_levels.get(
+            "equal_high"
+        ):
 
-    # ==========================
-    # PREMIUM / DISCOUNT
-    # ==========================
+            sell_points += 3
 
-    if zone:
+            reasons.append(
+                "Equal High Liquidity"
+            )
 
-        zone_name = zone["zone"]
 
-        if direction == "BUY":
 
-            if zone_name in ["Discount", "Deep Discount"]:
-                score += 5
-                reasons.append(zone_name)
+        if equal_levels.get(
+            "equal_low"
+        ):
 
-        elif direction == "SELL":
+            buy_points += 3
 
-            if zone_name in ["Premium", "Deep Premium"]:
-                score += 5
-                reasons.append(zone_name)
+            reasons.append(
+                "Equal Low Liquidity"
+            )
+
+
 
     # ==========================
-    # BTC CONFIRMATION
+    # BTC FILTER
     # ==========================
 
     if btc:
 
         score += 5
-        reasons.append("BTC Confirmation")
+
+        reasons.append(
+            "BTC Confirmation"
+        )
+
+
 
     # ==========================
-    # VOLUME CONFIRMATION
+    # VOLUME FILTER
     # ==========================
 
     if volume:
 
-        score += 4
-        reasons.append("Volume Confirmation")
-            # ==========================
+        score += 5
+
+        reasons.append(
+            "Volume Confirmation"
+        )
+
+
+
+    # ==========================
+    # FINAL DIRECTION
+    # ==========================
+
+    if buy_points > sell_points:
+
+        direction = "BUY"
+
+        score += buy_points
+
+
+
+    elif sell_points > buy_points:
+
+        direction = "SELL"
+
+        score += sell_points
+
+
+
+    else:
+
+        direction = None
+
+        score = 0
+
+
+
+    # ==========================
     # SCORE LIMIT
     # ==========================
 
-    if score > 100:
-        score = 100
+    score = min(
+        score,
+        100
+    )
+
+
 
     # ==========================
     # QUALITY
     # ==========================
 
     if score >= 90:
+
         quality = "A+"
 
+
+
     elif score >= 80:
+
         quality = "A"
 
+
+
     elif score >= 70:
+
         quality = "B"
 
+
+
     elif score >= 60:
+
         quality = "C"
 
+
+
     else:
+
         quality = "NO TRADE"
 
+
+
     # ==========================
-    # FINAL RETURN
+    # RETURN
     # ==========================
 
     return {
 
-        "direction": direction,
 
-        "score": score,
+        "direction":
+        direction,
 
-        "quality": quality,
 
-        "reasons": reasons
+        "score":
+        score,
+
+
+        "quality":
+        quality,
+
+
+        "buy_score":
+        buy_points,
+
+
+        "sell_score":
+        sell_points,
+
+
+        "reasons":
+        reasons
 
     }
