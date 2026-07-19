@@ -9,42 +9,59 @@ SYMBOLS = [
     "XRP-USDT-SWAP"
 ]
 
+
 # ==========================
 # TIMEFRAMES
 # ==========================
 
-HTF = "1d"
-TREND_TF = "4h"
-POI_TF = "1h"
-ENTRY_TF = "5m"
+HTF = "1d"          # Daily Bias
+TREND_TF = "4h"      # Main Trend
+POI_TF = "1h"        # Order Block / FVG
+ENTRY_TF = "5m"      # Execution
+
+
+# Main execution timeframe
+TIMEFRAME = ENTRY_TF
+
 
 # ==========================
-# MARKET
+# MARKET DATA
 # ==========================
 
 LIMIT = 300
 
+
 # ==========================
-# SWINGS
+# ICT SETTINGS
 # ==========================
+
+LOOKBACK = 50
+
+LIQUIDITY_LOOKBACK = 20
 
 SWING_LEFT = 5
 SWING_RIGHT = 5
+
 
 # ==========================
 # ATR
 # ==========================
 
 ATR_PERIOD = 14
+
 ATR_MULTIPLIER = 1.5
+
 
 # ==========================
 # EMA
 # ==========================
 
 EMA_FAST = 20
+
 EMA_MID = 50
+
 EMA_SLOW = 200
+
 
 # ==========================
 # CONFIDENCE
@@ -52,18 +69,31 @@ EMA_SLOW = 200
 
 MIN_SCORE = 70
 
+MIN_EXECUTION_SCORE = 70
+
+
 # ==========================
-# RISK
+# RISK MANAGEMENT
 # ==========================
 
 MIN_RR = 3.0
+
 RISK_PERCENT = 1
 
+
 # ==========================
-# BTC FILTER
+# ACCOUNT
+# ==========================
+
+ACCOUNT_BALANCE = 1000
+
+
+# ==========================
+# BTC CONFIRMATION
 # ==========================
 
 BTC_CONFIRMATION = True
+
 
 # ==========================
 # VOLUME
@@ -71,18 +101,31 @@ BTC_CONFIRMATION = True
 
 VOLUME_CONFIRMATION = True
 
+
 # ==========================
 # SESSIONS
 # ==========================
 
 LONDON_SESSION = True
+
 NEWYORK_SESSION = True
 
+
 # ==========================
-# DUPLICATE FILTER
+# FILTERS
 # ==========================
 
 COOLDOWN_MINUTES = 60
+
 MAX_TRADES_PER_DAY = 5
+
 MAX_DAILY_LOSS = 3
+
 MAX_CONSECUTIVE_LOSSES = 3
+
+
+# ==========================
+# TELEGRAM
+# ==========================
+
+ENABLE_TELEGRAM = True
