@@ -1,10 +1,37 @@
 # ==========================
-# ICT PD ARRAYS ENGINE
+# ICT PD ARRAYS ENGINE V2
 # ==========================
 
 
 # ==========================
-# FAIR VALUE GAP (FVG)
+# NORMALIZE ARRAY LEVELS
+# ==========================
+
+def normalize_levels(array):
+
+    if array is None:
+        return None
+
+
+    if "high" in array and "low" in array:
+
+        return array
+
+
+    if "top" in array and "bottom" in array:
+
+        array["high"] = array["top"]
+        array["low"] = array["bottom"]
+
+        return array
+
+
+    return None
+
+
+
+# ==========================
+# FVG DETECTION
 # ==========================
 
 def detect_fvg(df):
@@ -23,13 +50,13 @@ def detect_fvg(df):
 
         return {
 
-            "direction": "BUY",
+            "direction":"BUY",
 
-            "type": "Bullish FVG",
+            "type":"Bullish FVG",
 
-            "top": float(c3["low"]),
+            "top":float(c3["low"]),
 
-            "bottom": float(c1["high"])
+            "bottom":float(c1["high"])
 
         }
 
@@ -40,13 +67,13 @@ def detect_fvg(df):
 
         return {
 
-            "direction": "SELL",
+            "direction":"SELL",
 
-            "type": "Bearish FVG",
+            "type":"Bearish FVG",
 
-            "top": float(c1["low"]),
+            "top":float(c1["low"]),
 
-            "bottom": float(c3["high"])
+            "bottom":float(c3["high"])
 
         }
 
@@ -56,7 +83,7 @@ def detect_fvg(df):
 
 
 # ==========================
-# FVG MIDPOINT
+# FVG MID
 # ==========================
 
 def fvg_midpoint(fvg):
@@ -66,45 +93,11 @@ def fvg_midpoint(fvg):
 
 
     return (
-
         fvg["top"]
-
         +
-
         fvg["bottom"]
-
     ) / 2
-
-
-
-# ==========================
-# PD ARRAY OBJECT
-# ==========================
-
-def create_pd_array(
-
-    fvg=None,
-
-    order_block=None,
-
-    breaker=None,
-
-    mitigation=None
-
-):
-
-    return {
-
-        "fvg": fvg,
-
-        "order_block": order_block,
-
-        "breaker": breaker,
-
-        "mitigation": mitigation
-
-    }
-  # ==========================
+    # ==========================
 # BREAKER BLOCK
 # ==========================
 
@@ -117,51 +110,51 @@ def detect_breaker_block(
         return None
 
 
-    last_price = float(
+    price = float(
         df["close"].iloc[-1]
     )
 
 
-    # Bullish OB failed -> Bearish Breaker
+    # Bullish OB broken downward
+    # becomes Bearish Breaker
 
     if (
         order_block["direction"] == "BUY"
         and
-        last_price <
-        order_block["low"]
+        price < order_block["low"]
     ):
 
         return {
 
-            "direction": "SELL",
+            "direction":"SELL",
 
-            "type": "Bearish Breaker",
+            "type":"Bearish Breaker",
 
-            "high": order_block["high"],
+            "high":order_block["high"],
 
-            "low": order_block["low"]
+            "low":order_block["low"]
 
         }
 
 
-    # Bearish OB failed -> Bullish Breaker
+    # Bearish OB broken upward
+    # becomes Bullish Breaker
 
     if (
         order_block["direction"] == "SELL"
         and
-        last_price >
-        order_block["high"]
+        price > order_block["high"]
     ):
 
         return {
 
-            "direction": "BUY",
+            "direction":"BUY",
 
-            "type": "Bullish Breaker",
+            "type":"Bullish Breaker",
 
-            "high": order_block["high"],
+            "high":order_block["high"],
 
-            "low": order_block["low"]
+            "low":order_block["low"]
 
         }
 
@@ -187,8 +180,6 @@ def detect_mitigation_block(
         df["close"].iloc[-1]
     )
 
-
-    # Price returns inside OB
 
     if (
         order_block["low"]
@@ -224,90 +215,87 @@ def detect_mitigation_block(
 def detect_rejection_block(df):
 
     if len(df) < 3:
-
         return None
 
 
     candle = df.iloc[-1]
 
 
-    high = float(
-        candle["high"]
-    )
+    high = float(candle["high"])
 
-    low = float(
-        candle["low"]
-    )
+    low = float(candle["low"])
 
-    open_price = float(
-        candle["open"]
-    )
+    open_price = float(candle["open"])
 
-    close = float(
-        candle["close"]
-    )
+    close = float(candle["close"])
 
 
     body = abs(
-        close - open_price
+        close-open_price
     )
 
-    upper_wick = high - max(
-        open_price,
-        close
+
+    upper_wick = (
+        high -
+        max(open_price,close)
     )
 
-    lower_wick = min(
-        open_price,
-        close
-    ) - low
+
+    lower_wick = (
+        min(open_price,close)
+        -
+        low
+    )
+
+
+    # Avoid zero body problem
+
+    if body == 0:
+        body = 0.0001
+
 
 
     # Bearish rejection
 
-    if upper_wick > body * 2:
+    if upper_wick >= body*2:
 
         return {
 
-            "direction":
-            "SELL",
+            "direction":"SELL",
 
             "type":
             "Bearish Rejection Block",
 
-            "high":
-            high,
+            "high":high,
 
-            "low":
-            low
+            "low":low
 
         }
+
 
 
     # Bullish rejection
 
-    if lower_wick > body * 2:
+    if lower_wick >= body*2:
 
         return {
 
-            "direction":
-            "BUY",
+            "direction":"BUY",
 
             "type":
             "Bullish Rejection Block",
 
-            "high":
-            high,
+            "high":high,
 
-            "low":
-            low
+            "low":low
 
         }
 
 
+
     return None
-  # ==========================
-# PD ARRAY COLLECTION
+    # ==========================
+# PD ARRAY COLLECTION V2
 # ==========================
 
 def collect_pd_arrays(df):
@@ -315,17 +303,31 @@ def collect_pd_arrays(df):
     arrays = []
 
 
+    # FVG
+
     fvg = detect_fvg(df)
 
     if fvg:
+
+        fvg["source"] = "FVG"
+
         arrays.append(fvg)
 
+
+
+    # ORDER BLOCK
 
     ob = detect_order_block(df)
 
     if ob:
+
+        ob["source"] = "ORDER BLOCK"
+
         arrays.append(ob)
 
+
+
+    # BREAKER
 
     breaker = detect_breaker_block(
         df,
@@ -333,8 +335,14 @@ def collect_pd_arrays(df):
     )
 
     if breaker:
+
+        breaker["source"] = "BREAKER"
+
         arrays.append(breaker)
 
+
+
+    # MITIGATION
 
     mitigation = detect_mitigation_block(
         df,
@@ -342,15 +350,25 @@ def collect_pd_arrays(df):
     )
 
     if mitigation:
+
+        mitigation["source"] = "MITIGATION"
+
         arrays.append(mitigation)
 
+
+
+    # REJECTION
 
     rejection = detect_rejection_block(
         df
     )
 
     if rejection:
+
+        rejection["source"] = "REJECTION"
+
         arrays.append(rejection)
+
 
 
     return arrays
@@ -358,7 +376,7 @@ def collect_pd_arrays(df):
 
 
 # ==========================
-# PD ARRAY SCORE
+# PD ARRAY SCORE V2
 # ==========================
 
 def score_pd_array(array):
@@ -366,29 +384,61 @@ def score_pd_array(array):
     score = 0
 
 
-    if array["type"].find("Order Block") >= 0:
+    array_type = array.get(
+        "type",
+        ""
+    )
+
+
+    # Order Block highest
+
+    if "Order Block" in array_type:
 
         score += 40
 
 
-    if array["type"].find("FVG") >= 0:
 
-        score += 30
+    # Breaker
 
-
-    if array["type"].find("Breaker") >= 0:
+    if "Breaker" in array_type:
 
         score += 35
 
 
-    if array["type"].find("Mitigation") >= 0:
+
+    # FVG
+
+    if "FVG" in array_type:
+
+        score += 30
+
+
+
+    # Mitigation
+
+    if "Mitigation" in array_type:
 
         score += 25
 
 
-    if array["type"].find("Rejection") >= 0:
+
+    # Rejection
+
+    if "Rejection" in array_type:
 
         score += 20
+
+
+
+    # Fresh zone bonus
+
+    if array.get(
+        "fresh",
+        False
+    ):
+
+        score += 10
+
 
 
     return score
@@ -404,9 +454,10 @@ def get_best_pd_array(df):
     arrays = collect_pd_arrays(df)
 
 
-    if len(arrays) == 0:
+    if not arrays:
 
         return None
+
 
 
     for array in arrays:
@@ -416,9 +467,10 @@ def get_best_pd_array(df):
         )
 
 
+
     best = max(
         arrays,
-        key=lambda x: x["score"]
+        key=lambda x:x["score"]
     )
 
 
@@ -427,7 +479,7 @@ def get_best_pd_array(df):
 
 
 # ==========================
-# PD ARRAY DEBUG
+# PD DEBUG PANEL
 # ==========================
 
 def debug_pd_arrays(df):
@@ -436,17 +488,39 @@ def debug_pd_arrays(df):
 
 
     print(
-        "===== PD ARRAYS ====="
+        "\n========== PD ARRAYS =========="
     )
 
 
-    for a in arrays:
+    if not arrays:
 
         print(
-            a
+            "No PD Array Found"
+        )
+
+        return
+
+
+
+    for item in arrays:
+
+        print(
+            item
         )
 
 
+    best = get_best_pd_array(df)
+
+
     print(
-        "====================="
+        "\nBEST PD ARRAY:"
+    )
+
+    print(
+        best
+    )
+
+
+    print(
+        "==============================\n"
     )
