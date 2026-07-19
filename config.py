@@ -13,32 +13,48 @@ SYMBOLS = [
 # TIMEFRAMES
 # ==========================
 
-TIMEFRAMES = {
-    "bias": "1D",
-    "trend": "4H",
-    "structure": "1H",
-    "poi": "30m",
-    "confirmation": "15m",
-    "entry": "5m"
-}
+HTF = "1D"
+TREND_TF = "4H"
+POI_TF = "1H"
+ENTRY_TF = "5m"
+
+# ==========================
+# STRUCTURE
+# ==========================
+
+SWING_LEFT = 5
+SWING_RIGHT = 5
 
 # ==========================
 # RISK
 # ==========================
 
-RISK_REWARD = 3.0
-MIN_CONFIDENCE = 85
-
-# ==========================
-# EMA
-# ==========================
-
-EMA_FAST = 50
-EMA_SLOW = 200
-
-# ==========================
-# ATR
-# ==========================
+MIN_RR = 3.0
 
 ATR_PERIOD = 14
 ATR_MULTIPLIER = 1.5
+
+# ==========================
+# CONFIDENCE
+# ==========================
+
+MIN_SCORE = 70
+
+# ==========================
+# SESSIONS
+# ==========================
+
+LONDON_SESSION = True
+NEWYORK_SESSION = True
+
+# ==========================
+# BTC FILTER
+# ==========================
+
+BTC_CONFIRMATION = True
+
+# ==========================
+# VOLUME
+# ==========================
+
+VOLUME_CONFIRMATION = True
