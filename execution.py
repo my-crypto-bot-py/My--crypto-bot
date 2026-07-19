@@ -1,52 +1,10 @@
 # ==========================
-# ICT EXECUTION ENGINE
+# ICT EXECUTION ENGINE V2
 # ==========================
 
 
 # ==========================
-# CHECK DIRECTION
-# ==========================
-
-def check_direction(
-    signal_direction,
-    structure=None,
-    smt=None,
-    pd_array=None
-):
-
-    confirmations = 0
-
-
-    if structure:
-
-        if structure.get("direction") == signal_direction:
-
-            confirmations += 1
-
-
-
-    if smt:
-
-        if smt.get("direction") == signal_direction:
-
-            confirmations += 1
-
-
-
-    if pd_array:
-
-        if pd_array.get("direction") == signal_direction:
-
-            confirmations += 1
-
-
-
-    return confirmations
-
-
-
-# ==========================
-# ENTRY VALIDATION
+# ENTRY SCORE
 # ==========================
 
 def validate_entry(
@@ -68,60 +26,63 @@ def validate_entry(
     score = 0
 
 
-    # PD Array
-
     if pd_array:
 
-        if pd_array.get("direction") == direction:
+        if pd_array.get(
+            "direction"
+        ) == direction:
 
             score += 30
 
 
-
-    # OTE
 
     if ote:
 
-        if ote.get("valid"):
+        if ote.get(
+            "valid"
+        ):
 
             score += 30
 
 
 
-    # Structure
-
     if structure:
 
-        if structure.get("direction") == direction:
+        if structure.get(
+            "direction"
+        ) == direction:
 
             score += 25
 
 
 
-    # SMT
-
     if smt:
 
-        if smt.get("confirm"):
+        if smt.get(
+            "confirm"
+        ) and smt.get(
+            "direction"
+        ) == direction:
 
-            if smt.get("direction") == direction:
-
-                score += 15
+            score += 15
 
 
 
     return {
 
-        "valid": score >= 70,
+        "valid":
+        score >= 70,
 
-        "score": score
+        "score":
+        score
 
     }
 
 
 
+
 # ==========================
-# EXECUTION DECISION
+# EXECUTION SIGNAL
 # ==========================
 
 def execution_signal(
@@ -139,6 +100,7 @@ def execution_signal(
     smt=None
 
 ):
+
 
     result = validate_entry(
 
@@ -159,9 +121,12 @@ def execution_signal(
 
     if result["valid"]:
 
+
         return {
 
-            "signal": direction,
+            "signal":
+            direction,
+
 
             "execution_score":
             result["score"]
@@ -169,34 +134,31 @@ def execution_signal(
         }
 
 
+
     return {
 
-        "signal": "NO TRADE",
+        "signal":
+        "NO TRADE",
+
 
         "execution_score":
         result["score"]
 
     }
-  # ==========================
+    # ==========================
 # SIGNAL MEMORY
 # ==========================
 
 last_signal = None
-
 last_signal_time = None
 
-
-
-# ==========================
-# COOLDOWN SETTINGS
-# ==========================
 
 COOLDOWN_MINUTES = 60
 
 
 
 # ==========================
-# CHECK DUPLICATE SIGNAL
+# DUPLICATE CHECK
 # ==========================
 
 def is_duplicate_signal(
@@ -211,24 +173,27 @@ def is_duplicate_signal(
         return False
 
 
+
     if (
 
-        last_signal["direction"]
+        last_signal.get("direction")
         ==
-        new_signal["direction"]
+        new_signal.get("direction")
 
         and
 
-        last_signal["entry"]
+        last_signal.get("entry")
         ==
-        new_signal["entry"]
+        new_signal.get("entry")
 
     ):
 
         return True
 
 
+
     return False
+
 
 
 
@@ -244,17 +209,18 @@ def save_signal(
     global last_signal_time
 
 
-    last_signal = signal
-
-
     from datetime import datetime
+
+
+    last_signal = signal
 
     last_signal_time = datetime.utcnow()
 
 
 
+
 # ==========================
-# CHECK COOLDOWN
+# COOLDOWN CHECK
 # ==========================
 
 def check_cooldown():
@@ -267,40 +233,50 @@ def check_cooldown():
         return False
 
 
+
     from datetime import datetime
 
 
     now = datetime.utcnow()
 
 
-    diff = (
+    minutes = (
+
         now - last_signal_time
+
     ).total_seconds() / 60
 
 
 
-    if diff < COOLDOWN_MINUTES:
+    return minutes < COOLDOWN_MINUTES
 
-        return True
-
-
-    return False
 
 
 
 # ==========================
-# FINAL DUPLICATE FILTER
+# FINAL SIGNAL FILTER
 # ==========================
 
 def final_signal_filter(
+
     signal
+
 ):
 
 
-    if signal.get("direction") == "NO TRADE":
-     
-    
-    return False
+    if signal.get(
+        "direction"
+    ) is None:
+
+        return False
+
+
+
+    if signal.get(
+        "direction"
+    ) == "NO TRADE":
+
+        return False
 
 
 
@@ -332,8 +308,12 @@ def final_signal_filter(
 
 
     return True
-  # ==========================
-# FINAL TRADE PACKAGE
+
+
+
+
+# ==========================
+# TRADE PACKAGE
 # ==========================
 
 def create_trade_package(
@@ -348,6 +328,7 @@ def create_trade_package(
 
 ):
 
+
     if levels is None:
 
         return None
@@ -356,26 +337,41 @@ def create_trade_package(
 
     return {
 
-        "direction": direction,
 
-        "entry": levels["entry"],
+        "direction":
+        direction,
 
-        "sl": levels["sl"],
 
-        "tp1": levels["tp1"],
+        "entry":
+        levels["entry"],
 
-        "tp2": levels["tp2"],
 
-        "score": score,
+        "sl":
+        levels["sl"],
 
-        "reasons": reasons or []
+
+        "tp1":
+        levels["tp1"],
+
+
+        "tp2":
+        levels["tp2"],
+
+
+        "score":
+        score,
+
+
+        "reasons":
+        reasons or []
 
     }
 
 
 
+
 # ==========================
-# RISK REWARD CHECK
+# RISK REWARD
 # ==========================
 
 def check_risk_reward(
@@ -385,6 +381,7 @@ def check_risk_reward(
     minimum_rr=3
 
 ):
+
 
     entry = trade["entry"]
 
@@ -404,6 +401,7 @@ def check_risk_reward(
     )
 
 
+
     if risk == 0:
 
         return False
@@ -413,19 +411,14 @@ def check_risk_reward(
     rr = reward / risk
 
 
-
     trade["rr"] = round(
         rr,
         2
     )
 
 
-    if rr >= minimum_rr:
+    return rr >= minimum_rr
 
-        return True
-
-
-    return False
 
 
 
@@ -439,14 +432,16 @@ def final_execution_gate(
 
 ):
 
+
     if trade is None:
 
         return {
 
-            "approved": False,
+            "approved":
+            False,
 
             "reason":
-            "No Trade Data"
+            "No Trade"
 
         }
 
@@ -456,12 +451,14 @@ def final_execution_gate(
         trade
     ):
 
+
         return {
 
-            "approved": False,
+            "approved":
+            False,
 
             "reason":
-            "Low Risk Reward"
+            "Low RR"
 
         }
 
@@ -471,9 +468,11 @@ def final_execution_gate(
         trade
     ):
 
+
         return {
 
-            "approved": False,
+            "approved":
+            False,
 
             "reason":
             "Duplicate/Cooldown"
@@ -484,8 +483,11 @@ def final_execution_gate(
 
     return {
 
-        "approved": True,
+        "approved":
+        True,
 
-        "trade": trade
+
+        "trade":
+        trade
 
     }
