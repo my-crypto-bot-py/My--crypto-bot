@@ -96,9 +96,11 @@ def scan_market():
 
 
 
-            if strength < 60:
+            if strength < MIN_SCORE:
+    
+                    continue
 
-                continue
+            
 
 
 
