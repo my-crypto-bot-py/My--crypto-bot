@@ -297,9 +297,10 @@ def final_signal_filter(
 ):
 
 
-    if signal["signal"] == "NO TRADE":
-
-        return False
+    if signal.get("direction") == "NO TRADE":
+     
+    
+    return False
 
 
 
