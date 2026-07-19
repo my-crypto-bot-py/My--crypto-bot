@@ -1,22 +1,27 @@
 # ==========================
-# ICT OTE ENGINE
+# ICT OTE ENGINE V2
 # ==========================
 
+
 def fibonacci_levels(high, low):
+
+    if high <= low:
+        return None
 
     diff = high - low
 
     return {
 
-        "0.50": high - (diff * 0.50),
+        "50": high - (diff * 0.50),
 
-        "0.618": high - (diff * 0.618),
+        "618": high - (diff * 0.618),
 
-        "0.705": high - (diff * 0.705),
+        "705": high - (diff * 0.705),
 
-        "0.79": high - (diff * 0.79)
+        "79": high - (diff * 0.79)
 
     }
+
 
 
 # ==========================
@@ -25,17 +30,27 @@ def fibonacci_levels(high, low):
 
 def buy_ote(high, low):
 
-    fib = fibonacci_levels(high, low)
+    fib = fibonacci_levels(
+        high,
+        low
+    )
+
+    if fib is None:
+        return None
+
 
     return {
 
-        "entry": fib["0.705"],
+        "direction":"BUY",
 
-        "discount": fib["0.618"],
+        "entry":fib["705"],
 
-        "deep_discount": fib["0.79"]
+        "ote_low":fib["79"],
+
+        "ote_high":fib["618"]
 
     }
+
 
 
 # ==========================
@@ -44,61 +59,106 @@ def buy_ote(high, low):
 
 def sell_ote(high, low):
 
+    if high <= low:
+        return None
+
+
     diff = high - low
+
 
     return {
 
-        "entry": low + (diff * 0.705),
+        "direction":"SELL",
 
-        "premium": low + (diff * 0.618),
+        "entry":
+        low + (diff * 0.705),
 
-        "deep_premium": low + (diff * 0.79)
+
+        "ote_low":
+        low + (diff * 0.618),
+
+
+        "ote_high":
+        low + (diff * 0.79)
 
     }
-  # ==========================
-# PRICE INSIDE OTE
+
+
+
+# ==========================
+# PRICE IN OTE ZONE
 # ==========================
 
-def is_price_in_ote(price, high, low, direction):
+def is_price_in_ote(
+    price,
+    high,
+    low,
+    direction
+):
+
 
     if direction == "BUY":
 
-        ote = buy_ote(high, low)
-
-        return (
-            ote["deep_discount"]
-            <= price
-            <= ote["discount"]
+        ote = buy_ote(
+            high,
+            low
         )
+
 
     elif direction == "SELL":
 
-        ote = sell_ote(high, low)
-
-        return (
-            ote["premium"]
-            <= price
-            <= ote["deep_premium"]
+        ote = sell_ote(
+            high,
+            low
         )
 
-    return False
+
+    else:
+
+        return False
 
 
+
+    if ote is None:
+        return False
+
+
+
+    return (
+
+        ote["ote_low"]
+        <= price
+        <= ote["ote_high"]
+
+    )
+    # ==========================
+# GET OTE ZONE
 # ==========================
-# BEST OTE ENTRY
-# ==========================
 
-def get_best_ote(high, low, direction):
+def get_best_ote(
+    high,
+    low,
+    direction
+):
 
     if direction == "BUY":
 
-        return buy_ote(high, low)
+        return buy_ote(
+            high,
+            low
+        )
+
 
     elif direction == "SELL":
 
-        return sell_ote(high, low)
+        return sell_ote(
+            high,
+            low
+        )
+
 
     return None
+
 
 
 # ==========================
@@ -106,135 +166,199 @@ def get_best_ote(high, low, direction):
 # ==========================
 
 def confirm_ote(
+
     price,
+
     high,
+
     low,
+
     direction
+
 ):
 
     valid = is_price_in_ote(
+
         price,
+
         high,
+
         low,
+
         direction
+
     )
 
-    ote = get_best_ote(
+
+    zone = get_best_ote(
+
         high,
+
         low,
+
         direction
+
     )
+
+
+    if zone is None:
+
+        return {
+
+            "valid":False,
+
+            "reason":"Invalid OTE Zone"
+
+        }
+
+
 
     return {
 
-        "valid": valid,
+        "valid":valid,
 
-        "entry": ote["entry"],
+        "direction":direction,
 
-        "zone": ote
+        "entry":zone["entry"],
+
+        "zone":zone
 
     }
-  # ==========================
-# OTE + STRUCTURE CONFIRMATION
+
+
+
+# ==========================
+# STRUCTURE CONFIRMATION
 # ==========================
 
-def ote_structure_confirmation(
-    ote_valid,
+def confirm_structure(
+
     bos=None,
+
     mss=None,
-    choch=None
+
+    choch=None,
+
+    direction=None
+
 ):
 
-    if not ote_valid:
-        return False
+    confirmations = 0
 
 
-    if (
-        bos
-        or mss
-        or choch
-    ):
+    for item in [
+        bos,
+        mss,
+        choch
+    ]:
 
-        return True
+        if item:
+
+            if item.get(
+                "direction"
+            ) == direction:
+
+                confirmations += 1
 
 
-    return False
+
+    return confirmations > 0
+
 
 
 
 # ==========================
-# OTE + FVG CONFIRMATION
+# FVG CONFIRMATION
 # ==========================
 
-def ote_fvg_confirmation(
-    ote_valid,
+def confirm_fvg(
+
     fvg=None,
+
     direction=None
+
 ):
 
-    if not ote_valid:
+    if not fvg:
+
         return False
 
 
-    if fvg:
+    return (
 
-        if fvg.get("direction") == direction:
+        fvg.get("direction")
+        ==
+        direction
 
-            return True
+    )
 
-
-    return False
 
 
 
 # ==========================
-# OTE + ORDER BLOCK
+# ORDER BLOCK CONFIRMATION
 # ==========================
 
-def ote_orderblock_confirmation(
-    ote_valid,
+def confirm_order_block(
+
     order_block=None,
+
     direction=None
+
 ):
 
-    if not ote_valid:
+    if not order_block:
+
         return False
 
 
-    if order_block:
+    return (
 
-        if order_block.get("direction") == direction:
+        order_block.get("direction")
+        ==
+        direction
 
-            return True
-
-
-    return False
+    )
 
 
 
 # ==========================
-# FINAL OTE ENTRY ENGINE
+# INSTITUTIONAL OTE ENTRY
 # ==========================
 
 def institutional_ote_entry(
 
     price,
+
     high,
+
     low,
+
     direction,
+
     bos=None,
+
     mss=None,
+
     choch=None,
+
     fvg=None,
+
     order_block=None
 
 ):
 
+
     ote = confirm_ote(
+
         price,
+
         high,
+
         low,
+
         direction
+
     )
 
 
@@ -242,29 +366,29 @@ def institutional_ote_entry(
 
         return {
 
-            "valid": False,
+            "valid":False,
 
-            "reason": "Price not in OTE"
+            "reason":
+            "Price Outside OTE"
 
         }
 
 
-    structure = ote_structure_confirmation(
 
-        True,
+    structure = confirm_structure(
 
         bos,
 
         mss,
 
-        choch
+        choch,
+
+        direction
 
     )
 
 
-    fvg_confirm = ote_fvg_confirmation(
-
-        True,
+    fvg_confirm = confirm_fvg(
 
         fvg,
 
@@ -273,9 +397,7 @@ def institutional_ote_entry(
     )
 
 
-    ob_confirm = ote_orderblock_confirmation(
-
-        True,
+    ob_confirm = confirm_order_block(
 
         order_block,
 
@@ -284,34 +406,58 @@ def institutional_ote_entry(
     )
 
 
-    confirmations = sum([
-
-        structure,
-
-        fvg_confirm,
-
-        ob_confirm
-
-    ])
+    score = 0
 
 
-    if confirmations >= 2:
+    if structure:
+
+        score += 40
+
+
+    if fvg_confirm:
+
+        score += 30
+
+
+    if ob_confirm:
+
+        score += 30
+
+
+
+    if score >= 70:
 
         return {
 
-            "valid": True,
+            "valid":True,
 
-            "entry": ote["entry"],
+            "direction":direction,
 
-            "confirmations": confirmations
+            "entry":ote["entry"],
+
+            "score":score,
+
+            "confirmations":{
+
+                "structure":structure,
+
+                "fvg":fvg_confirm,
+
+                "order_block":ob_confirm
+
+            }
 
         }
 
 
+
     return {
 
-        "valid": False,
+        "valid":False,
 
-        "reason": "Low Confirmation"
+        "score":score,
+
+        "reason":
+        "Low OTE Confirmation"
 
     }
