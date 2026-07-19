@@ -189,70 +189,50 @@ print(
 )
 
 
-    # ==========================
-    # SMT ANALYSIS
-    # ==========================
+# ==========================
+# SMT ANALYSIS
+# ==========================
 
-    smt_result = None
-
-
-    try:
-
-        # SMT only runs with BTC reference
-
-        if symbol == "BTC-USDT-SWAP":
+smt_result = None
 
 
-            eth_df = get_market_data(
+try:
 
-                "ETH-USDT-SWAP",
+    if symbol == "BTC-USDT-SWAP":
 
-                "5m"
-
-            )
-
-
-            sol_df = get_market_data(
-
-                "SOL-USDT-SWAP",
-
-                "5m"
-
-            )
-
-
-            smt_result = get_smt_confirmation(
-
-                btc_df=df,
- 
-                eth_df=eth_df,
-
-                sol_df=sol_df
-
-            )
-
-
-        else:
-
-            smt_result = None
-
-
-
-    except Exception as e:
-
-
-        print(
-            "SMT ERROR:",
-            e
+        eth_df = get_market_data(
+            "ETH-USDT-SWAP",
+            "5m"
         )
 
+        sol_df = get_market_data(
+            "SOL-USDT-SWAP",
+            "5m"
+        )
+
+        smt_result = get_smt_confirmation(
+            btc_df=df,
+            eth_df=eth_df,
+            sol_df=sol_df
+        )
+
+    else:
+
+        smt_result = None
+
+
+except Exception as e:
 
     print(
-        "SMT RESULT:",
-        smt_result
+        "SMT ERROR:",
+        e
     )
- 
 
+
+print(
+    "SMT RESULT:",
+    smt_result
+)
 
 
 # ==========================
