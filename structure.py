@@ -100,7 +100,27 @@ def get_swings(df):
             })
 
     return swing_highs, swing_lows
-    # ==========================
+# ==========================
+# DETECT SWING HIGHS
+# ==========================
+
+def detect_swing_highs(df):
+
+    swing_highs, _ = get_swings(df)
+
+    return swing_highs
+
+
+# ==========================
+# DETECT SWING LOWS
+# ==========================
+
+def detect_swing_lows(df):
+
+    _, swing_lows = get_swings(df)
+
+    return swing_lows
+# ==========================
 # REMOVE DUPLICATE SWINGS
 # ==========================
 
