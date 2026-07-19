@@ -249,7 +249,15 @@ def detect_bearish_bos(df, swing_lows):
 
             "direction": "SELL",
 
-            "type": "Bearish BOS
+            "type": "Bearish BOS",
+
+            "level": last_low["price"],
+
+            "index": last_low["index"]
+
+        }
+
+    return None
             # ==========================
 # CHoCH
 # ==========================
