@@ -152,106 +152,107 @@ def run():
 
     if best_poi:
 
-    poi_high = best_poi["high"]
+        poi_high = best_poi["high"]
 
-    poi_low = best_poi["low"]
-
-
-    current_price = float(
-        df["close"].iloc[-1]
-    )
+        poi_low = best_poi["low"]
 
 
-    ote_signal = institutional_ote_entry(
+        current_price = float(
+            df["close"].iloc[-1]
+        )
 
-        price=current_price,
 
-        high=poi_high,
+        ote_signal =
+    institutional_ote_entry(
 
-        low=poi_low,
+            price=current_price,
 
-        direction=direction,
+            high=poi_high,
 
-        bos=bos,
+            low=poi_low,
 
-        mss=mss,
+            direction=direction,
 
-        choch=choch,
+            bos=bos,
 
-        fvg=fvg,
+            mss=mss,
 
-        order_block=order_block
+            choch=choch,
 
-    )
+            fvg=fvg,
+
+            order_block=order_block
+
+        )
+
+
+        print(
+            "OTE Signal:",
+            ote_signal
+        )
+
+    # ==========================
+    # SMT ANALYSIS
+    # ==========================
+
+    smt_result = None
+
+
+    try:
+
+        # SMT only runs with BTC reference
+
+        if symbol == "BTC-USDT-SWAP":
+
+
+            eth_df = get_market_data(
+
+                "ETH-USDT-SWAP",
+
+                "5m"
+
+            )
+
+
+            sol_df = get_market_data(
+
+                "SOL-USDT-SWAP",
+
+                "5m"
+
+            )
+
+
+            smt_result = get_smt_confirmation(
+
+                btc_df=df,
+ 
+                eth_df=eth_df,
+
+                sol_df=sol_df
+
+            )
+
+
+        else:
+
+            smt_result = None
+
+
+
+    except Exception as e:
+
+
+        print(
+            "SMT ERROR:",
+            e
+        )
 
 
     print(
-        "OTE Signal:",
-        ote_signal
+        "SMT RESULT:",
+        smt_result
     )
-
-# ==========================
-# SMT ANALYSIS
-# ==========================
-
-smt_result = None
-
-
-try:
-
-    # SMT only runs with BTC reference
-
-    if symbol == "BTC-USDT-SWAP":
-
-
-        eth_df = get_market_data(
-
-            "ETH-USDT-SWAP",
-
-            "5m"
-
-        )
-
-
-        sol_df = get_market_data(
-
-            "SOL-USDT-SWAP",
-
-            "5m"
-
-        )
-
-
-        smt_result = get_smt_confirmation(
-
-            btc_df=df,
-
-            eth_df=eth_df,
-
-            sol_df=sol_df
-
-        )
-
-
-    else:
-
-        smt_result = None
-
-
-
-except Exception as e:
-
-
-    print(
-        "SMT ERROR:",
-        e
-    )
-
-
-print(
-    "SMT RESULT:",
-    smt_result
-)
  
 
 
