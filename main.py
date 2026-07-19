@@ -542,7 +542,7 @@ print(
     print("Swing Highs:", swing_highs[-2:])
     print("Swing Lows:", swing_lows[-2:])
     print("BOS:", bos)
-        # ==========================
+    # ==========================
     # SMART MONEY
     # ==========================
 
@@ -610,7 +610,7 @@ print(
     print("Direction:", direction)
     print("Score:", score)
     print("Signal:", signal_type)
-        # ==========================
+    # ==========================
     # NO TRADE
     # ==========================
 
