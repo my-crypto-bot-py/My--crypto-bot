@@ -338,6 +338,9 @@ def analyze_symbol(
 
 def run_market_scan():
 
+   print("SCANNER RUNNING")
+   print(market_data)
+    
     modules = import_engines()
 
 
@@ -358,7 +361,9 @@ def run_market_scan():
     symbols = scan_symbols()
 
 
-    for symbol_data in symbols:
+    print("SETUP FOUND:", setup)
+
+ for symbol_data in symbols:
 
         result = analyze_symbol(
 
