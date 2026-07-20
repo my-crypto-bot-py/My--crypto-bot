@@ -390,27 +390,71 @@ def process_signal(
 # ==========================
 # BOT PROCESS CYCLE
 # ==========================
+
 def bot_cycle():
-    
+
     print("BOT CYCLE RUNNING")
 
     try:
 
-        # ==========================
-        # MARKET DATA
-        # ==========================
-
         data = get_market_data()
 
+        print("MARKET DATA:", data)
 
-        if not validate_market_data(
 
-            data
+        if not validate_market_data(data):
 
-        ):
+            print("MARKET DATA INVALID")
 
             return None
 
+
+        print("MARKET DATA OK")
+
+
+        scan_result = run_scanner(data)
+
+        print("SCANNER RESULT:", scan_result)
+
+
+        if not scan_result:
+
+            print("NO SCANNER RESULT")
+
+            return None
+
+
+        bias = prepare_market_bias(data)
+
+        print("BIAS:", bias)
+
+
+        setup = {
+
+            "scan": scan_result,
+
+            "bias": bias
+
+        }
+
+
+        signal = process_signal(setup)
+
+        print("SIGNAL:", signal)
+
+
+        return signal
+
+
+    except Exception as e:
+
+        BOT_STATE["errors"] += 1
+
+        handle_error(e)
+
+        print("ERROR:", e)
+
+        return None
 
 
         # ==========================
