@@ -332,15 +332,15 @@ def analyze_symbol(
         confidence
 
     }
-    # ==========================
+# ==========================
 # MARKET SCAN ENGINE
 # ==========================
 
 def run_market_scan():
 
-   print("SCANNER RUNNING")
-   print(market_data)
-    
+    print("SCANNER RUNNING")
+
+
     modules = import_engines()
 
 
@@ -361,9 +361,10 @@ def run_market_scan():
     symbols = scan_symbols()
 
 
-    print("SETUP FOUND:", setup)
+    print("SYMBOLS FOUND:", symbols)
 
- for symbol_data in symbols:
+
+    for symbol_data in symbols:
 
         result = analyze_symbol(
 
@@ -372,6 +373,9 @@ def run_market_scan():
             modules
 
         )
+
+
+        print("ANALYSIS RESULT:", result)
 
 
         if result:
@@ -386,8 +390,10 @@ def run_market_scan():
     scanner_state["signals"] = results
 
 
-    return results
+    print("FINAL SIGNALS:", results)
 
+
+    return results
 
 
 # ==========================
