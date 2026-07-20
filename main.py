@@ -75,8 +75,8 @@ def start_bot():
     )
 
 
-    return True
-    # ==========================
+    return True 
+# ==========================
 # MARKET DATA HANDLER
 # ==========================
 
@@ -143,7 +143,7 @@ def market_check():
 
 
     return False
-    # ==========================
+# ==========================
 # TREND CHECK
 # ==========================
 
@@ -231,7 +231,7 @@ def prepare_market_bias(
         session
 
     }
-    # ==========================
+ # ==========================
 # SCANNER CONNECTION
 # ==========================
 
@@ -332,8 +332,8 @@ def generate_signal(
 
         )
 
-        return None
-        # ==========================
+        return None 
+# ==========================
 # PROCESS SIGNAL
 # ==========================
 
@@ -437,8 +437,8 @@ def bot_cycle():
 
         )
 
-        return None
-        # ==========================
+        return None 
+# ==========================
 # TELEGRAM SENDER
 # ==========================
 
@@ -534,8 +534,8 @@ def final_signal_process(
     )
 
 
-    return signal
-    # ==========================
+    return signal 
+# ==========================
 # MAIN BOT LOOP
 # ==========================
 
@@ -626,8 +626,8 @@ def bot_status():
 
         BOT_STATE["errors"]
 
-    }
-    # ==========================
+    } 
+# ==========================
 # MAIN ENGINE
 # ==========================
 
@@ -697,8 +697,9 @@ def test_mode():
     reset_bot()
 
 
-    return main_engine_v5()
-    # ==========================
+    return main_engine_v5() 
+
+# ==========================
 # FINAL STATUS
 # ==========================
 
@@ -719,7 +720,6 @@ def final_status():
         BOT_STATE["errors"]
 
     }
-
 
 
 # ==========================
