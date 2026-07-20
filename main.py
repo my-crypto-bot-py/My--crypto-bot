@@ -390,7 +390,6 @@ def process_signal(
 # ==========================
 # BOT PROCESS CYCLE
 # ==========================
-
 def bot_cycle():
 
     print("BOT CYCLE RUNNING")
@@ -453,81 +452,6 @@ def bot_cycle():
         handle_error(e)
 
         print("ERROR:", e)
-
-        return None
-
-
-        # ==========================
-        # SCANNER
-        # ==========================
-
-        scan_result = run_scanner(
-
-            data
-
-        )
-
-
-        if not scan_result:
-
-            return None
-
-
-
-        # ==========================
-        # MARKET BIAS
-        # ==========================
-
-        bias = prepare_market_bias(
-
-            data
-
-        )
-
-
-
-        # ==========================
-        # COMBINE SETUP
-        # ==========================
-
-        setup = {
-
-            "scan":
-
-            scan_result,
-
-            "bias":
-
-            bias
-
-        }
-
-
-
-        # ==========================
-        # SIGNAL PROCESS
-        # ==========================
-
-        signal = process_signal(
-
-            setup
-
-        )
-
-
-        return signal
-
-
-
-    except Exception as e:
-
-        BOT_STATE["errors"] += 1
-
-        handle_error(
-
-            e
-
-        )
 
         return None
 
