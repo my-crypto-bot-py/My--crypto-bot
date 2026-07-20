@@ -1,243 +1,715 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 # ==========================
-# UTC HOUR
+# SESSION ENGINE V5
+# ==========================
+
+SESSION_STATE = {
+
+    "current": "NONE",
+
+    "active": False,
+
+    "allowed": False
+
+}
+
+
+# ==========================
+# SESSION TIMES (UTC)
+# ==========================
+
+SESSIONS = {
+
+    "ASIA": {
+
+        "start": 0,
+
+        "end": 8
+
+    },
+
+    "LONDON": {
+
+        "start": 7,
+
+        "end": 16
+
+    },
+
+    "NEW_YORK": {
+
+        "start": 13,
+
+        "end": 21
+
+    }
+
+}
+
+
+
+# ==========================
+# GET UTC HOUR
 # ==========================
 
 def get_utc_hour():
 
-    return datetime.utcnow().hour
+    return datetime.now(
+
+        timezone.utc
+
+    ).hour
+
 
 
 # ==========================
-# ASIAN SESSION
-# 00:00 - 08:00 UTC
+# CHECK SESSION
 # ==========================
 
-def is_asian_session():
+def check_session():
 
     hour = get_utc_hour()
 
-    return 0 <= hour < 8
+
+    for name, session in SESSIONS.items():
+
+        if session["start"] <= hour < session["end"]:
+
+            return name
+
+
+    return "NONE"
+    # ==========================
+# ACTIVE SESSION CHECK
+# ==========================
+
+def is_session_active():
+
+    current = check_session()
+
+
+    if current != "NONE":
+
+        return True
+
+
+    return False
+
 
 
 # ==========================
-# LONDON SESSION
-# 08:00 - 16:00 UTC
+# UPDATE SESSION STATE
 # ==========================
 
-def is_london_session():
+def update_session_state():
 
-    hour = get_utc_hour()
-
-    return 8 <= hour < 16
+    current = check_session()
 
 
-# ==========================
-# NEW YORK SESSION
-# 13:00 - 21:00 UTC
-# ==========================
+    SESSION_STATE["current"] = current
 
-def is_newyork_session():
+    SESSION_STATE["active"] = (
 
-    hour = get_utc_hour()
+        current != "NONE"
 
-    return 13 <= hour < 21
+    )
+
+    SESSION_STATE["allowed"] = (
+
+        current in [
+
+            "LONDON",
+
+            "NEW_YORK"
+
+        ]
+
+    )
 
 
-# ==========================
-# LONDON KILL ZONE
-# 07:00 - 10:00 UTC
-# ==========================
+    return SESSION_STATE
 
-def london_killzone():
-
-    hour = get_utc_hour()
-
-    return 7 <= hour < 10
 
 
 # ==========================
-# NEW YORK KILL ZONE
-# 13:00 - 16:00 UTC
+# SESSION FILTER
 # ==========================
 
-def newyork_killzone():
+def session_filter():
 
-    hour = get_utc_hour()
+    state = update_session_state()
 
-    return 13 <= hour < 16
-  # ==========================
-# SESSION HIGH / LOW
+
+    return state["allowed"]
+    # ==========================
+# SESSION STRENGTH
 # ==========================
 
-def get_session_high_low(df):
+def session_strength(
 
-    high = float(df["high"].max())
-    low = float(df["low"].min())
+    session
+
+):
+
+    if session == "LONDON":
+
+        return "HIGH"
+
+
+    if session == "NEW_YORK":
+
+        return "HIGH"
+
+
+    if session == "ASIA":
+
+        return "MEDIUM"
+
+
+    return "LOW"
+
+
+
+# ==========================
+# BEST SESSION CHECK
+# ==========================
+
+def best_trading_session():
+
+    current = check_session()
+
+
+    return current in [
+
+        "LONDON",
+
+        "NEW_YORK"
+
+    ]
+
+
+
+# ==========================
+# SESSION SCORE
+# ==========================
+
+def session_score():
+
+    current = check_session()
+
+
+    if current in [
+
+        "LONDON",
+
+        "NEW_YORK"
+
+    ]:
+
+        return 10
+
+
+    elif current == "ASIA":
+
+        return 5
+
+
+    return 0
+    # ==========================
+# SESSION REPORT
+# ==========================
+
+def session_report():
+
+    state = update_session_state()
+
 
     return {
 
-        "high": high,
+        "session":
 
-        "low": low
+        state["current"],
+
+        "active":
+
+        state["active"],
+
+        "allowed":
+
+        state["allowed"],
+
+        "strength":
+
+        session_strength(
+
+            state["current"]
+
+        ),
+
+        "score":
+
+        session_score()
 
     }
 
 
-# ==========================
-# ASIAN RANGE
-# ==========================
-
-def get_asian_range(df):
-
-    session = df.iloc[-96:] if len(df) >= 96 else df
-
-    return get_session_high_low(session)
-
 
 # ==========================
-# LONDON RANGE
+# DEBUG SESSION
 # ==========================
 
-def get_london_range(df):
+def debug_session():
 
-    session = df.iloc[-48:] if len(df) >= 48 else df
+    report = session_report()
 
-    return get_session_high_low(session)
+
+    print("\n========== SESSION V5 ==========")
+
+    print(
+
+        "Current :",
+
+        report["session"]
+
+    )
+
+    print(
+
+        "Active :",
+
+        report["active"]
+
+    )
+
+    print(
+
+        "Allowed :",
+
+        report["allowed"]
+
+    )
+
+    print(
+
+        "Strength :",
+
+        report["strength"]
+
+    )
+
+    print(
+
+        "Score :",
+
+        report["score"]
+
+    )
+
+    print(
+
+        "================================\n"
+
+    )
+
+
+    return report
+
 
 
 # ==========================
-# NEW YORK RANGE
+# SCANNER SESSION CHECK
 # ==========================
 
-def get_newyork_range(df):
+def session_for_scanner():
 
-    session = df.iloc[-48:] if len(df) >= 48 else df
+    report = session_report()
 
-    return get_session_high_low(session)
-
-
-# ==========================
-# SESSION LIQUIDITY
-# ==========================
-
-def get_session_liquidity(df):
-
-    asian = get_asian_range(df)
-
-    london = get_london_range(df)
-
-    newyork = get_newyork_range(df)
 
     return {
 
-        "asian": asian,
+        "allowed":
 
-        "london": london,
+        report["allowed"],
 
-        "newyork": newyork
+        "score":
+
+        report["score"],
+
+        "session":
+
+        report["session"]
 
     }
-  # ==========================
-# JUDAS SWING
+    # ==========================
+# SESSION VALIDATION
 # ==========================
 
-def detect_judas_swing(df):
+def validate_session():
 
-    if len(df) < 20:
-        return None
+    report = session_report()
 
-    asian = get_asian_range(df)
 
-    last = df.iloc[-1]
+    return report["allowed"]
 
-    # Buy-side Judas
-    if (
-        float(last["high"]) > asian["high"]
-        and float(last["close"]) < asian["high"]
-    ):
-
-        return {
-            "direction": "SELL",
-            "type": "Judas Buy Sweep"
-        }
-
-    # Sell-side Judas
-    if (
-        float(last["low"]) < asian["low"]
-        and float(last["close"]) > asian["low"]
-    ):
-
-        return {
-            "direction": "BUY",
-            "type": "Judas Sell Sweep"
-        }
-
-    return None
 
 
 # ==========================
-# SESSION SWEEP
+# SESSION DIRECTION
 # ==========================
 
-def detect_session_sweep(df):
+def session_direction():
 
-    if len(df) < 20:
-        return None
+    current = check_session()
 
-    asian = get_asian_range(df)
 
-    london = get_london_range(df)
+    if current == "LONDON":
 
-    last = df.iloc[-1]
+        return "ACTIVE"
 
-    # London takes Asian High
-    if (
-        float(last["high"]) > asian["high"]
-        and london_killzone()
-    ):
 
-        return {
-            "direction": "SELL",
-            "type": "London High Sweep"
-        }
 
-    # London takes Asian Low
-    if (
-        float(last["low"]) < asian["low"]
-        and london_killzone()
-    ):
+    if current == "NEW_YORK":
 
-        return {
-            "direction": "BUY",
-            "type": "London Low Sweep"
-        }
+        return "ACTIVE"
 
-    return None
+
+
+    if current == "ASIA":
+
+        return "ACTIVE"
+
+
+
+    return "INACTIVE"
+
+
+
+# ==========================
+# SESSION CONFIDENCE BONUS
+# ==========================
+
+def session_confidence_bonus():
+
+    score = session_score()
+
+
+    if score >= 10:
+
+        return 10
+
+
+    elif score >= 5:
+
+        return 5
+
+
+    return 0
+    # ==========================
+# SESSION FILTER ENGINE
+# ==========================
+
+def session_filter_engine():
+
+    report = session_report()
+
+
+    return {
+
+        "approved":
+
+        report["allowed"],
+
+        "session":
+
+        report["session"],
+
+        "score":
+
+        report["score"]
+
+    }
+
+
+
+# ==========================
+# TRADE SESSION APPROVAL
+# ==========================
+
+def approve_session_trade():
+
+    result = session_filter_engine()
+
+
+    return result["approved"]
+
+
+
+# ==========================
+# ADVANCED SESSION CHECK
+# ==========================
+
+def advanced_session_check(
+
+    require_high_session=True
+
+):
+
+    report = session_report()
+
+
+    if not report["active"]:
+
+        return False
+
+
+    if require_high_session:
+
+        return report["strength"] == "HIGH"
+
+
+    return True
+    # ==========================
+# ENGINE STATUS
+# ==========================
+
+def session_status():
+
+    state = update_session_state()
+
+
+    return {
+
+        "current":
+
+        state["current"],
+
+        "active":
+
+        state["active"],
+
+        "allowed":
+
+        state["allowed"]
+
+    }
+
+
+
+# ==========================
+# MODULE REPORT
+# ==========================
+
+def session_module_report():
+
+    return {
+
+        "status":
+
+        session_status(),
+
+        "report":
+
+        session_report()
+
+    }
+
+
+
+# ==========================
+# FINAL SESSION CHECK
+# ==========================
+
+def final_session_check():
+
+    return approve_session_trade()
+    # ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def sessions_engine():
+
+    report = session_module_report()
+
+
+    return {
+
+        "session":
+
+        report["report"],
+
+        "ready":
+
+        report["status"]["allowed"]
+
+    }
+
+
+
+# ==========================
+# SESSIONS ENGINE V5
+# ==========================
+
+def sessions_engine_v5():
+
+    result = sessions_engine()
+
+
+    return {
+
+        "current":
+
+        result["session"]["session"],
+
+        "active":
+
+        result["session"]["active"],
+
+        "allowed":
+
+        result["ready"],
+
+        "score":
+
+        result["session"]["score"]
+
+    }
+
+
+
+# ==========================
+# TEST ENGINE
+# ==========================
+
+def test_sessions():
+
+    return sessions_engine_v5()
+    # ==========================
+# RESET SESSION
+# ==========================
+
+def reset_session():
+
+    SESSION_STATE["current"] = "NONE"
+
+    SESSION_STATE["active"] = False
+
+    SESSION_STATE["allowed"] = False
+
+
+    return True
+
+
+
+# ==========================
+# FINAL DEBUG
+# ==========================
+
+def final_session_debug():
+
+    report = session_report()
+
+
+    print("\n========== FINAL SESSION V5 ==========")
+
+    print("Session :", report["session"])
+
+    print("Active :", report["active"])
+
+    print("Allowed :", report["allowed"])
+
+    print("Strength :", report["strength"])
+
+    print("Score :", report["score"])
+
+    print("======================================\n")
+
+
+    return report
+
 
 
 # ==========================
 # SESSION SUMMARY
 # ==========================
 
-def analyze_sessions(df):
+def session_summary():
+
+    report = session_report()
+
 
     return {
 
-        "asian": is_asian_session(),
+        "session":
 
-        "london": is_london_session(),
+        report["session"],
 
-        "newyork": is_newyork_session(),
+        "score":
 
-        "london_kz": london_killzone(),
+        report["score"],
 
-        "newyork_kz": newyork_killzone(),
+        "trade_allowed":
 
-        "judas": detect_judas_swing(df),
-
-        "session_sweep": detect_session_sweep(df)
+        report["allowed"]
 
     }
+    # ==========================
+# EXPORTS
+# ==========================
+
+__all__ = [
+
+    "check_session",
+
+    "get_utc_hour",
+
+    "is_session_active",
+
+    "update_session_state",
+
+    "session_filter",
+
+    "session_strength",
+
+    "best_trading_session",
+
+    "session_score",
+
+    "session_report",
+
+    "debug_session",
+
+    "session_for_scanner",
+
+    "validate_session",
+
+    "session_direction",
+
+    "session_confidence_bonus",
+
+    "session_filter_engine",
+
+    "approve_session_trade",
+
+    "advanced_session_check",
+
+    "session_status",
+
+    "session_module_report",
+
+    "final_session_check",
+
+    "sessions_engine",
+
+    "sessions_engine_v5",
+
+    "test_sessions",
+
+    "reset_session",
+
+    "final_session_debug",
+
+    "session_summary"
+
+]
