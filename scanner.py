@@ -353,65 +353,52 @@ def analyze_symbol(
 # ==========================
 # MARKET SCAN ENGINE
 # ==========================
-
 def run_market_scan():
 
     print("SCANNER RUNNING")
 
+    try:
 
-    modules = import_engines()
+        modules = import_engines()
 
+        print("MODULES:", modules)
 
-    if "error" in modules:
+        if "error" in modules:
 
-        return {
+            return {
+                "error": modules["error"]
+            }
 
-            "error":
+        results = []
 
-            modules["error"]
+        symbols = scan_symbols()
 
-        }
+        print("SYMBOLS FOUND:", symbols)
 
+        for symbol_data in symbols:
 
-    results = []
-
-
-    symbols = scan_symbols()
-
-
-    print("SYMBOLS FOUND:", symbols)
-
-
-    for symbol_data in symbols:
-
-        result = analyze_symbol(
-
-            symbol_data,
-
-            modules
-
-        )
-
-
-        print("ANALYSIS RESULT:", result)
-
-
-        if result:
-
-            results.append(
-
-                result
-
+            result = analyze_symbol(
+                symbol_data,
+                modules
             )
 
+            print("ANALYSIS RESULT:", result)
 
-    scanner_state["signals"] = results
+            if result:
 
+                results.append(result)
 
-    print("FINAL SIGNALS:", results)
+        scanner_state["signals"] = results
 
+        print("FINAL SIGNALS:", results)
 
-    return results
+        return results
+
+    except Exception as e:
+
+        print("RUN MARKET SCAN ERROR:", e)
+
+        raise
 
 
 # ==========================
@@ -1147,22 +1134,27 @@ def scanner_engine_v5():
 # FINAL SCANNER RUN
 # ==========================
 
-def run_scanner():
+def run_scanner(
 
-    signal = generate_signal()
+    market_data
 
+):
 
-    return {
+    try:
 
-        "signal":
+        from scanner import run_market_scan
 
-        signal,
+        result = run_market_scan()
 
-        "time":
+        return result
 
-        time.time()
+    except Exception as e:
 
-    }
+        print("RUN SCANNER ERROR:", e)
+
+        handle_error(e)
+
+        return None
 
 
 
