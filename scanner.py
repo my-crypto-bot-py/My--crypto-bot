@@ -193,51 +193,28 @@ def get_market_data(
 # ==========================
 def scan_symbols():
 
-    results = []
+    from market import get_market_data as market_get_data
 
+    results = []
 
     for symbol in SYMBOLS:
 
-        data = get_market_data(
-
+        data = market_get_data(
             symbol,
-
             TIMEFRAME,
-
             300
-
         )
-
 
         if data is not None and not data.empty:
 
             print("DATA RECEIVED:", symbol, len(data))
 
-            results.append(
-
-                {
-
-                    "symbol": symbol,
-
-                    "data": data
-
-                }
-
-            )
-
-
-        else:
-
-            print("NO DATA:", symbol)
-
-
-        scanner_state["scanned"] += 1
-
-
-    scanner_state["last_scan"] = time.time()
+            results.append({
+                "symbol": symbol,
+                "data": data
+            })
 
     print("TOTAL SYMBOLS:", len(results))
-
 
     return results
 # ==========================
