@@ -393,10 +393,13 @@ def process_signal(
 # ==========================
 # BOT PROCESS CYCLE
 # ==========================
-
 def bot_cycle():
 
     try:
+
+        # ==========================
+        # MARKET DATA
+        # ==========================
 
         data = get_market_data()
 
@@ -410,12 +413,57 @@ def bot_cycle():
             return None
 
 
-        setup = prepare_market_bias(
+
+        # ==========================
+        # SCANNER
+        # ==========================
+
+        scan_result = run_scanner(
 
             data
 
         )
 
+
+        if not scan_result:
+
+            return None
+
+
+
+        # ==========================
+        # MARKET BIAS
+        # ==========================
+
+        bias = prepare_market_bias(
+
+            data
+
+        )
+
+
+
+        # ==========================
+        # COMBINE SETUP
+        # ==========================
+
+        setup = {
+
+            "scan":
+
+            scan_result,
+
+            "bias":
+
+            bias
+
+        }
+
+
+
+        # ==========================
+        # SIGNAL PROCESS
+        # ==========================
 
         signal = process_signal(
 
@@ -425,6 +473,7 @@ def bot_cycle():
 
 
         return signal
+
 
 
     except Exception as e:
@@ -437,7 +486,8 @@ def bot_cycle():
 
         )
 
-        return None 
+        return None
+
 # ==========================
 # TELEGRAM SENDER
 # ==========================
@@ -775,8 +825,8 @@ def production_check():
 
         checks
 
-    )
-    # ==========================
+    ) 
+# ==========================
 # MAIN RUNNER
 # ==========================
 
