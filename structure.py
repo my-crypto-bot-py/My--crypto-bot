@@ -2,12 +2,7 @@ import pandas as pd
 import numpy as np
 
 # ==========================
-# ICT STRUCTURE ENGINE V2
-# ==========================
-
-
-# ==========================
-# SWING SETTINGS
+# ICT STRUCTURE ENGINE V5
 # ==========================
 
 SWING_LENGTH = 3
@@ -17,54 +12,102 @@ SWING_LENGTH = 3
 # SWING HIGH
 # ==========================
 
-def is_swing_high(df, index, length=SWING_LENGTH):
+def is_swing_high(
+
+    df,
+
+    index,
+
+    length=SWING_LENGTH
+
+):
 
     if index < length:
+
         return False
 
     if index >= len(df) - length:
+
         return False
 
-    current = float(df["high"].iloc[index])
+    current = float(
 
-    left = df["high"].iloc[index-length:index]
+        df["high"].iloc[index]
 
-    right = df["high"].iloc[index+1:index+length+1]
+    )
 
-    if current <= left.max():
-        return False
+    left = df["high"].iloc[
 
-    if current <= right.max():
-        return False
+        index-length:index
 
-    return True
+    ]
+
+    right = df["high"].iloc[
+
+        index+1:index+length+1
+
+    ]
+
+    return (
+
+        current > left.max()
+
+        and
+
+        current > right.max()
+
+    )
 
 
 # ==========================
 # SWING LOW
 # ==========================
 
-def is_swing_low(df, index, length=SWING_LENGTH):
+def is_swing_low(
+
+    df,
+
+    index,
+
+    length=SWING_LENGTH
+
+):
 
     if index < length:
+
         return False
 
     if index >= len(df) - length:
+
         return False
 
-    current = float(df["low"].iloc[index])
+    current = float(
 
-    left = df["low"].iloc[index-length:index]
+        df["low"].iloc[index]
 
-    right = df["low"].iloc[index+1:index+length+1]
+    )
 
-    if current >= left.min():
-        return False
+    left = df["low"].iloc[
 
-    if current >= right.min():
-        return False
+        index-length:index
 
-    return True
+    ]
+
+    right = df["low"].iloc[
+
+        index+1:index+length+1
+
+    ]
+
+    return (
+
+        current < left.min()
+
+        and
+
+        current < right.min()
+
+    )
 
 
 # ==========================
@@ -85,7 +128,9 @@ def get_swings(df):
 
                 "index": i,
 
-                "price": float(df["high"].iloc[i])
+                "price":
+
+                float(df["high"].iloc[i])
 
             })
 
@@ -95,53 +140,88 @@ def get_swings(df):
 
                 "index": i,
 
-                "price": float(df["low"].iloc[i])
+                "price":
+
+                float(df["low"].iloc[i])
 
             })
 
     return swing_highs, swing_lows
+
+
 # ==========================
-# DETECT SWING HIGHS
+# DETECT SWINGS
 # ==========================
 
 def detect_swing_highs(df):
 
-    swing_highs, _ = get_swings(df)
+    highs, _ = get_swings(df)
 
-    return swing_highs
+    return highs
 
-
-# ==========================
-# DETECT SWING LOWS
-# ==========================
 
 def detect_swing_lows(df):
 
-    _, swing_lows = get_swings(df)
+    _, lows = get_swings(df)
 
-    return swing_lows
+    return lows
+    # ==========================
+# CLEAN SWINGS
 # ==========================
-# REMOVE DUPLICATE SWINGS
-# ==========================
 
-def clean_swings(swings, min_distance=3):
+def clean_swings(
 
-    if not swings:
+    swings,
+
+    min_distance=3
+
+):
+
+    if len(swings) == 0:
+
         return []
 
-    cleaned = [swings[0]]
+    cleaned = [
+
+        swings[0]
+
+    ]
 
     for swing in swings[1:]:
 
         last = cleaned[-1]
 
-        if swing["index"] - last["index"] >= min_distance:
+        if (
 
-            cleaned.append(swing)
+            swing["index"]
+
+            -
+
+            last["index"]
+
+            >=
+
+            min_distance
+
+        ):
+
+            cleaned.append(
+
+                swing
+
+            )
 
         else:
 
-            if swing["price"] > last["price"]:
+            if (
+
+                swing["price"]
+
+                >
+
+                last["price"]
+
+            ):
 
                 cleaned[-1] = swing
 
@@ -152,86 +232,113 @@ def clean_swings(swings, min_distance=3):
 # LAST SWING HIGH
 # ==========================
 
-def get_last_swing_high(swing_highs):
+def get_last_swing_high(df):
 
-    if len(swing_highs) == 0:
+    highs = clean_swings(
+
+        detect_swing_highs(df)
+
+    )
+
+    if len(highs) == 0:
+
         return None
 
-    return swing_highs[-1]
+    return highs[-1]
 
 
 # ==========================
 # LAST SWING LOW
 # ==========================
 
-def get_last_swing_low(swing_lows):
+def get_last_swing_low(df):
 
-    if len(swing_lows) == 0:
+    lows = clean_swings(
+
+        detect_swing_lows(df)
+
+    )
+
+    if len(lows) == 0:
+
         return None
 
-    return swing_lows[-1]
+    return lows[-1]
 
 
 # ==========================
-# EQUAL HIGH
+# SWING TREND
 # ==========================
 
-def detect_equal_high(swing_highs, tolerance=0.001):
+def swing_trend(df):
 
-    if len(swing_highs) < 2:
-        return None
+    high = get_last_swing_high(df)
 
-    h1 = swing_highs[-2]["price"]
-    h2 = swing_highs[-1]["price"]
+    low = get_last_swing_low(df)
 
-    if abs(h1 - h2) / h1 <= tolerance:
+    if (
 
-        return {
+        high is None
 
-            "type": "Equal High",
+        or
 
-            "price": round((h1 + h2) / 2, 4)
+        low is None
 
-        }
+    ):
 
-    return None
+        return "UNKNOWN"
+
+    if high["index"] > low["index"]:
+
+        return "UPTREND"
+
+    return "DOWNTREND"
 
 
 # ==========================
-# EQUAL LOW
+# SWING SUMMARY
 # ==========================
 
-def detect_equal_low(swing_lows, tolerance=0.001):
+def swing_summary(df):
 
-    if len(swing_lows) < 2:
-        return None
+    return {
 
-    l1 = swing_lows[-2]["price"]
-    l2 = swing_lows[-1]["price"]
+        "trend":
 
-    if abs(l1 - l2) / l1 <= tolerance:
+        swing_trend(df),
 
-        return {
+        "last_high":
 
-            "type": "Equal Low",
+        get_last_swing_high(df),
 
-            "price": round((l1 + l2) / 2, 4)
+        "last_low":
 
-        }
-
-    return None
-# ==========================
+        get_last_swing_low(df)
+        
+    }
+    # ==========================
 # BULLISH BOS
 # ==========================
 
-def detect_bullish_bos(df, swing_highs):
+def detect_bullish_bos(
+
+    df,
+
+    swing_highs
+
+):
 
     if len(swing_highs) == 0:
+
         return None
 
     last_high = swing_highs[-1]
 
-    current_close = float(df["close"].iloc[-1])
+    current_close = float(
+
+        df["close"].iloc[-1]
+
+    )
 
     if current_close > last_high["price"]:
 
@@ -254,14 +361,25 @@ def detect_bullish_bos(df, swing_highs):
 # BEARISH BOS
 # ==========================
 
-def detect_bearish_bos(df, swing_lows):
+def detect_bearish_bos(
+
+    df,
+
+    swing_lows
+
+):
 
     if len(swing_lows) == 0:
+
         return None
 
     last_low = swing_lows[-1]
 
-    current_close = float(df["close"].iloc[-1])
+    current_close = float(
+
+        df["close"].iloc[-1]
+
+    )
 
     if current_close < last_low["price"]:
 
@@ -278,64 +396,115 @@ def detect_bearish_bos(df, swing_lows):
         }
 
     return None
+
+
 # ==========================
-# FINAL BOS
+# BOS
 # ==========================
 
-def detect_bos(df, swing_highs, swing_lows):
+def detect_bos(
+
+    df,
+
+    swing_highs,
+
+    swing_lows
+
+):
 
     bullish = detect_bullish_bos(
+
         df,
+
         swing_highs
+
     )
 
     if bullish:
+
         return bullish
 
     bearish = detect_bearish_bos(
+
         df,
+
         swing_lows
+
     )
 
     if bearish:
+
         return bearish
 
     return None
+
+
 # ==========================
+# BOS CONFIRMATION
+# ==========================
+
+def bos_confirmed(df):
+
+    swings = get_swings(df)
+
+    bos = detect_bos(
+
+        df,
+
+        swings[0],
+
+        swings[1]
+
+    )
+
+    return bos is not None
+    # ==========================
 # CHoCH
 # ==========================
 
-def detect_choch(df, swing_highs, swing_lows):
+def detect_choch(
+
+    df,
+
+    swing_highs,
+
+    swing_lows
+
+):
 
     if len(swing_highs) < 2:
+
         return None
 
     if len(swing_lows) < 2:
+
         return None
 
+    last_high = swing_highs[-1]
 
-    current_close = float(
+    previous_high = swing_highs[-2]
+
+    last_low = swing_lows[-1]
+
+    previous_low = swing_lows[-2]
+
+    close = float(
+
         df["close"].iloc[-1]
+
     )
-
-
-    last_high = swing_highs[-1]["price"]
-    previous_high = swing_highs[-2]["price"]
-
-
-    last_low = swing_lows[-1]["price"]
-    previous_low = swing_lows[-2]["price"]
-
 
     # Bullish CHoCH
 
     if (
 
-        last_low < previous_low
+        last_high["price"]
+
+        > previous_high["price"]
 
         and
 
-        current_close > previous_high
+        close > previous_high["price"]
 
     ):
 
@@ -345,20 +514,21 @@ def detect_choch(df, swing_highs, swing_lows):
 
             "type": "Bullish CHoCH",
 
-            "level": previous_high
+            "level": previous_high["price"]
 
         }
-
 
     # Bearish CHoCH
 
     if (
 
-        last_high > previous_high
+        last_low["price"]
+
+        < previous_low["price"]
 
         and
 
-        current_close < previous_low
+        close < previous_low["price"]
 
     ):
 
@@ -368,196 +538,738 @@ def detect_choch(df, swing_highs, swing_lows):
 
             "type": "Bearish CHoCH",
 
-            "level": previous_low
+            "level": previous_low["price"]
 
         }
-
 
     return None
 
 
 # ==========================
-# MARKET STRUCTURE SHIFT
+# MSS
 # ==========================
 
-def detect_mss(df, bos=None, choch=None):
+def detect_mss(
 
-    if choch:
-
-        return {
-
-            "direction": choch["direction"],
-
-            "type": "Market Structure Shift"
-
-        }
-
-
-    if bos:
-
-        return {
-
-            "direction": bos["direction"],
-
-            "type": "Market Structure Continuation"
-
-        }
-
-
-    return None
-# ==========================
-# STRONG SWING FILTER
-# ==========================
-
-def filter_strong_swings(
     df,
-    swings,
-    atr_multiplier=0.5
+
+    swing_highs,
+
+    swing_lows
+
 ):
 
-    if len(df) < 20:
-        return swings
+    choch = detect_choch(
 
-    atr = (
-        (
-            df["high"] - df["low"]
-        )
-        .rolling(14)
-        .mean()
-        .iloc[-1]
+        df,
+
+        swing_highs,
+
+        swing_lows
+
     )
 
-    if pd.isna(atr):
-        return swings
+    if choch is None:
 
-    filtered = []
-
-    for swing in swings:
-
-        idx = swing["index"]
-
-        if idx <= 0:
-            continue
-
-        candle_range = float(
-            df.iloc[idx]["high"]
-            -
-            df.iloc[idx]["low"]
-        )
-
-        if candle_range >= atr * atr_multiplier:
-
-            filtered.append(swing)
-
-    return filtered
-
-
-# ==========================
-# INSTITUTIONAL
-# EQUAL LEVELS
-# ==========================
-
-def detect_equal_levels(
-    swing_highs,
-    swing_lows,
-    tolerance=0.001
-):
+        return None
 
     return {
 
-        "equal_high":
-        detect_equal_high(
-            swing_highs,
-            tolerance
-        ),
+        "direction": choch["direction"],
 
-        "equal_low":
-        detect_equal_low(
-            swing_lows,
-            tolerance
-        )
+        "type": "Market Structure Shift",
+
+        "level": choch["level"]
 
     }
 
 
 # ==========================
-# STRUCTURE DIRECTION
+# STRUCTURE SHIFT
 # ==========================
 
-def get_structure_direction(
-    bos=None,
-    choch=None,
-    mss=None
-):
+def detect_structure_shift(df):
 
-    if choch:
-        return choch["direction"]
+    highs, lows = get_swings(df)
+
+    mss = detect_mss(
+
+        df,
+
+        highs,
+
+        lows
+
+    )
 
     if mss:
-        return mss["direction"]
 
-    if bos:
-        return bos["direction"]
+        return mss
 
-    return None
+    return detect_choch(
+
+        df,
+
+        highs,
+
+        lows
+
+    )
+    # ==========================
+# INTERNAL STRUCTURE
 # ==========================
-# COMPLETE STRUCTURE ANALYSIS
+
+def detect_internal_structure(df):
+
+    highs, lows = get_swings(df)
+
+    highs = clean_swings(highs)
+
+    lows = clean_swings(lows)
+
+    return {
+
+        "highs": highs[-5:] if len(highs) >= 5 else highs,
+
+        "lows": lows[-5:] if len(lows) >= 5 else lows
+
+    }
+
+
+# ==========================
+# EXTERNAL STRUCTURE
 # ==========================
 
-def analyze_structure(df):
+def detect_external_structure(df):
 
-    # Raw Swings
-    swing_highs = detect_swing_highs(df)
-    swing_lows = detect_swing_lows(df)
+    highs, lows = get_swings(df)
 
-    # Strong Swings Only
-    swing_highs = filter_strong_swings(
+    highs = clean_swings(highs)
+
+    lows = clean_swings(lows)
+
+    return {
+
+        "major_high":
+
+        highs[-1] if highs else None,
+
+        "major_low":
+
+        lows[-1] if lows else None
+
+    }
+
+
+# ==========================
+# INTERNAL BOS
+# ==========================
+
+def detect_internal_bos(df):
+
+    internal = detect_internal_structure(df)
+
+    highs = internal["highs"]
+
+    lows = internal["lows"]
+
+    return detect_bos(
+
         df,
-        swing_highs
+
+        highs,
+
+        lows
+
     )
 
-    swing_lows = filter_strong_swings(
+
+# ==========================
+# EXTERNAL BOS
+# ==========================
+
+def detect_external_bos(df):
+
+    external = detect_external_structure(df)
+
+    high = external["major_high"]
+
+    low = external["major_low"]
+
+    if high is None or low is None:
+
+        return None
+
+    return detect_bos(
+
         df,
-        swing_lows
+
+        [high],
+
+        [low]
+
     )
 
-    # BOS
-    bos = detect_bos(
-        df,
-        swing_highs,
-        swing_lows
+
+# ==========================
+# STRUCTURE LAYER
+# ==========================
+
+def structure_layer(df):
+
+    return {
+
+        "internal":
+
+        detect_internal_bos(df),
+
+        "external":
+
+        detect_external_bos(df)
+
+    }
+    # ==========================
+# EQUAL HIGHS
+# ==========================
+
+def detect_equal_highs(
+
+    df,
+
+    tolerance=0.001
+
+):
+
+    highs = clean_swings(
+
+        detect_swing_highs(df)
+
     )
 
-    # CHoCH
-    choch = detect_choch(
-        df,
-        swing_highs,
-        swing_lows
+    equal_highs = []
+
+    for i in range(
+
+        len(highs) - 1
+
+    ):
+
+        p1 = highs[i]["price"]
+
+        p2 = highs[i + 1]["price"]
+
+        if abs(p1 - p2) / p1 <= tolerance:
+
+            equal_highs.append({
+
+                "price": round(
+
+                    (p1 + p2) / 2,
+
+                    2
+
+                ),
+
+                "first": highs[i]["index"],
+
+                "second": highs[i + 1]["index"]
+
+            })
+
+    return equal_highs
+
+
+# ==========================
+# EQUAL LOWS
+# ==========================
+
+def detect_equal_lows(
+
+    df,
+
+    tolerance=0.001
+
+):
+
+    lows = clean_swings(
+
+        detect_swing_lows(df)
+
     )
 
-    # MSS
-    mss = detect_mss(
-        df,
-        bos,
-        choch
+    equal_lows = []
+
+    for i in range(
+
+        len(lows) - 1
+
+    ):
+
+        p1 = lows[i]["price"]
+
+        p2 = lows[i + 1]["price"]
+
+        if abs(p1 - p2) / p1 <= tolerance:
+
+            equal_lows.append({
+
+                "price": round(
+
+                    (p1 + p2) / 2,
+
+                    2
+
+                ),
+
+                "first": lows[i]["index"],
+
+                "second": lows[i + 1]["index"]
+
+            })
+
+    return equal_lows
+
+
+# ==========================
+# LIQUIDITY LEVELS
+# ==========================
+
+def liquidity_levels(df):
+
+    return {
+
+        "equal_highs":
+
+        detect_equal_highs(df),
+
+        "equal_lows":
+
+        detect_equal_lows(df)
+
+    }
+
+
+# ==========================
+# SWING CLUSTERS
+# ==========================
+
+def swing_clusters(df):
+
+    highs = detect_equal_highs(df)
+
+    lows = detect_equal_lows(df)
+
+    return {
+
+        "buy_side":
+
+        highs,
+
+        "sell_side":
+
+        lows
+
+    }
+    # ==========================
+# PREMIUM / DISCOUNT
+# ==========================
+
+def premium_discount_structure(df):
+
+    external = detect_external_structure(df)
+
+    high = external["major_high"]
+
+    low = external["major_low"]
+
+    if high is None or low is None:
+
+        return None
+
+    high_price = float(high["price"])
+    low_price = float(low["price"])
+
+    equilibrium = (
+
+        high_price + low_price
+
+    ) / 2
+
+    price = float(
+
+        df["close"].iloc[-1]
+
     )
 
-    # Equal High / Low
-    equal_levels = detect_equal_levels(
-        swing_highs,
-        swing_lows
+    if price > equilibrium:
+
+        zone = "PREMIUM"
+
+    elif price < equilibrium:
+
+        zone = "DISCOUNT"
+
+    else:
+
+        zone = "EQUILIBRIUM"
+
+    return {
+
+        "zone": zone,
+
+        "price": price,
+
+        "equilibrium": round(
+
+            equilibrium,
+
+            2
+
+        ),
+
+        "high": high_price,
+
+        "low": low_price
+
+    }
+
+
+# ==========================
+# INTERNAL / EXTERNAL TREND
+# ==========================
+
+def structure_trend(df):
+
+    internal = detect_internal_bos(df)
+
+    external = detect_external_bos(df)
+
+    internal_trend = (
+
+        internal["direction"]
+
+        if internal
+
+        else None
+
     )
 
-    # Final Direction
-    direction = get_structure_direction(
-        bos,
-        choch,
-        mss
+    external_trend = (
+
+        external["direction"]
+
+        if external
+
+        else None
+
     )
 
     return {
 
-        "direction": direction,
+        "internal":
+
+        internal_trend,
+
+        "external":
+
+        external_trend
+
+    }
+
+
+# ==========================
+# STRUCTURE BIAS
+# ==========================
+
+def structure_bias(df):
+
+    trend = structure_trend(df)
+
+    pd = premium_discount_structure(df)
+
+    if pd is None:
+
+        return {
+
+            "bias": "NEUTRAL"
+
+        }
+
+    if (
+
+        trend["external"] == "BUY"
+
+        and
+
+        pd["zone"] == "DISCOUNT"
+
+    ):
+
+        return {
+
+            "bias": "BUY"
+
+        }
+
+    if (
+
+        trend["external"] == "SELL"
+
+        and
+
+        pd["zone"] == "PREMIUM"
+
+    ):
+
+        return {
+
+            "bias": "SELL"
+
+        }
+
+    return {
+
+        "bias": "NEUTRAL"
+
+    }
+    # ==========================
+# STRUCTURE STRENGTH SCORE
+# ==========================
+
+def calculate_structure_score(df):
+
+    score = 0
+
+    reasons = []
+
+    highs, lows = get_swings(df)
+
+    bos = detect_bos(
+
+        df,
+
+        highs,
+
+        lows
+
+    )
+
+    choch = detect_choch(
+
+        df,
+
+        highs,
+
+        lows
+
+    )
+
+    mss = detect_mss(
+
+        df,
+
+        highs,
+
+        lows
+
+    )
+
+    bias = structure_bias(df)
+
+    pd_zone = premium_discount_structure(df)
+
+
+    if bos:
+
+        score += 35
+
+        reasons.append(
+
+            bos["type"]
+
+        )
+
+
+    if choch:
+
+        score += 20
+
+        reasons.append(
+
+            choch["type"]
+
+        )
+
+
+    if mss:
+
+        score += 20
+
+        reasons.append(
+
+            mss["type"]
+
+        )
+
+
+    if (
+
+        bias["bias"]
+
+        !=
+
+        "NEUTRAL"
+
+    ):
+
+        score += 15
+
+        reasons.append(
+
+            "Structure Bias"
+
+        )
+
+
+    if pd_zone:
+
+        if (
+
+            pd_zone["zone"]
+
+            ==
+
+            "DISCOUNT"
+
+        ):
+
+            score += 5
+
+            reasons.append(
+
+                "Discount"
+
+            )
+
+        elif (
+
+            pd_zone["zone"]
+
+            ==
+
+            "PREMIUM"
+
+        ):
+
+            score += 5
+
+            reasons.append(
+
+                "Premium"
+
+            )
+
+
+    if score > 100:
+
+        score = 100
+
+
+    return {
+
+        "score": score,
+
+        "reasons": reasons
+
+    }
+
+
+# ==========================
+# STRUCTURE QUALITY
+# ==========================
+
+def structure_quality(df):
+
+    result = calculate_structure_score(df)
+
+    score = result["score"]
+
+
+    if score >= 80:
+
+        quality = "STRONG"
+
+    elif score >= 60:
+
+        quality = "GOOD"
+
+    elif score >= 40:
+
+        quality = "AVERAGE"
+
+    else:
+
+        quality = "WEAK"
+
+
+    return {
+
+        "quality": quality,
+
+        "score": score,
+
+        "reasons": result["reasons"]
+
+    }
+    # ==========================
+# INSTITUTIONAL STRUCTURE
+# ==========================
+
+def analyze_structure_v5(df):
+
+    highs = detect_swing_highs(df)
+
+    lows = detect_swing_lows(df)
+
+    bos = detect_bos(
+
+        df,
+
+        highs,
+
+        lows
+
+    )
+
+    choch = detect_choch(
+
+        df,
+
+        highs,
+
+        lows
+
+    )
+
+    mss = detect_mss(
+
+        df,
+
+        highs,
+
+        lows
+
+    )
+
+    bias = structure_bias(df)
+
+    quality = structure_quality(df)
+
+    pd_zone = premium_discount_structure(df)
+
+    liquidity = liquidity_levels(df)
+
+    return {
 
         "bos": bos,
 
@@ -565,158 +1277,162 @@ def analyze_structure(df):
 
         "mss": mss,
 
-        "swing_highs": swing_highs,
+        "bias": bias,
 
-        "swing_lows": swing_lows,
+        "quality": quality,
 
-        "equal_levels": equal_levels
+        "premium_discount": pd_zone,
+
+        "liquidity": liquidity,
+
+        "swing_highs": highs,
+
+        "swing_lows": lows
 
     }
 
 
 # ==========================
-# DEBUG STRUCTURE
+# DEBUG PANEL
 # ==========================
 
 def debug_structure(df):
 
-    result = analyze_structure(df)
+    result = analyze_structure_v5(df)
 
-    print("\n===== STRUCTURE DEBUG =====")
+    print("\n========== STRUCTURE V5 ==========")
 
-    print("Direction :", result["direction"])
+    print("BOS        :", result["bos"])
 
-    print("BOS       :", result["bos"])
+    print("CHoCH      :", result["choch"])
 
-    print("CHoCH     :", result["choch"])
+    print("MSS        :", result["mss"])
 
-    print("MSS       :", result["mss"])
+    print("Bias       :", result["bias"])
 
-    print("Equal Lvls:", result["equal_levels"])
+    print("Quality    :", result["quality"]["quality"])
 
-    print("Swing Highs:", len(result["swing_highs"]))
+    print("Score      :", result["quality"]["score"])
 
-    print("Swing Lows :", len(result["swing_lows"]))
+    print("PD Zone    :", result["premium_discount"])
 
-    print("===========================\n")
-# ==========================
-# BOS CONFIRMATION
-# ==========================
+    print("EQ Highs   :", len(result["liquidity"]["equal_highs"]))
 
-def confirm_bos(df, bos):
+    print("EQ Lows    :", len(result["liquidity"]["equal_lows"]))
 
-    if bos is None:
-        return False
+    print("Swing High :", len(result["swing_highs"]))
 
-    if len(df) < 3:
-        return False
+    print("Swing Low  :", len(result["swing_lows"]))
 
-    last = df.iloc[-1]
-    prev = df.iloc[-2]
-
-    if bos["direction"] == "BUY":
-
-        return (
-
-            float(last["close"])
-            >
-            float(prev["high"])
-
-        )
-
-    if bos["direction"] == "SELL":
-
-        return (
-
-            float(last["close"])
-            <
-            float(prev["low"])
-
-        )
-
-    return False
-
-
-# ==========================
-# CHOCH CONFIRMATION
-# ==========================
-
-def confirm_choch(df, choch):
-
-    if choch is None:
-        return False
-
-    return True
-
-
-# ==========================
-# MSS CONFIRMATION
-# ==========================
-
-def confirm_mss(df, mss):
-
-    if mss is None:
-        return False
-
-    return True
-
-
-# ==========================
-# STRUCTURE SCORE
-# ==========================
-
-def structure_score(
-    bos=None,
-    choch=None,
-    mss=None
-):
-
-    score = 0
-
-    if bos:
-        score += 40
-
-    if choch:
-        score += 35
-
-    if mss:
-        score += 25
-
-    return min(score, 100)
-
-
-# ==========================
-# FINAL STRUCTURE SIGNAL
-# ==========================
-
-def get_structure_signal(df):
-
-    result = analyze_structure(df)
-
-    score = structure_score(
-
-        result["bos"],
-
-        result["choch"],
-
-        result["mss"]
-
-    )
-
-    result["score"] = score
-
-    result["confirmed"] = (
-
-        confirm_bos(df, result["bos"])
-
-        or
-
-        confirm_choch(df, result["choch"])
-
-        or
-
-        confirm_mss(df, result["mss"])
-
-    )
+    print("=================================\n")
 
     return result
+    # ==========================
+# MAIN BOT COMPATIBILITY
+# ==========================
+
+def analyze_structure(df):
+
+    result = analyze_structure_v5(df)
+
+    return {
+
+        "bos": result["bos"],
+
+        "mss": result["mss"],
+
+        "choch": result["choch"],
+
+        "swing_highs": result["swing_highs"],
+
+        "swing_lows": result["swing_lows"],
+
+        "equal_levels": result["liquidity"],
+
+        "bias": result["bias"],
+
+        "quality": result["quality"],
+
+        "premium_discount": result["premium_discount"]
+
+    }
+
+
+# ==========================
+# BOT READY ENGINE
+# ==========================
+
+def structure_engine_v5(df):
+
+    result = analyze_structure(df)
+
+    return {
+
+        "direction":
+
+        result["bias"]["bias"],
+
+        "bos":
+
+        result["bos"] is not None,
+
+        "mss":
+
+        result["mss"] is not None,
+
+        "choch":
+
+        result["choch"] is not None,
+
+        "score":
+
+        result["quality"]["score"],
+
+        "quality":
+
+        result["quality"]["quality"]
+
+    }
+
+
+# ==========================
+# EXPORT
+# ==========================
+
+__all__ = [
+
+    "detect_swing_highs",
+
+    "detect_swing_lows",
+
+    "get_swings",
+
+    "detect_bos",
+
+    "detect_choch",
+
+    "detect_mss",
+
+    "detect_internal_structure",
+
+    "detect_external_structure",
+
+    "detect_equal_highs",
+
+    "detect_equal_lows",
+
+    "premium_discount_structure",
+
+    "structure_bias",
+
+    "structure_quality",
+
+    "analyze_structure",
+
+    "analyze_structure_v5",
+
+    "structure_engine_v5",
+
+    "debug_structure"
+
+]
