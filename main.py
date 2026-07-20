@@ -232,11 +232,10 @@ def prepare_market_bias(
 
         session
 
-    }
- # ==========================
+    } 
+# ==========================
 # SCANNER CONNECTION
 # ==========================
-
 def run_scanner(
 
     market_data
@@ -245,14 +244,10 @@ def run_scanner(
 
     try:
 
-        from scanner import scan_market
+        from scanner import run_market_scan
 
 
-        result = scan_market(
-
-            market_data
-
-        )
+        result = run_market_scan()
 
 
         return result
