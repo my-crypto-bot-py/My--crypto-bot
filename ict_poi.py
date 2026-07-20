@@ -1,300 +1,1134 @@
 import pandas as pd
+import numpy as np
 
 
 # ==========================
-# EXTERNAL RANGE
+# ICT POI ENGINE V5
 # ==========================
 
-def get_external_range(df, lookback=200):
 
-    if len(df) < lookback:
-        lookback = len(df)
+# ==========================
+# SETTINGS
+# ==========================
 
-    data = df.tail(lookback)
+LOOKBACK = 20
 
-    high = float(data["high"].max())
-    low = float(data["low"].min())
+MIN_IMPULSE = 1.5
+
+ZONE_BUFFER = 0.001
+
+
+
+# ==========================
+# POI STATE
+# ==========================
+
+poi_state = {
+
+    "last_poi": None,
+
+    "bullish_poi": [],
+
+    "bearish_poi": []
+
+}
+
+
+
+# ==========================
+# PREPARE DATA
+# ==========================
+
+def prepare_poi_data(df):
+
+    df = df.copy()
+
+    cols = [
+
+        "open",
+
+        "high",
+
+        "low",
+
+        "close",
+
+        "volume"
+
+    ]
+
+    for col in cols:
+
+        df[col] = pd.to_numeric(
+
+            df[col],
+
+            errors="coerce"
+
+        )
+
+    df.dropna(inplace=True)
+
+    df.reset_index(
+
+        drop=True,
+
+        inplace=True
+
+    )
+
+    return df
+
+
+
+# ==========================
+# CREATE POI OBJECT
+# ==========================
+
+def create_poi(
+
+    zone_type,
+
+    high,
+
+    low,
+
+    index
+
+):
 
     return {
+
+        "type": zone_type,
+
         "high": high,
+
         "low": low,
-        "range": high - low
+
+        "index": index
+
     }
+    # ==========================
+# IMPULSE CANDLE CHECK
+# ==========================
+
+def is_impulse_candle(
+
+    candle
+
+):
+
+    body = abs(
+
+        candle["close"]
+
+        -
+
+        candle["open"]
+
+    )
+
+
+    total = (
+
+        candle["high"]
+
+        -
+
+        candle["low"]
+
+    )
+
+
+    if total == 0:
+
+        return False
+
+
+    return (
+
+        body / total
+
+    ) >= 0.60
+
 
 
 # ==========================
-# INTERNAL RANGE
+# BULLISH POI
 # ==========================
 
-def get_internal_range(df, lookback=40):
+def detect_bullish_poi(
 
-    if len(df) < lookback:
-        lookback = len(df)
+    df
 
-    data = df.tail(lookback)
+):
 
-    high = float(data["high"].max())
-    low = float(data["low"].min())
+    pois = []
 
-    return {
-        "high": high,
-        "low": low,
-        "range": high - low
-    }
-
-
-# ==========================
-# SWING HIGH
-# ==========================
-
-def get_last_swing_high(df, left=3, right=3):
 
     for i in range(
-        len(df)-right-1,
-        left,
-        -1
+
+        LOOKBACK,
+
+        len(df)
+
     ):
 
-        high = float(df["high"].iloc[i])
+        candle = df.iloc[i]
+
 
         if (
-            high >
-            df["high"].iloc[i-left:i].max()
+
+            candle["close"]
+
+            >
+
+            candle["open"]
+
             and
-            high >
-            df["high"].iloc[i+1:i+right+1].max()
+
+            is_impulse_candle(
+
+                candle
+
+            )
+
         ):
 
-            return {
-                "index": i,
-                "price": high
-            }
+            pois.append(
 
-    return None
+                create_poi(
+
+                    "BULLISH",
+
+                    candle["high"],
+
+                    candle["low"],
+
+                    i
+
+                )
+
+            )
+
+
+    return pois
+
 
 
 # ==========================
-# SWING LOW
+# BEARISH POI
 # ==========================
 
-def get_last_swing_low(df, left=3, right=3):
+def detect_bearish_poi(
+
+    df
+
+):
+
+    pois = []
+
 
     for i in range(
-        len(df)-right-1,
-        left,
-        -1
+
+        LOOKBACK,
+
+        len(df)
+
     ):
 
-        low = float(df["low"].iloc[i])
+        candle = df.iloc[i]
+
 
         if (
-            low <
-            df["low"].iloc[i-left:i].min()
+
+            candle["close"]
+
+            <
+
+            candle["open"]
+
             and
-            low <
-            df["low"].iloc[i+1:i+right+1].min()
+
+            is_impulse_candle(
+
+                candle
+
+            )
+
         ):
 
-            return {
-                "index": i,
-                "price": low
-            }
+            pois.append(
+
+                create_poi(
+
+                    "BEARISH",
+
+                    candle["high"],
+
+                    candle["low"],
+
+                    i
+
+                )
+
+            )
+
+
+    return pois
+    # ==========================
+# GET LATEST POI
+# ==========================
+
+def get_latest_poi(
+
+    pois
+
+):
+
+    if not pois:
+
+        return None
+
+
+    return pois[-1]
+
+
+
+# ==========================
+# UPDATE POI STATE
+# ==========================
+
+def update_poi_state(
+
+    bullish,
+
+    bearish
+
+):
+
+    poi_state["bullish_poi"] = bullish
+
+    poi_state["bearish_poi"] = bearish
+
+
+    latest_bull = get_latest_poi(
+
+        bullish
+
+    )
+
+    latest_bear = get_latest_poi(
+
+        bearish
+
+    )
+
+
+    if latest_bull and latest_bear:
+
+        if latest_bull["index"] > latest_bear["index"]:
+
+            poi_state["last_poi"] = latest_bull
+
+        else:
+
+            poi_state["last_poi"] = latest_bear
+
+    elif latest_bull:
+
+        poi_state["last_poi"] = latest_bull
+
+    elif latest_bear:
+
+        poi_state["last_poi"] = latest_bear
+
+    else:
+
+        poi_state["last_poi"] = None
+
+
+    return poi_state
+
+
+
+# ==========================
+# ACTIVE POI
+# ==========================
+
+def get_active_poi():
+
+    return poi_state.get(
+
+        "last_poi"
+
+    )
+    # ==========================
+# POI VALIDATION
+# ==========================
+
+def validate_poi(
+
+    poi
+
+):
+
+    if poi is None:
+
+        return False
+
+
+    if poi["high"] <= poi["low"]:
+
+        return False
+
+
+    return True
+
+
+
+# ==========================
+# PREMIUM / DISCOUNT CHECK
+# ==========================
+
+def premium_discount_zone(
+
+    current_price,
+
+    swing_high,
+
+    swing_low
+
+):
+
+    if swing_high <= swing_low:
+
+        return "UNKNOWN"
+
+
+    midpoint = (
+
+        swing_high
+
+        +
+
+        swing_low
+
+    ) / 2
+
+
+    if current_price > midpoint:
+
+        return "PREMIUM"
+
+
+    if current_price < midpoint:
+
+        return "DISCOUNT"
+
+
+    return "EQUILIBRIUM"
+
+
+
+# ==========================
+# POI STRENGTH
+# ==========================
+
+def poi_strength(
+
+    poi
+
+):
+
+    if not validate_poi(
+
+        poi
+
+    ):
+
+        return 0
+
+
+    zone_size = (
+
+        poi["high"]
+
+        -
+
+        poi["low"]
+
+    )
+
+
+    if zone_size <= 0:
+
+        return 0
+
+
+    if zone_size < ZONE_BUFFER:
+
+        return 90
+
+
+    if zone_size < (
+
+        ZONE_BUFFER * 2
+
+    ):
+
+        return 75
+
+
+    return 60
+    # ==========================
+# POI TOUCH DETECTION
+# ==========================
+
+def is_poi_touched(
+
+    current_price,
+
+    poi
+
+):
+
+    if poi is None:
+
+        return False
+
+
+    return (
+
+        poi["low"]
+
+        <=
+
+        current_price
+
+        <=
+
+        poi["high"]
+
+    )
+
+
+
+# ==========================
+# ENTRY ZONE CONFIRMATION
+# ==========================
+
+def confirm_entry_zone(
+
+    current_price,
+
+    poi
+
+):
+
+    if not validate_poi(
+
+        poi
+
+    ):
+
+        return False
+
+
+    return is_poi_touched(
+
+        current_price,
+
+        poi
+
+    )
+
+
+
+# ==========================
+# ACTIVE POI FILTER
+# ==========================
+
+def active_poi_filter(
+
+    current_price
+
+):
+
+    poi = get_active_poi()
+
+
+    if poi is None:
+
+        return None
+
+
+    if confirm_entry_zone(
+
+        current_price,
+
+        poi
+
+    ):
+
+        return poi
+
 
     return None
     # ==========================
-# EQUILIBRIUM
+# POI DIRECTION
 # ==========================
 
-def get_equilibrium(external_range):
+def poi_direction(
 
-    high = external_range["high"]
-    low = external_range["low"]
+    poi
 
-    return round(
-        (high + low) / 2,
-        4
+):
+
+    if poi is None:
+
+        return "NEUTRAL"
+
+
+    if poi["type"] == "BULLISH":
+
+        return "BUY"
+
+
+    if poi["type"] == "BEARISH":
+
+        return "SELL"
+
+
+    return "NEUTRAL"
+
+
+
+# ==========================
+# POI SIGNAL
+# ==========================
+
+def poi_signal(
+
+    current_price
+
+):
+
+    poi = active_poi_filter(
+
+        current_price
+
     )
 
 
-# ==========================
-# PREMIUM / DISCOUNT
-# ==========================
+    if poi is None:
 
-def get_pd_zone(df, external_range):
+        return {
 
-    price = float(
-        df["close"].iloc[-1]
-    )
+            "signal": False,
 
-    high = external_range["high"]
-    low = external_range["low"]
+            "direction": "NEUTRAL",
 
-    equilibrium = (
-        high + low
-    ) / 2
+            "poi": None
 
-    if price > equilibrium:
+        }
 
-        zone = "Premium"
-
-    elif price < equilibrium:
-
-        zone = "Discount"
-
-    else:
-
-        zone = "Equilibrium"
 
     return {
 
-        "price": round(price,4),
+        "signal": True,
 
-        "zone": zone,
+        "direction": poi_direction(
 
-        "equilibrium": round(
-            equilibrium,
-            4
+            poi
+
         ),
 
-        "high": round(high,4),
-
-        "low": round(low,4)
+        "poi": poi
 
     }
 
 
+
 # ==========================
-# DEALING RANGE
+# FINAL POI ANALYSIS
 # ==========================
 
-def get_dealing_range(df):
+def analyze_poi(
 
-    ext = get_external_range(df)
+    current_price
 
-    pd = get_pd_zone(
-        df,
-        ext
+):
+
+    result = poi_signal(
+
+        current_price
+
     )
+
+
+    if not result["signal"]:
+
+        return {
+
+            "active": False,
+
+            "direction": "NEUTRAL",
+
+            "strength": 0,
+
+            "poi": None
+
+        }
+
+
+    strength = poi_strength(
+
+        result["poi"]
+
+    )
+
 
     return {
 
-        "external_high": ext["high"],
+        "active": True,
 
-        "external_low": ext["low"],
+        "direction": result["direction"],
 
-        "equilibrium": pd["equilibrium"],
+        "strength": strength,
 
-        "zone": pd["zone"]
+        "poi": result["poi"]
 
     }
-
-
-# ==========================
-# PRICE POSITION
+    # ==========================
+# SCANNER INTEGRATION
 # ==========================
 
-def get_price_position(df, external_range):
+def poi_for_scanner(
 
-    high = external_range["high"]
-    low = external_range["low"]
+    current_price
 
-    price = float(
-        df["close"].iloc[-1]
+):
+
+    result = analyze_poi(
+
+        current_price
+
     )
 
-    if high == low:
-        return 50
-
-    position = (
-        (price - low)
-        /
-        (high - low)
-    ) * 100
-
-    return round(position,2)
-   # ==========================
-# EQUILIBRIUM
-# ==========================
-
-def get_equilibrium(high, low):
-
-    return (high + low) / 2
-
-
-# ==========================
-# PREMIUM / DISCOUNT
-# ==========================
-
-def get_pd_zone(price, high, low):
-
-    eq = get_equilibrium(high, low)
-
-    if price > eq:
-
-        zone = "Premium"
-
-    elif price < eq:
-
-        zone = "Discount"
-
-    else:
-
-        zone = "Equilibrium"
 
     return {
 
-        "zone": zone,
+        "active":
 
-        "equilibrium": eq,
+        result["active"],
 
-        "price": price
+        "direction":
+
+        result["direction"],
+
+        "strength":
+
+        result["strength"]
 
     }
 
 
+
 # ==========================
-# DEALING RANGE
+# CONFIDENCE SCORE
 # ==========================
 
-def get_dealing_range(df):
+def poi_score(
 
-    ext = get_external_range(df)
+    current_price
 
-    eq = get_equilibrium(
+):
 
-        ext["high"],
+    result = analyze_poi(
 
-        ext["low"]
+        current_price
 
     )
+
+
+    if not result["active"]:
+
+        return 0
+
+
+    strength = result["strength"]
+
+
+    if strength >= 90:
+
+        return 15
+
+
+    if strength >= 75:
+
+        return 10
+
+
+    if strength >= 60:
+
+        return 5
+
+
+    return 0
+
+
+
+# ==========================
+# POI SUMMARY
+# ==========================
+
+def poi_summary(
+
+    current_price
+
+):
+
+    analysis = analyze_poi(
+
+        current_price
+
+    )
+
 
     return {
 
-        "high": ext["high"],
+        "active":
 
-        "low": ext["low"],
+        analysis["active"],
 
-        "equilibrium": eq
+        "direction":
+
+        analysis["direction"],
+
+        "score":
+
+        poi_score(
+
+            current_price
+
+        ),
+
+        "strength":
+
+        analysis["strength"]
+
+    }
+    # ==========================
+# DEBUG PANEL
+# ==========================
+
+def debug_poi(
+
+    current_price
+
+):
+
+    report = analyze_poi(
+
+        current_price
+
+    )
+
+
+    print("\n========== ICT POI V5 ==========")
+
+    print(
+
+        "Active :",
+
+        report["active"]
+
+    )
+
+    print(
+
+        "Direction :",
+
+        report["direction"]
+
+    )
+
+    print(
+
+        "Strength :",
+
+        report["strength"]
+
+    )
+
+    print(
+
+        "POI :",
+
+        report["poi"]
+
+    )
+
+    print(
+
+        "================================\n"
+
+    )
+
+
+    return report
+
+
+
+# ==========================
+# REPORT
+# ==========================
+
+def poi_report(
+
+    current_price
+
+):
+
+    report = analyze_poi(
+
+        current_price
+
+    )
+
+
+    return {
+
+        "active":
+
+        report["active"],
+
+        "direction":
+
+        report["direction"],
+
+        "strength":
+
+        report["strength"],
+
+        "score":
+
+        poi_score(
+
+            current_price
+
+        )
 
     }
 
 
+
 # ==========================
-# CURRENT PRICE POSITION
+# RESET
 # ==========================
 
-def current_pd_position(df):
+def reset_poi():
 
-    ext = get_external_range(df)
+    poi_state["last_poi"] = None
 
-    price = float(df["close"].iloc[-1])
+    poi_state["bullish_poi"] = []
 
-    return get_pd_zone(
+    poi_state["bearish_poi"] = []
 
-        price,
 
-        ext["high"],
+    return True
+    # ==========================
+# SCANNER COMPATIBILITY
+# ==========================
 
-        ext["low"]
+def scanner_poi_engine(
+
+    current_price
+
+):
+
+    summary = poi_summary(
+
+        current_price
 
     )
+
+
+    return {
+
+        "active":
+
+        summary["active"],
+
+        "direction":
+
+        summary["direction"],
+
+        "score":
+
+        summary["score"],
+
+        "strength":
+
+        summary["strength"]
+
+    }
+
+
+
+# ==========================
+# MAIN ENGINE
+# ==========================
+
+def ict_poi_engine(
+
+    current_price
+
+):
+
+    report = poi_report(
+
+        current_price
+
+    )
+
+
+    return {
+
+        "poi":
+
+        report,
+
+        "ready":
+
+        report["active"]
+
+    }
+
+
+
+# ==========================
+# TEST ENGINE
+# ==========================
+
+def test_poi(
+
+    current_price
+
+):
+
+    return ict_poi_engine(
+
+        current_price
+
+    )
+    # ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def ict_poi_engine_v5(
+
+    current_price
+
+):
+
+    result = ict_poi_engine(
+
+        current_price
+
+    )
+
+
+    return {
+
+        "active":
+
+        result["poi"]["active"],
+
+        "direction":
+
+        result["poi"]["direction"],
+
+        "score":
+
+        result["poi"]["score"],
+
+        "strength":
+
+        result["poi"]["strength"]
+
+    }
+
+
+
+# ==========================
+# FINAL POI CHECK
+# ==========================
+
+def final_poi_check(
+
+    current_price
+
+):
+
+    result = ict_poi_engine_v5(
+
+        current_price
+
+    )
+
+
+    return (
+
+        result["active"]
+
+    )
+
+
+
+# ==========================
+# EXPORTS
+# ==========================
+
+__all__ = [
+
+    "prepare_poi_data",
+
+    "detect_bullish_poi",
+
+    "detect_bearish_poi",
+
+    "get_active_poi",
+
+    "validate_poi",
+
+    "premium_discount_zone",
+
+    "poi_strength",
+
+    "active_poi_filter",
+
+    "poi_signal",
+
+    "analyze_poi",
+
+    "poi_score",
+
+    "poi_summary",
+
+    "scanner_poi_engine",
+
+    "ict_poi_engine",
+
+    "ict_poi_engine_v5",
+
+    "final_poi_check",
+
+    "poi_report",
+
+    "debug_poi",
+
+    "reset_poi"
+
+]
