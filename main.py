@@ -86,10 +86,26 @@ def get_market_data():
 
     try:
 
-        from market import get_market_data as market_data
+        from market import get_market_data as market_fetch
 
 
-        data = market_data()
+        symbol = "BTC-USDT-SWAP"
+
+        timeframe = "5m"
+
+
+        data = market_fetch(
+
+            symbol,
+
+            timeframe,
+
+            300
+
+        )
+
+
+        print("MARKET DATA FETCHED:", data is not None)
 
 
         return data
@@ -97,11 +113,9 @@ def get_market_data():
 
     except Exception as e:
 
-        handle_error(
+        handle_error(e)
 
-            e
-
-        )
+        print("MARKET FETCH ERROR:", e)
 
         return None
 
