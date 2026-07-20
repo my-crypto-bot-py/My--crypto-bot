@@ -125,7 +125,7 @@ def create_symbol_object(
         "time": time.time()
 
     }
-    # ==========================
+# ==========================
 # MARKET DATA STORAGE
 # ==========================
 
@@ -191,7 +191,6 @@ def get_market_data(
 # ==========================
 # SCAN SYMBOL LIST
 # ==========================
-
 def scan_symbols():
 
     results = []
@@ -201,16 +200,26 @@ def scan_symbols():
 
         data = get_market_data(
 
-            symbol
+            symbol,
+
+            "5m",
+
+            300
 
         )
 
 
-        if data:
+        if data is not None:
 
             results.append(
 
-                data
+                {
+
+                    "symbol": symbol,
+
+                    "data": data
+
+                }
 
             )
 
@@ -221,8 +230,8 @@ def scan_symbols():
     scanner_state["last_scan"] = time.time()
 
 
-    return results
-    # ==========================
+    return results 
+# ==========================
 # MODULE CONNECTION
 # ==========================
 
