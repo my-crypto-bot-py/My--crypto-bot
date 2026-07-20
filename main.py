@@ -883,4 +883,6 @@ __all__ = [
 
 if __name__ == "__main__":
 
-    run()
+    result = test_mode()
+
+    print(result)
