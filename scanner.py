@@ -202,14 +202,16 @@ def scan_symbols():
 
             symbol,
 
-            "5m",
+            TIMEFRAME,
 
             300
 
         )
 
 
-        if data is not None:
+        if data is not None and not data.empty:
+
+            print("DATA RECEIVED:", symbol, len(data))
 
             results.append(
 
@@ -224,13 +226,20 @@ def scan_symbols():
             )
 
 
+        else:
+
+            print("NO DATA:", symbol)
+
+
         scanner_state["scanned"] += 1
 
 
     scanner_state["last_scan"] = time.time()
 
+    print("TOTAL SYMBOLS:", len(results))
 
-    return results 
+
+    return results
 # ==========================
 # MODULE CONNECTION
 # ==========================
