@@ -391,6 +391,8 @@ def process_signal(
 # BOT PROCESS CYCLE
 # ==========================
 def bot_cycle():
+    
+    print("BOT CYCLE RUNNING")
 
     try:
 
@@ -677,12 +679,15 @@ def bot_status():
 # ==========================
 # MAIN ENGINE
 # ==========================
-
 def main_engine():
+
+    print("MAIN ENGINE RUNNING")
 
     try:
 
         signal = bot_cycle()
+
+        print("BOT CYCLE RESULT:", signal)
 
 
         if signal:
@@ -706,7 +711,6 @@ def main_engine():
         )
 
         return None
-
 
 
 # ==========================
