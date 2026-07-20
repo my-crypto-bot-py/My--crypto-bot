@@ -1,7 +1,7 @@
 import datetime
 import math
 import traceback
-
+import logging
 
 # ==========================
 # UTILS ENGINE V5
@@ -275,7 +275,7 @@ def validate_columns(
 
 
     return True
-  import logging
+  
 
 
 # ==========================
