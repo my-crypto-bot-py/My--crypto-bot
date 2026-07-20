@@ -1,770 +1,885 @@
+import time
+
+
 # ==========================
-# ICT SMART MONEY BOT V2
-# MAIN ENGINE
+# IMPORT MODULES
 # ==========================
 
+from utils import *
 
-from config import *
+from trend import *
 
-from market import (
-    get_market_data,
-    detect_volume_confirmation
-)
+from sessions import *
 
-from scanner import (
-    get_best_symbol
-)
+from signal import *
 
-from structure import (
-    analyze_structure
-)
-
-from smartmoney import (
-    analyze_smart_money,
-    generate_trade_levels
-)
-
-from confidence import (
-    calculate_confidence
-)
-
-from pd_arrays import (
-    get_best_pd_array
-)
-
-from ote import (
-    institutional_ote_entry
-)
-
-from smt import (
-    get_smt_confirmation
-)
-
-from execution import (
-    execution_signal,
-    create_trade_package,
-    final_execution_gate
-)
-
-from risk import (
-    validate_trade,
-    can_take_trade
-)
-
-from telegram_bot import (
-    send_signal
-)
-
-
-print("========== ICT BOT V2 STARTED ==========")
+from filters import *
 
 
 
 # ==========================
-# MAIN FUNCTION
+# BOT STATE V5
 # ==========================
 
+BOT_STATE = {
 
-def run():
+    "running": False,
+
+    "signals": 0,
+
+    "errors": 0
+
+}
 
 
-    print("\n===== SCANNING MARKET =====")
+
+# ==========================
+# RESET BOT
+# ==========================
+
+def reset_bot():
+
+    BOT_STATE["running"] = False
+
+    BOT_STATE["signals"] = 0
+
+    BOT_STATE["errors"] = 0
 
 
+    reset_utils()
+
+    reset_trend()
+
+    reset_session()
+
+    reset_signal()
+
+
+    return True
+
+
+
+# ==========================
+# START BOT
+# ==========================
+
+def start_bot():
+
+    BOT_STATE["running"] = True
+
+
+    trade_log(
+
+        "BOT V5 Started"
+
+    )
+
+
+    return True
     # ==========================
-    # FIND BEST SYMBOL
-    # ==========================
+# MARKET DATA HANDLER
+# ==========================
 
-
-    best = get_best_symbol()
-
-
-    if best is None:
-
-        print("No suitable symbol found")
-
-        return
-
-
-
-    symbol = best["symbol"]
-
-    trend = best["trend"]
-
-
-    print(
-        "Selected:",
-        symbol,
-        trend
-    )
-
-
-
-    # ==========================
-    # LOAD DATA
-    # ==========================
-
-
-    df = get_market_data(
-
-        symbol,
-
-        ENTRY_TF,
-
-        LIMIT
-
-    )
-
-
-    if df is None or df.empty:
-
-        print("Market data failed")
-
-        return
-
-
-
-    print(
-        "Data Loaded:",
-        len(df),
-        "candles"
-    )
-        # ==========================
-    # STRUCTURE ANALYSIS
-    # ==========================
-
-
-    print("\n===== STRUCTURE =====")
-
-
-    structure = analyze_structure(df)
-
-
-    bos = structure.get("bos")
-
-    mss = structure.get("mss")
-
-    choch = structure.get("choch")
-
-    equal_levels = structure.get(
-        "equal_levels"
-    )
-
-
-    print(
-        "BOS:",
-        bos
-    )
-
-    print(
-        "MSS:",
-        mss
-    )
-
-    print(
-        "CHoCH:",
-        choch
-    )
-
-
-
-    # ==========================
-    # SMART MONEY ANALYSIS
-    # ==========================
-
-
-    print("\n===== SMART MONEY =====")
-
-
-    smart = analyze_smart_money(df)
-
-
-    liquidity = smart.get(
-        "liquidity"
-    )
-
-    liquidity_grab = smart.get(
-        "liquidity_grab"
-    )
-
-    fvg = smart.get(
-        "fvg"
-    )
-
-    order_block = smart.get(
-        "order_block"
-    )
-
-    displacement = smart.get(
-        "displacement"
-    )
-
-    zone = smart.get(
-        "zone"
-    )
-
-
-    print(
-        "Liquidity:",
-        liquidity
-    )
-
-    print(
-        "FVG:",
-        fvg
-    )
-
-    print(
-        "Order Block:",
-        order_block
-    )
-
-    print(
-        "Zone:",
-        zone
-    )
-
-
-
-    # ==========================
-    # VOLUME CONFIRMATION
-    # ==========================
-
-
-    volume = detect_volume_confirmation(
-        df
-    )
-
-
-    print(
-        "Volume:",
-        volume
-    )
-        # ==========================
-    # CONFIDENCE ENGINE
-    # ==========================
-
-
-    print("\n===== CONFIDENCE =====")
-
-
-    confidence = calculate_confidence(
-
-        trend=trend,
-
-        bos=bos,
-
-        choch=choch,
-
-        mss=mss,
-
-        liquidity=liquidity,
-
-        fvg=fvg,
-
-        order_block=order_block,
-
-        equal_levels=equal_levels,
-
-        displacement=displacement,
-
-        liquidity_grab=liquidity_grab,
-
-        zone=zone,
-
-        btc=True,
-
-        volume=volume
-
-    )
-
-
-    direction = confidence.get(
-        "direction"
-    )
-
-    score = confidence.get(
-        "score"
-    )
-
-
-    print(
-        "Direction:",
-        direction
-    )
-
-    print(
-        "Confidence:",
-        score
-    )
-
-
-
-    if direction is None or score < MIN_SCORE:
-
-        print(
-            "Low confidence - NO TRADE"
-        )
-
-        return
-
-
-
-    # ==========================
-    # PD ARRAY
-    # ==========================
-
-
-    print("\n===== PD ARRAY =====")
-
-
-    best_poi = get_best_pd_array(
-        df
-    )
-
-
-    print(
-        "Best POI:",
-        best_poi
-    )
-
-
-
-    # ==========================
-    # OTE CONFIRMATION
-    # ==========================
-
-
-    ote_result = None
-
-
-    if best_poi:
-
-
-        poi_high = best_poi.get(
-            "high"
-        )
-
-        poi_low = best_poi.get(
-            "low"
-        )
-
-
-        if poi_high and poi_low:
-
-
-            current_price = float(
-                df["close"].iloc[-1]
-            )
-
-
-            ote_result = institutional_ote_entry(
-
-                price=current_price,
-
-                high=poi_high,
-
-                low=poi_low,
-
-                direction=direction,
-
-                bos=bos,
-
-                mss=mss,
-
-                choch=choch,
-
-                fvg=fvg,
-
-                order_block=order_block
-
-            )
-
-
-    print(
-        "OTE:",
-        ote_result
-    )
-
-
-
-    # ==========================
-    # SMT CONFIRMATION
-    # ==========================
-
-
-    smt_result = None
-
+def get_market_data():
 
     try:
 
-
-        if symbol == "BTC-USDT-SWAP":
-
-
-            eth_df = get_market_data(
-
-                "ETH-USDT-SWAP",
-
-                ENTRY_TF,
-
-                LIMIT
-
-            )
+        from market import get_market_data as market_data
 
 
-            sol_df = get_market_data(
-
-                "SOL-USDT-SWAP",
-
-                ENTRY_TF,
-
-                LIMIT
-
-            )
+        data = market_data()
 
 
-            smt_result = get_smt_confirmation(
-
-                btc_df=df,
-
-                eth_df=eth_df,
-
-                sol_df=sol_df
-
-            )
+        return data
 
 
     except Exception as e:
 
+        handle_error(
 
-        print(
-            "SMT Error:",
             e
+
+        )
+
+        return None
+
+
+
+# ==========================
+# DATA VALIDATION
+# ==========================
+
+def validate_market_data(
+
+    data
+
+):
+
+    if data is None:
+
+        return False
+
+
+    return True
+
+
+
+# ==========================
+# MARKET CHECK
+# ==========================
+
+def market_check():
+
+    data = get_market_data()
+
+
+    if validate_market_data(
+
+        data
+
+    ):
+
+        return True
+
+
+    return False
+    # ==========================
+# TREND CHECK
+# ==========================
+
+def check_market_trend(
+
+    df
+
+):
+
+    try:
+
+        result = trend_engine_v5(
+
+            df
+
         )
 
 
-    print(
-        "SMT:",
-        smt_result
+        return result
+
+
+    except Exception as e:
+
+        handle_error(
+
+            e
+
+        )
+
+        return None
+
+
+
+# ==========================
+# SESSION CHECK
+# ==========================
+
+def check_market_session():
+
+    try:
+
+        return sessions_engine_v5()
+
+
+    except Exception as e:
+
+        handle_error(
+
+            e
+
+        )
+
+        return None
+
+
+
+# ==========================
+# MARKET BIAS PREPARATION
+# ==========================
+
+def prepare_market_bias(
+
+    df
+
+):
+
+    trend = check_market_trend(
+
+        df
+
     )
+
+
+    session = check_market_session()
+
+
+    return {
+
+        "trend":
+
+        trend,
+
+        "session":
+
+        session
+
+    }
+    # ==========================
+# SCANNER CONNECTION
+# ==========================
+
+def run_scanner(
+
+    market_data
+
+):
+
+    try:
+
+        from scanner import scan_market
+
+
+        result = scan_market(
+
+            market_data
+
+        )
+
+
+        return result
+
+
+    except Exception as e:
+
+        handle_error(
+
+            e
+
+        )
+
+        return None
+
+
+
+# ==========================
+# FILTER PIPELINE
+# ==========================
+
+def run_filters(
+
+    setup
+
+):
+
+    try:
+
+        result = final_trade_filter(
+
+            setup
+
+        )
+
+
+        return result
+
+
+    except Exception as e:
+
+        handle_error(
+
+            e
+
+        )
+
+        return False
+
+
+
+# ==========================
+# SIGNAL PIPELINE
+# ==========================
+
+def generate_signal(
+
+    setup
+
+):
+
+    try:
+
+        result = signal_engine_v5(
+
+            setup
+
+        )
+
+
+        return result
+
+
+    except Exception as e:
+
+        handle_error(
+
+            e
+
+        )
+
+        return None
         # ==========================
-    # EXECUTION ENGINE
-    # ==========================
+# PROCESS SIGNAL
+# ==========================
 
+def process_signal(
 
-    print("\n===== EXECUTION =====")
+    setup
 
+):
 
-    execution = execution_signal(
+    try:
 
-        direction=direction,
+        approved = run_filters(
 
-        price=float(
-            df["close"].iloc[-1]
-        ),
+            setup
 
-        pd_array=best_poi,
-
-        ote=ote_result,
-
-        structure=bos or mss or choch,
-
-        smt=smt_result
-
-    )
-
-
-    print(
-        "Execution:",
-        execution
-    )
-
-
-
-    if execution.get("signal") == "NO TRADE":
-
-        print(
-            "Execution rejected"
         )
 
-        return
 
+        if not approved:
 
+            return no_trade_signal(
 
-    # ==========================
-    # TRADE LEVELS
-    # ==========================
+                "Filter Rejected"
 
-
-    levels = generate_trade_levels(
-
-        df,
-
-        execution["signal"],
-
-        fvg,
-
-        order_block,
-
-        liquidity
-
-    )
-
-
-    if levels is None:
-
-        print(
-            "Trade levels failed"
-        )
-
-        return
-
-
-
-    print(
-        "Levels:",
-        levels
-    )
-
-
-
-    # ==========================
-    # RISK CHECK
-    # ==========================
-
-
-    risk = validate_trade(
-
-        levels["entry"],
-
-        levels["sl"],
-
-        levels["tp2"]
-
-    )
-
-
-    if not risk["valid"]:
-
-        print(
-            "Risk reward failed"
-        )
-
-        return
-
-
-
-    allowed, reason = can_take_trade()
-
-
-    if not allowed:
-
-        print(
-            reason
-        )
-
-        return
-
-
-
-    # ==========================
-    # CREATE TRADE PACKAGE
-    # ==========================
-
-
-    trade = create_trade_package(
-
-        direction=execution["signal"],
-
-        levels=levels,
-
-        score=score,
-
-        reasons=confidence["reasons"]
-
-    )
-
-
-    print(
-        "Trade Package:",
-        trade
-    )
-
-
-
-    # ==========================
-    # FINAL GATE
-    # ==========================
-
-
-    final_result = final_execution_gate(
-
-        trade
-
-    )
-
-
-    print(
-        "Final Result:",
-        final_result
-    )
-        # ==========================
-    # TELEGRAM SIGNAL
-    # ==========================
-
-
-    if final_result.get("approved"):
-
-
-        approved = final_result["trade"]
-
-
-        signal = {
-
-            "symbol": symbol,
-
-            "signal": approved["direction"],
-
-            "entry": approved["entry"],
-
-            "sl": approved["sl"],
-
-            "tp1": approved["tp1"],
-
-            "tp2": approved["tp2"],
-
-            "score": approved["score"],
-
-            "rr": approved.get(
-                "rr",
-                risk["rr"]
-            ),
-
-            "trend": trend,
-
-            "zone": (
-                zone["zone"]
-                if zone
-                else "N/A"
-            ),
-
-            "reasons": ", ".join(
-                approved["reasons"]
             )
 
-        }
 
+        signal = generate_signal(
 
-        print(
-            "\n===== FINAL SIGNAL ====="
+            setup
+
         )
 
-        print(
+
+        if signal:
+
+            BOT_STATE["signals"] += 1
+
+
+        return signal
+
+
+    except Exception as e:
+
+        BOT_STATE["errors"] += 1
+
+        handle_error(
+
+            e
+
+        )
+
+        return None
+
+
+
+# ==========================
+# BOT PROCESS CYCLE
+# ==========================
+
+def bot_cycle():
+
+    try:
+
+        data = get_market_data()
+
+
+        if not validate_market_data(
+
+            data
+
+        ):
+
+            return None
+
+
+        setup = prepare_market_bias(
+
+            data
+
+        )
+
+
+        signal = process_signal(
+
+            setup
+
+        )
+
+
+        return signal
+
+
+    except Exception as e:
+
+        BOT_STATE["errors"] += 1
+
+        handle_error(
+
+            e
+
+        )
+
+        return None
+        # ==========================
+# TELEGRAM SENDER
+# ==========================
+
+def send_signal_telegram(
+
+    signal
+
+):
+
+    try:
+
+        from telegram_bot import send_message
+
+
+        message = signal_text(
+
             signal
+
         )
 
+
+        send_message(
+
+            message
+
+        )
+
+
+        return True
+
+
+    except Exception as e:
+
+        handle_error(
+
+            e
+
+        )
+
+        return False
+
+
+
+# ==========================
+# NOTIFICATION SYSTEM
+# ==========================
+
+def notify_signal(
+
+    signal
+
+):
+
+    if signal is None:
+
+        return False
+
+
+    if signal["direction"] == "NO TRADE":
+
+        return False
+
+
+    return send_signal_telegram(
+
+        signal
+
+    )
+
+
+
+# ==========================
+# SIGNAL PIPELINE FINAL
+# ==========================
+
+def final_signal_process(
+
+    setup
+
+):
+
+    signal = process_signal(
+
+        setup
+
+    )
+
+
+    notify_signal(
+
+        signal
+
+    )
+
+
+    return signal
+    # ==========================
+# MAIN BOT LOOP
+# ==========================
+
+def run_bot():
+
+    start_bot()
+
+
+    while BOT_STATE["running"]:
 
         try:
 
-            send_signal(
-                signal
-            )
+            signal = bot_cycle()
 
 
-            print(
-                "Telegram Sent"
+            if signal:
+
+                notify_signal(
+
+                    signal
+
+                )
+
+
+            time.sleep(
+
+                60
+
             )
 
 
         except Exception as e:
 
+            BOT_STATE["errors"] += 1
 
-            print(
-                "Telegram Error:",
+            handle_error(
+
                 e
+
             )
 
 
-    else:
+            time.sleep(
+
+                10
+
+            )
 
 
-        print(
-            "NO VALID ICT TRADE"
+
+# ==========================
+# STOP BOT
+# ==========================
+
+def stop_bot():
+
+    BOT_STATE["running"] = False
+
+
+    trade_log(
+
+        "BOT V5 Stopped"
+
+    )
+
+
+    return True
+
+
+
+# ==========================
+# BOT STATUS
+# ==========================
+
+def bot_status():
+
+    return {
+
+        "running":
+
+        BOT_STATE["running"],
+
+        "signals":
+
+        BOT_STATE["signals"],
+
+        "errors":
+
+        BOT_STATE["errors"]
+
+    }
+    # ==========================
+# MAIN ENGINE
+# ==========================
+
+def main_engine():
+
+    try:
+
+        signal = bot_cycle()
+
+
+        if signal:
+
+            notify_signal(
+
+                signal
+
+            )
+
+
+        return signal
+
+
+    except Exception as e:
+
+        handle_error(
+
+            e
+
+        )
+
+        return None
+
+
+
+# ==========================
+# MAIN ENGINE V5
+# ==========================
+
+def main_engine_v5():
+
+    start_bot()
+
+
+    result = main_engine()
+
+
+    return {
+
+        "status":
+
+        bot_status(),
+
+        "signal":
+
+        result
+
+    }
+
+
+
+# ==========================
+# TEST MODE
+# ==========================
+
+def test_mode():
+
+    reset_bot()
+
+
+    return main_engine_v5()
+    # ==========================
+# FINAL STATUS
+# ==========================
+
+def final_status():
+
+    return {
+
+        "bot":
+
+        BOT_STATE["running"],
+
+        "signals":
+
+        BOT_STATE["signals"],
+
+        "errors":
+
+        BOT_STATE["errors"]
+
+    }
+
+
+
+# ==========================
+# MODULE REPORT
+# ==========================
+
+def module_report():
+
+    return {
+
+        "bot_status":
+
+        bot_status(),
+
+        "utils":
+
+        utils_status(),
+
+        "trend":
+
+        trend_status(),
+
+        "session":
+
+        session_status(),
+
+        "signal":
+
+        signal_status()
+
+    }
+
+
+
+# ==========================
+# PRODUCTION CHECK
+# ==========================
+
+def production_check():
+
+    checks = [
+
+        final_utils_check(),
+
+        final_session_check(),
+
+        True
+
+    ]
+
+
+    return all(
+
+        checks
+
+    )
+    # ==========================
+# MAIN RUNNER
+# ==========================
+
+def run():
+
+    try:
+
+        start_bot()
+
+
+        trade_log(
+
+            "MAIN V5 Running"
+
         )
 
 
-
-    # ==========================
-    # DEBUG PANEL
-    # ==========================
+        run_bot()
 
 
-    print(
-        "\n========== DEBUG =========="
-    )
+    except KeyboardInterrupt:
+
+        stop_bot()
 
 
-    print(
-        "Symbol:",
-        symbol
-    )
 
-    print(
-        "Trend:",
-        trend
-    )
+    except Exception as e:
 
-    print(
-        "Direction:",
-        direction
-    )
+        handle_error(
 
-    print(
-        "Score:",
-        score
-    )
+            e
 
-    print(
-        "BOS:",
-        bos
-    )
+        )
 
-    print(
-        "MSS:",
-        mss
-    )
-
-    print(
-        "CHoCH:",
-        choch
-    )
-
-    print(
-        "POI:",
-        best_poi
-    )
-
-    print(
-        "OTE:",
-        ote_result
-    )
-
-    print(
-        "SMT:",
-        smt_result
-    )
-
-    print(
-        "=========================="
-    )
+        stop_bot()
 
 
 
 # ==========================
-# RUN BOT
+# EXPORTS
 # ==========================
 
+__all__ = [
+
+    "reset_bot",
+
+    "start_bot",
+
+    "get_market_data",
+
+    "validate_market_data",
+
+    "market_check",
+
+    "check_market_trend",
+
+    "check_market_session",
+
+    "prepare_market_bias",
+
+    "run_scanner",
+
+    "run_filters",
+
+    "generate_signal",
+
+    "process_signal",
+
+    "bot_cycle",
+
+    "send_signal_telegram",
+
+    "notify_signal",
+
+    "final_signal_process",
+
+    "run_bot",
+
+    "stop_bot",
+
+    "bot_status",
+
+    "main_engine",
+
+    "main_engine_v5",
+
+    "test_mode",
+
+    "final_status",
+
+    "module_report",
+
+    "production_check",
+
+    "run"
+
+]
+
+
+
+# ==========================
+# START
+# ==========================
 
 if __name__ == "__main__":
 
