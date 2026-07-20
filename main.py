@@ -15,6 +15,8 @@ from signal import *
 
 from filters import *
 
+from scanner import *
+
 
 
 # ==========================
