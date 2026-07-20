@@ -1,125 +1,662 @@
 import pandas as pd
+import numpy as np
+
+# ==========================
+# ICT SMART MONEY ENGINE V5
+# ==========================
+
+FVG_LOOKBACK = 80
+
+OB_LOOKBACK = 80
+
+LIQUIDITY_LOOKBACK = 50
+
+DISPLACEMENT_MULTIPLIER = 1.5
+
+
+# ==========================
+# PREPARE DATA
+# ==========================
+
+def prepare_smart_money(df):
+
+    df = df.copy()
+
+    numeric = [
+
+        "open",
+
+        "high",
+
+        "low",
+
+        "close",
+
+        "volume"
+
+    ]
+
+    for col in numeric:
+
+        df[col] = pd.to_numeric(
+
+            df[col],
+
+            errors="coerce"
+
+        )
+
+    df.dropna(inplace=True)
+
+    df.reset_index(
+
+        drop=True,
+
+        inplace=True
+
+    )
+
+    return df
+
+
+# ==========================
+# CANDLE BODY
+# ==========================
+
+def candle_body(
+
+    candle
+
+):
+
+    return abs(
+
+        float(candle["close"])
+
+        -
+
+        float(candle["open"])
+
+    )
+
+
+# ==========================
+# CANDLE RANGE
+# ==========================
+
+def candle_range(
+
+    candle
+
+):
+
+    return (
+
+        float(candle["high"])
+
+        -
+
+        float(candle["low"])
+
+    )
+
+
+# ==========================
+# BULLISH CANDLE
+# ==========================
+
+def bullish(
+
+    candle
+
+):
+
+    return (
+
+        candle["close"]
+
+        >
+
+        candle["open"]
+
+    )
+
+
+# ==========================
+# BEARISH CANDLE
+# ==========================
+
+def bearish(
+
+    candle
+
+):
+
+    return (
+
+        candle["close"]
+
+        <
+
+        candle["open"]
+
+    )
+    # ==========================
+# DISPLACEMENT ENGINE
+# ==========================
+
+def detect_displacement(
+
+    df,
+
+    multiplier=DISPLACEMENT_MULTIPLIER
+
+):
+
+    df = prepare_smart_money(df)
+
+    if len(df) < 20:
+
+        return None
+
+    ranges = (
+
+        df["high"]
+
+        -
+
+        df["low"]
+
+    )
+
+    average_range = (
+
+        ranges
+
+        .tail(20)
+
+        .mean()
+
+    )
+
+    last = df.iloc[-1]
+
+    last_range = (
+
+        float(last["high"])
+
+        -
+
+        float(last["low"])
+
+    )
+
+    if last_range >= average_range * multiplier:
+
+        return {
+
+            "valid": True,
+
+            "direction":
+
+            "BUY"
+
+            if bullish(last)
+
+            else "SELL",
+
+            "range":
+
+            round(last_range, 2),
+
+            "average":
+
+            round(average_range, 2)
+
+        }
+
+    return {
+
+        "valid": False,
+
+        "direction": None,
+
+        "range":
+
+        round(last_range, 2),
+
+        "average":
+
+        round(average_range, 2)
+
+    }
+
+
+# ==========================
+# IMPULSE CANDLE
+# ==========================
+
+def strong_impulse_candle(df):
+
+    result = detect_displacement(df)
+
+    if result is None:
+
+        return False
+
+    return result["valid"]
+
+
+# ==========================
+# INSTITUTIONAL CANDLE
+# ==========================
+
+def institutional_candle(df):
+
+    if len(df) < 2:
+
+        return False
+
+    last = df.iloc[-1]
+
+    body = candle_body(last)
+
+    rng = candle_range(last)
+
+    if rng == 0:
+
+        return False
+
+    body_ratio = body / rng
+
+    displacement = detect_displacement(df)
+
+    return (
+
+        body_ratio >= 0.7
+
+        and
+
+        displacement
+
+        and
+
+        displacement["valid"]
+
+    )
+    # ==========================
+# FAIR VALUE GAP (FVG)
+# ==========================
+
+def detect_fvg(df):
+
+    df = prepare_smart_money(df)
+
+    if len(df) < 3:
+
+        return None
+
+    for i in range(
+
+        len(df) - 2,
+
+        max(-1, len(df) - FVG_LOOKBACK),
+
+        -1
+
+    ):
+
+        c1 = df.iloc[i - 2]
+
+        c2 = df.iloc[i - 1]
+
+        c3 = df.iloc[i]
+
+        # Bullish FVG
+        if (
+
+            float(c1["high"])
+
+            <
+
+            float(c3["low"])
+
+        ):
+
+            return {
+
+                "direction": "BUY",
+
+                "type": "Bullish FVG",
+
+                "high": float(c3["low"]),
+
+                "low": float(c1["high"]),
+
+                "index": i
+
+            }
+
+        # Bearish FVG
+        if (
+
+            float(c1["low"])
+
+            >
+
+            float(c3["high"])
+
+        ):
+
+            return {
+
+                "direction": "SELL",
+
+                "type": "Bearish FVG",
+
+                "high": float(c1["low"]),
+
+                "low": float(c3["high"]),
+
+                "index": i
+
+            }
+
+    return None
+
+
+# ==========================
+# FVG STATUS
+# ==========================
+
+def fvg_open(df):
+
+    fvg = detect_fvg(df)
+
+    if fvg is None:
+
+        return False
+
+    price = float(
+
+        df["close"].iloc[-1]
+
+    )
+
+    return (
+
+        fvg["low"]
+
+        <=
+
+        price
+
+        <=
+
+        fvg["high"]
+
+    )
+
+
+# ==========================
+# FVG SUMMARY
+# ==========================
+
+def analyze_fvg(df):
+
+    fvg = detect_fvg(df)
+
+    return {
+
+        "fvg": fvg,
+
+        "active": fvg_open(df)
+
+    }
+    # ==========================
+# ORDER BLOCK ENGINE V5
+# ==========================
+
+def detect_order_block(df):
+
+    df = prepare_smart_money(df)
+
+    if len(df) < 5:
+
+        return None
+
+    start = max(
+
+        1,
+
+        len(df) - OB_LOOKBACK
+
+    )
+
+    for i in range(
+
+        len(df) - 2,
+
+        start - 1,
+
+        -1
+
+    ):
+
+        candle = df.iloc[i]
+
+        nxt = df.iloc[i + 1]
+
+        # Bullish Order Block
+        if (
+
+            bearish(candle)
+
+            and
+
+            bullish(nxt)
+
+        ):
+
+            return {
+
+                "direction": "BUY",
+
+                "type": "Bullish Order Block",
+
+                "high": float(candle["high"]),
+
+                "low": float(candle["low"]),
+
+                "index": i
+
+            }
+
+        # Bearish Order Block
+        if (
+
+            bullish(candle)
+
+            and
+
+            bearish(nxt)
+
+        ):
+
+            return {
+
+                "direction": "SELL",
+
+                "type": "Bearish Order Block",
+
+                "high": float(candle["high"]),
+
+                "low": float(candle["low"]),
+
+                "index": i
+
+            }
+
+    return None
+
+
+# ==========================
+# ORDER BLOCK ACTIVE
+# ==========================
+
+def order_block_active(df):
+
+    ob = detect_order_block(df)
+
+    if ob is None:
+
+        return False
+
+    price = float(
+
+        df["close"].iloc[-1]
+
+    )
+
+    return (
+
+        ob["low"]
+
+        <=
+
+        price
+
+        <=
+
+        ob["high"]
+
+    )
+
+
+# ==========================
+# ORDER BLOCK SUMMARY
+# ==========================
+
+def analyze_order_block(df):
+
+    ob = detect_order_block(df)
+
+    return {
+
+        "order_block": ob,
+
+        "active": order_block_active(df)
+
+    }
+    # ==========================
+# BUY SIDE LIQUIDITY
+# ==========================
+
+def detect_buy_side_liquidity(df):
+
+    highs = df["high"].tail(
+
+        LIQUIDITY_LOOKBACK
+
+    )
+
+    level = float(
+
+        highs.max()
+
+    )
+
+    return {
+
+        "direction": "BUY",
+
+        "level": level
+
+    }
+
+
+# ==========================
+# SELL SIDE LIQUIDITY
+# ==========================
+
+def detect_sell_side_liquidity(df):
+
+    lows = df["low"].tail(
+
+        LIQUIDITY_LOOKBACK
+
+    )
+
+    level = float(
+
+        lows.min()
+
+    )
+
+    return {
+
+        "direction": "SELL",
+
+        "level": level
+
+    }
 
 
 # ==========================
 # LIQUIDITY SWEEP
 # ==========================
 
-def detect_liquidity_sweep(df, lookback=20):
+def detect_liquidity_sweep(df):
 
-    if len(df) < lookback:
-        return None
+    buy = detect_buy_side_liquidity(df)
 
+    sell = detect_sell_side_liquidity(df)
 
-    recent = df.iloc[-lookback:-1]
-    current = df.iloc[-1]
+    candle = df.iloc[-1]
 
-
-    previous_high = float(
-        recent["high"].max()
-    )
-
-    previous_low = float(
-        recent["low"].min()
-    )
-
-
-    open_price = float(
-        current["open"]
-    )
-
-    close = float(
-        current["close"]
-    )
-
-    high = float(
-        current["high"]
-    )
-
-    low = float(
-        current["low"]
-    )
-
-
-    body = abs(
-        close - open_price
-    )
-
-
-    upper_wick = high - max(
-        open_price,
-        close
-    )
-
-
-    lower_wick = min(
-        open_price,
-        close
-    ) - low
-
-
-
-    # Buy Side Liquidity Sweep
-    # High taken then rejection
-
+    # Buy Side Sweep
     if (
 
-        high > previous_high
+        float(candle["high"])
 
-        and
+        >
 
-        close < previous_high
-
-        and
-
-        upper_wick > body
+        buy["level"]
 
     ):
 
         return {
 
-            "direction":"SELL",
+            "direction": "SELL",
 
-            "type":"Buy Side Liquidity Sweep",
+            "type": "Buy Side Sweep",
 
-            "level":previous_high
+            "level": buy["level"]
 
         }
 
-
-
-    # Sell Side Liquidity Sweep
-    # Low taken then rejection
-
+    # Sell Side Sweep
     if (
 
-        low < previous_low
+        float(candle["low"])
 
-        and
+        <
 
-        close > previous_low
-
-        and
-
-        lower_wick > body
+        sell["level"]
 
     ):
 
         return {
 
-            "direction":"BUY",
+            "direction": "BUY",
 
-            "type":"Sell Side Liquidity Sweep",
+            "type": "Sell Side Sweep",
 
-            "level":previous_low
+            "level": sell["level"]
 
         }
-
-
 
     return None
-
-
 
 
 # ==========================
@@ -128,1045 +665,517 @@ def detect_liquidity_sweep(df, lookback=20):
 
 def detect_liquidity_grab(df):
 
-    if len(df) < 20:
+    sweep = detect_liquidity_sweep(df)
+
+    if sweep is None:
+
         return None
-
-
-    recent = df.iloc[-20:-1]
-    current = df.iloc[-1]
-
-
-    high = float(
-        recent["high"].max()
-    )
-
-    low = float(
-        recent["low"].min()
-    )
-
-
-
-    if (
-
-        float(current["high"]) > high
-
-        and
-
-        float(current["close"]) < high
-
-    ):
-
-        return {
-
-            "direction":"SELL",
-
-            "type":"Buy Side Liquidity Grab"
-
-        }
-
-
-
-
-    if (
-
-        float(current["low"]) < low
-
-        and
-
-        float(current["close"]) > low
-
-    ):
-
-        return {
-
-            "direction":"BUY",
-
-            "type":"Sell Side Liquidity Grab"
-
-        }
-
-
-
-    return None
-
-
-
-
-# ==========================
-# FAIR VALUE GAP (FVG)
-# ==========================
-
-def detect_fvg(df):
-
-    if len(df) < 3:
-        return None
-
-
-
-    c1 = df.iloc[-3]
-
-    c2 = df.iloc[-2]
-
-    c3 = df.iloc[-1]
-
-
-
-    # Bullish FVG
-
-    if (
-
-        float(c3["low"])
-
-        >
-
-        float(c1["high"])
-
-    ):
-
-
-        return {
-
-            "direction":"BUY",
-
-            "type":"Bullish FVG",
-
-            "top":float(c3["low"]),
-
-            "bottom":float(c1["high"])
-
-        }
-
-
-
-    # Bearish FVG
-
-    if (
-
-        float(c3["high"])
-
-        <
-
-        float(c1["low"])
-
-    ):
-
-
-        return {
-
-            "direction":"SELL",
-
-            "type":"Bearish FVG",
-
-            "top":float(c1["low"]),
-
-            "bottom":float(c3["high"])
-
-        }
-
-
-
-    return None
-
-
-
-
-# ==========================
-# PREMIUM / DISCOUNT
-# ==========================
-
-def get_premium_discount(df):
-
-    if len(df) < 20:
-        return None
-
-
-
-    high = float(
-        df["high"].tail(20).max()
-    )
-
-
-    low = float(
-        df["low"].tail(20).min()
-    )
-
-
-    price = float(
-        df["close"].iloc[-1]
-    )
-
-
-    if high == low:
-        return None
-
-
-
-    position = (
-
-        (price - low)
-
-        /
-
-        (high - low)
-
-    ) * 100
-
-
-
-
-    if position >= 75:
-
-        zone = "Deep Premium"
-
-
-    elif position >= 50:
-
-        zone = "Premium"
-
-
-    elif position <= 25:
-
-        zone = "Deep Discount"
-
-
-    else:
-
-        zone = "Discount"
-
-
 
     return {
 
-        "zone":zone,
+        "direction": sweep["direction"],
 
-        "high":high,
+        "type": "Liquidity Grab",
 
-        "low":low,
-
-        "price":price,
-
-        "equilibrium":(high+low)/2,
-
-        "position":round(position,2)
+        "level": sweep["level"]
 
     }
     # ==========================
-# ORDER BLOCK
+# PREMIUM / DISCOUNT ZONE
 # ==========================
 
-def detect_order_block(df, lookback=50):
+def detect_pd_zone(df):
 
-    if len(df) < lookback:
-        return None
+    high = float(
 
+        df["high"].tail(50).max()
 
-    data = df.iloc[-lookback:]
+    )
 
+    low = float(
 
-    for i in range(
-        len(data)-2,
-        0,
-        -1
-    ):
+        df["low"].tail(50).min()
 
-        candle = data.iloc[i]
+    )
 
-        next_candle = data.iloc[i+1]
+    price = float(
 
+        df["close"].iloc[-1]
 
-        high = float(candle["high"])
-        low = float(candle["low"])
+    )
 
-        open_price = float(candle["open"])
-        close = float(candle["close"])
+    equilibrium = (
 
+        high + low
 
+    ) / 2
 
-        candle_range = high - low
+    if price > equilibrium:
 
+        zone = "PREMIUM"
 
-        if candle_range == 0:
-            continue
+    elif price < equilibrium:
 
+        zone = "DISCOUNT"
 
+    else:
 
-        next_move = abs(
+        zone = "EQUILIBRIUM"
 
-            float(next_candle["close"])
+    return {
 
-            -
+        "zone": zone,
 
-            float(next_candle["open"])
+        "high": round(high, 2),
 
-        )
+        "low": round(low, 2),
 
+        "equilibrium": round(equilibrium, 2),
 
+        "price": round(price, 2)
 
-        # Bullish Order Block
-        # Last bearish candle before expansion
-
-        if (
-
-            close < open_price
-
-            and
-
-            float(next_candle["close"]) > high
-
-            and
-
-            next_move > candle_range * 0.5
-
-        ):
+    }
 
 
-            return {
+# ==========================
+# SMART MONEY ZONE
+# ==========================
 
-                "direction":"BUY",
+def detect_smart_money_zone(df):
 
-                "type":"Bullish Order Block",
+    ob = detect_order_block(df)
 
-                "high":high,
+    fvg = detect_fvg(df)
 
-                "low":low
+    pd = detect_pd_zone(df)
 
-            }
+    return {
 
+        "order_block": ob,
 
+        "fvg": fvg,
 
+        "pd_zone": pd
 
-        # Bearish Order Block
-        # Last bullish candle before drop
-
-
-        if (
-
-            close > open_price
-
-            and
-
-            float(next_candle["close"]) < low
-
-            and
-
-            next_move > candle_range * 0.5
-
-        ):
+    }
 
 
-            return {
+# ==========================
+# BEST POI
+# ==========================
 
-                "direction":"SELL",
+def best_poi(df):
 
-                "type":"Bearish Order Block",
+    ob = detect_order_block(df)
 
-                "high":high,
+    if ob:
 
-                "low":low
+        return ob
 
-            }
+    fvg = detect_fvg(df)
 
+    if fvg:
+
+        return fvg
 
     return None
 
 
+# ==========================
+# SMART MONEY SUMMARY
+# ==========================
+
+def smart_money_summary(df):
+
+    return {
+
+        "poi": best_poi(df),
+
+        "zone": detect_pd_zone(df),
+
+        "liquidity": detect_liquidity_grab(df)
+
+    }
+    # ==========================
+# SMART MONEY CONFLUENCE
+# ==========================
+
+def smart_money_confluence(df):
+
+    ob = detect_order_block(df)
+
+    fvg = detect_fvg(df)
+
+    liquidity = detect_liquidity_grab(df)
+
+    displacement = detect_displacement(df)
+
+    score = 0
+
+    reasons = []
+
+    # Order Block
+    if ob is not None:
+
+        score += 30
+
+        reasons.append("Order Block")
+
+    # Fair Value Gap
+    if fvg is not None:
+
+        score += 25
+
+        reasons.append("FVG")
+
+    # Liquidity Grab
+    if liquidity is not None:
+
+        score += 25
+
+        reasons.append("Liquidity Grab")
+
+    # Displacement
+    if (
+
+        displacement is not None
+
+        and
+
+        displacement["valid"]
+
+    ):
+
+        score += 20
+
+        reasons.append("Displacement")
+
+    if score > 100:
+
+        score = 100
+
+    return {
+
+        "score": score,
+
+        "reasons": reasons
+
+    }
 
 
 # ==========================
-# FRESH ORDER BLOCK
+# SMART MONEY STRENGTH
 # ==========================
 
-def is_fresh_order_block(
-    df,
-    order_block
-):
+def smart_money_strength(df):
 
-    if order_block is None:
+    result = smart_money_confluence(df)
+
+    score = result["score"]
+
+    if score >= 80:
+
+        strength = "STRONG"
+
+    elif score >= 60:
+
+        strength = "GOOD"
+
+    elif score >= 40:
+
+        strength = "AVERAGE"
+
+    else:
+
+        strength = "WEAK"
+
+    return {
+
+        "strength": strength,
+
+        "score": score,
+
+        "reasons": result["reasons"]
+
+    }
+
+
+# ==========================
+# CONFLUENCE CHECK
+# ==========================
+
+def institutional_confirmation(df):
+
+    result = smart_money_strength(df)
+
+    return result["score"] >= 60
+    # ==========================
+# INSTITUTIONAL ENTRY FILTER
+# ==========================
+
+def institutional_entry_filter(df):
+
+    ob = detect_order_block(df)
+
+    fvg = detect_fvg(df)
+
+    displacement = detect_displacement(df)
+
+    liquidity = detect_liquidity_grab(df)
+
+    pd_zone = detect_pd_zone(df)
+
+    if ob is None:
+
         return False
 
+    if displacement is None or not displacement["valid"]:
 
+        return False
 
-    recent = df.tail(5)
+    if liquidity is None:
 
-
-
-    if order_block["direction"] == "BUY":
-
-
-        if (
-
-            float(recent["low"].min())
-
-            <
-
-            order_block["low"]
-
-        ):
-
-            return False
-
-
-
-
-    if order_block["direction"] == "SELL":
-
-
-        if (
-
-            float(recent["high"].max())
-
-            >
-
-            order_block["high"]
-
-        ):
-
-            return False
-
-
+        return False
 
     return True
 
 
-
-
 # ==========================
-# BREAKER BLOCK
+# TRADE DIRECTION
 # ==========================
 
-def detect_breaker_block(
-    df,
-    order_block=None
-):
+def smart_money_direction(df):
 
-    if order_block is None:
-        return None
+    ob = detect_order_block(df)
 
+    if ob is not None:
 
+        return ob["direction"]
 
-    price = float(
-        df["close"].iloc[-1]
-    )
+    fvg = detect_fvg(df)
 
+    if fvg is not None:
 
+        return fvg["direction"]
 
-    # Bullish OB failed
+    liquidity = detect_liquidity_grab(df)
 
-    if (
+    if liquidity is not None:
 
-        order_block["direction"] == "BUY"
-
-        and
-
-        price < order_block["low"]
-
-    ):
-
-
-        return {
-
-            "direction":"SELL",
-
-            "type":"Bearish Breaker",
-
-            "high":order_block["high"],
-
-            "low":order_block["low"]
-
-        }
-
-
-
-
-    # Bearish OB failed
-
-
-    if (
-
-        order_block["direction"] == "SELL"
-
-        and
-
-        price > order_block["high"]
-
-    ):
-
-
-        return {
-
-            "direction":"BUY",
-
-            "type":"Bullish Breaker",
-
-            "high":order_block["high"],
-
-            "low":order_block["low"]
-
-        }
-
-
+        return liquidity["direction"]
 
     return None
 
 
-
-
 # ==========================
-# MITIGATION BLOCK
+# FINAL SMART MONEY ANALYSIS
 # ==========================
 
-def detect_mitigation_block(
-    df,
-    order_block=None
-):
+def analyze_smart_money_v5(df):
 
-    if order_block is None:
-        return None
+    return {
 
+        "direction": smart_money_direction(df),
 
+        "entry_valid": institutional_entry_filter(df),
 
-    price = float(
-        df["close"].iloc[-1]
-    )
+        "order_block": detect_order_block(df),
 
+        "fvg": detect_fvg(df),
 
+        "liquidity": detect_liquidity_grab(df),
 
-    if (
+        "displacement": detect_displacement(df),
 
-        order_block["low"]
+        "pd_zone": detect_pd_zone(df),
 
-        <=
+        "strength": smart_money_strength(df)
 
-        price
-
-        <=
-
-        order_block["high"]
-
-    ):
-
-
-        return {
-
-            "direction":
-            order_block["direction"],
-
-            "type":
-            "Mitigation Block",
-
-            "high":
-            order_block["high"],
-
-            "low":
-            order_block["low"]
-
-        }
-
-
-
-    return None
-
-
-
-
-# ==========================
-# REJECTION BLOCK
-# ==========================
-
-def detect_rejection_block(df):
-
-    if len(df) < 3:
-        return None
-
-
-
-    candle = df.iloc[-1]
-
-
-    high = float(candle["high"])
-
-    low = float(candle["low"])
-
-    open_price = float(candle["open"])
-
-    close = float(candle["close"])
-
-
-
-    body = abs(
-        close - open_price
-    )
-
-
-
-    upper_wick = (
-
-        high -
-
-        max(
-            open_price,
-            close
-        )
-
-    )
-
-
-
-    lower_wick = (
-
-        min(
-            open_price,
-            close
-        )
-
-        -
-
-        low
-
-    )
-
-
-
-    # Bearish rejection
-
-
-    if upper_wick > body * 2:
-
-
-        return {
-
-            "direction":"SELL",
-
-            "type":"Bearish Rejection Block",
-
-            "high":high,
-
-            "low":low
-
-        }
-
-
-
-    # Bullish rejection
-
-
-    if lower_wick > body * 2:
-
-
-        return {
-
-            "direction":"BUY",
-
-            "type":"Bullish Rejection Block",
-
-            "high":high,
-
-            "low":low
-
-        }
-
-
-
-    return None
+    }
     # ==========================
-# DISPLACEMENT
+# SMART MONEY DEBUG PANEL
 # ==========================
 
-def detect_displacement(df):
+def debug_smart_money(df):
 
-    if len(df) < 20:
-        return None
+    result = analyze_smart_money_v5(df)
 
+    print("\n========== SMART MONEY V5 ==========")
 
-    current = df.iloc[-1]
+    print("Direction     :", result["direction"])
 
+    print("Entry Valid   :", result["entry_valid"])
 
-    body = abs(
-        float(current["close"])
-        -
-        float(current["open"])
-    )
+    print("Order Block   :", result["order_block"])
 
+    print("FVG           :", result["fvg"])
 
-    avg_body = (
+    print("Liquidity     :", result["liquidity"])
 
-        df["close"]
-        -
-        df["open"]
+    print("Displacement  :", result["displacement"])
 
-    ).abs().tail(20).mean()
+    print("PD Zone       :", result["pd_zone"])
 
+    print("Strength      :", result["strength"]["strength"])
 
+    print("Score         :", result["strength"]["score"])
 
-    if avg_body == 0:
-        return None
+    print("Reasons       :", ", ".join(result["strength"]["reasons"]))
 
+    print("====================================\n")
 
-
-    strength = body / avg_body
-
-
-
-    if strength >= 2:
-
-
-        if (
-
-            float(current["close"])
-
-            >
-
-            float(current["open"])
-
-        ):
-
-
-            return {
-
-                "direction":"BUY",
-
-                "type":"Bullish Displacement",
-
-                "strength":round(strength,2)
-
-            }
-
-
-
-        else:
-
-
-            return {
-
-                "direction":"SELL",
-
-                "type":"Bearish Displacement",
-
-                "strength":round(strength,2)
-
-            }
-
-
-
-    return None
-
-
+    return result
 
 
 # ==========================
-# TRADE LEVEL GENERATOR
+# SMART MONEY REPORT
+# ==========================
+
+def smart_money_report(df):
+
+    result = analyze_smart_money_v5(df)
+
+    return {
+
+        "direction": result["direction"],
+
+        "entry_valid": result["entry_valid"],
+
+        "score": result["strength"]["score"],
+
+        "strength": result["strength"]["strength"],
+
+        "reasons": result["strength"]["reasons"],
+
+        "order_block": result["order_block"],
+
+        "fvg": result["fvg"],
+
+        "liquidity": result["liquidity"],
+
+        "pd_zone": result["pd_zone"]
+
+    }
+    # ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def analyze_smart_money(df):
+
+    result = analyze_smart_money_v5(df)
+
+    return {
+
+        "liquidity": result["liquidity"],
+
+        "fvg": result["fvg"],
+
+        "order_block": result["order_block"],
+
+        "fresh_ob": result["order_block"],
+
+        "zone": result["pd_zone"],
+
+        "displacement": result["displacement"],
+
+        "liquidity_grab": result["liquidity"]
+
+    }
+
+
+# ==========================
+# TRADE LEVELS
 # ==========================
 
 def generate_trade_levels(
+
     df,
-    signal,
-    fvg=None,
-    order_block=None,
-    liquidity=None
+
+    direction,
+
+    fvg,
+
+    order_block,
+
+    liquidity
+
 ):
 
-    price = float(
-        df["close"].iloc[-1]
-    )
+    price = float(df["close"].iloc[-1])
 
+    atr = (
 
+        df["high"]
 
-    if signal == "BUY":
+        -
 
+        df["low"]
 
-        entry = price
+    ).tail(14).mean()
 
-
-
-        if order_block and order_block["direction"] == "BUY":
-
-
-            entry = (
-
-                order_block["high"]
-
-                +
-
-                order_block["low"]
-
-            ) / 2
-
-
-
-            sl = order_block["low"] * 0.998
-
-
-
-        elif fvg and fvg["direction"] == "BUY":
-
-
-            entry = (
-
-                fvg["top"]
-
-                +
-
-                fvg["bottom"]
-
-            ) / 2
-
-
-
-            sl = fvg["bottom"] * 0.998
-
-
-
-        else:
-
-
-            sl = (
-
-                float(
-                    df["low"]
-                    .tail(30)
-                    .min()
-                )
-
-                *
-
-                0.998
-
-            )
-
-
-
-        risk = entry - sl
-
-
-
-        if risk <= 0:
-            return None
-
-
-
-        tp1 = (
-
-            float(
-                df["high"]
-                .tail(50)
-                .max()
-            )
-
-        )
-
-
-
-        if tp1 <= entry:
-
-            tp1 = entry + risk * 2
-
-
-
-        tp2 = entry + risk * 3
-
-
-
-
-    elif signal == "SELL":
-
+    if direction == "BUY":
 
         entry = price
 
+        sl = price - atr
 
+        tp1 = price + (atr * 2)
 
-        if order_block and order_block["direction"] == "SELL":
+        tp2 = price + (atr * 3)
 
+    elif direction == "SELL":
 
-            entry = (
+        entry = price
 
-                order_block["high"]
+        sl = price + atr
 
-                +
+        tp1 = price - (atr * 2)
 
-                order_block["low"]
-
-            ) / 2
-
-
-
-            sl = order_block["high"] * 1.002
-
-
-
-        elif fvg and fvg["direction"] == "SELL":
-
-
-            entry = (
-
-                fvg["top"]
-
-                +
-
-                fvg["bottom"]
-
-            ) / 2
-
-
-
-            sl = fvg["top"] * 1.002
-
-
-
-        else:
-
-
-            sl = (
-
-                float(
-                    df["high"]
-                    .tail(30)
-                    .max()
-                )
-
-                *
-
-                1.002
-
-            )
-
-
-
-        risk = sl - entry
-
-
-
-        if risk <= 0:
-            return None
-
-
-
-        tp1 = (
-
-            float(
-                df["low"]
-                .tail(50)
-                .min()
-            )
-
-        )
-
-
-
-        if tp1 >= entry:
-
-            tp1 = entry - risk * 2
-
-
-
-        tp2 = entry - risk * 3
-
-
+        tp2 = price - (atr * 3)
 
     else:
 
         return None
 
-
-
     return {
 
+        "entry": round(entry, 2),
 
-        "entry":round(entry,4),
+        "sl": round(sl, 2),
 
-        "sl":round(sl,4),
+        "tp1": round(tp1, 2),
 
-        "tp1":round(tp1,4),
-
-        "tp2":round(tp2,4)
+        "tp2": round(tp2, 2)
 
     }
 
 
-
-
 # ==========================
-# SMART MONEY ANALYSIS
+# EXPORTS
 # ==========================
 
-def analyze_smart_money(df):
+__all__ = [
 
+    "detect_order_block",
 
-    liquidity = detect_liquidity_sweep(df)
+    "detect_fvg",
 
+    "detect_liquidity_grab",
 
-    liquidity_grab = detect_liquidity_grab(df)
+    "detect_displacement",
 
+    "detect_pd_zone",
 
-    fvg = detect_fvg(df)
+    "smart_money_strength",
 
+    "analyze_smart_money",
 
-    order_block = detect_order_block(df)
+    "analyze_smart_money_v5",
 
+    "generate_trade_levels",
 
+    "debug_smart_money",
 
-    fresh_ob = is_fresh_order_block(
-        df,
-        order_block
-    )
+    "smart_money_report"
 
-
-
-    breaker = detect_breaker_block(
-        df,
-        order_block
-    )
-
-
-
-    mitigation = detect_mitigation_block(
-        df,
-        order_block
-    )
-
-
-
-    rejection = detect_rejection_block(df)
-
-
-
-    zone = get_premium_discount(df)
-
-
-
-    displacement = detect_displacement(df)
-
-
-
-    return {
-
-
-        "liquidity":liquidity,
-
-
-        "liquidity_grab":liquidity_grab,
-
-
-        "fvg":fvg,
-
-
-        "order_block":order_block,
-
-
-        "fresh_ob":fresh_ob,
-
-
-        "breaker":breaker,
-
-
-        "mitigation":mitigation,
-
-
-        "rejection":rejection,
-
-
-        "zone":zone,
-
-
-        "displacement":displacement
-
-    }
+]
