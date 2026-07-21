@@ -21,7 +21,8 @@ class ScannerEngineV12:
 
     def __init__(self):
         self.results: List[ScanResult] = []
-            def health(self):
+
+    def health(self):
         return {
             "status": "OK",
             "engine": "ScannerEngineV12",
@@ -29,8 +30,6 @@ class ScannerEngineV12:
         }
 
     def preprocess(self, market_data):
-        """Validate and normalize market data."""
-        return market_data
 
     def analyze_symbol(self, symbol: str, market_data):
         """Placeholder for analysis logic."""
