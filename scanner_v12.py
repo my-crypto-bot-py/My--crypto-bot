@@ -21,13 +21,8 @@ class ScannerEngineV12:
 
     def __init__(self):
         self.results: List[ScanResult] = []
-            def health(self):
-        return {
-            "status": "OK",
-            "engine": "ScannerEngineV12",
-            "results": len(self.results)
-        }
-        
+
+    def health(self):
         return {
             "status": "OK",
             "engine": "ScannerEngineV12",
@@ -35,6 +30,8 @@ class ScannerEngineV12:
         }
 
     def preprocess(self, market_data):
+        """Validate and normalize market data."""
+        return market_data
 
     def analyze_symbol(self, symbol: str, market_data):
         """Placeholder for analysis logic."""
@@ -51,13 +48,18 @@ class ScannerEngineV12:
 
         for symbol in symbols:
             data = market_data_provider(symbol)
+
+            if data is None:
+                continue
+
             processed = self.preprocess(data)
+
             self.results.append(
                 self.analyze_symbol(symbol, processed)
             )
 
-        return self.results
-      # ==========================
+        return self.results 
+# ==========================
 # SCANNER ENGINE V12
 # PART 2
 # Data Validation Layer
