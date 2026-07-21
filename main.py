@@ -15,11 +15,13 @@ from signal import *
 
 from filters import *
 
+# V5 Scanner (Backup)
 from scanner import *
 
+# V12 Scanner
+from scanner_v12 import *
 
-# V12 INTELLIGENCE CORE
-
+# V12 Structure
 from structure_v12 import (
     get_v12_master_signal_v12
 )
