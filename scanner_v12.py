@@ -1100,3 +1100,172 @@ class ScannerComponentRegistry:
 
     def clear(self) -> None:
         self._components.clear()
+        # ==========================
+# SCANNER ENGINE V12
+# PART 21
+# Public Entry Point
+# ==========================
+
+SCANNER_ENGINE_VERSION = "V12"
+
+
+def scanner_engine_v12(
+    market_data
+):
+    """
+    Public entry point for Main.py
+    """
+
+    lifecycle = ScanLifecycleManager()
+    validator = DataValidatorV12()
+    diagnostics = DiagnosticsManager()
+    metrics = ScanMetricsCollector()
+    health = ScannerHealthMonitor()
+
+    lifecycle.start()
+
+    try:
+
+        validation = validator.validate(
+            market_data
+        )
+
+        if not validation.valid:
+
+            diagnostics.record(
+                component="DataValidatorV12",
+                status="FAILED",
+                message=validation.reason
+            )
+
+            health.update(
+                data_feed_ok=False
+            )
+
+            lifecycle.fail(
+                validation.reason
+            )
+
+            metrics.record_failure()
+
+            return None
+
+        health.update(
+            data_feed_ok=True
+        )
+
+        lifecycle.update(
+            ScanStage.VALIDATING,
+            25
+        )
+
+        engine = ScannerEngineV12()
+
+        processed = engine.preprocess(
+            market_data
+        )
+
+        lifecycle.update(
+            ScanStage.PROCESSING,
+            75
+        )
+
+        metrics.record_success()
+
+        lifecycle.complete()
+
+        metrics.finish()
+
+        return {
+            "engine": SCANNER_ENGINE_VERSION,
+            "status": "READY",
+            "market_data": processed,
+            "validation": validation,
+            "health": health.snapshot(),
+            "metrics": metrics.summary(),
+        }
+
+    except Exception as e:
+
+        diagnostics.record(
+            component="ScannerEngineV12",
+            status="FAILED",
+            message=str(e)
+        )
+
+        health.update(
+            data_feed_ok=False
+        )
+
+        lifecycle.fail(
+            str(e)
+        )
+
+        metrics.record_failure()
+
+        metrics.finish()
+
+        return None
+        # ==========================
+# SCANNER ENGINE V12
+# PART 22
+# Component Bootstrap
+# ==========================
+
+from dataclasses import dataclass
+
+
+@dataclass
+class ScannerComponents:
+
+    validator: DataValidatorV12
+    lifecycle: ScanLifecycleManager
+    diagnostics: DiagnosticsManager
+    metrics: ScanMetricsCollector
+    health: ScannerHealthMonitor
+    repository: ScanResultRepository
+    cache: ScanCacheManager
+    state: ScannerStateStore
+    registry: ScannerComponentRegistry
+
+
+def create_scanner_components():
+
+    components = ScannerComponents(
+        validator=DataValidatorV12(),
+        lifecycle=ScanLifecycleManager(),
+        diagnostics=DiagnosticsManager(),
+        metrics=ScanMetricsCollector(),
+        health=ScannerHealthMonitor(),
+        repository=ScanResultRepository(),
+        cache=ScanCacheManager(),
+        state=ScannerStateStore(),
+        registry=ScannerComponentRegistry(),
+    )
+
+    components.registry.register(
+        name="validator",
+        version="V12",
+        component=components.validator,
+    )
+
+    components.registry.register(
+        name="metrics",
+        version="V12",
+        component=components.metrics,
+    )
+
+    components.registry.register(
+        name="health",
+        version="V12",
+        component=components.health,
+    )
+
+    components.registry.register(
+        name="repository",
+        version="V12",
+        component=components.repository,
+    )
+
+    return components
+    
