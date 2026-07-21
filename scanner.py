@@ -264,55 +264,55 @@ def import_engines():
 
 
 
-# ==========================
-# SIGNAL ANALYZER
-# ==========================
-df = symbol_data["data"]
-
+    # ==========================
+    # SIGNAL ANALYZER
+    # ==========================
+    df = symbol_data["data"]
+ 
     from market import market_engine_v5
 
-    market = market_engine_v5(df)
+        market = market_engine_v5(df)
 
-    print("MARKET ENGINE:", market)
+        print("MARKET ENGINE:", market)
 
-    structure = {}
+        structure = {}
 
-    smart_money = {}
+        smart_money = {}
 
-    pd_array = {}
+        pd_array = {}
 
-    ote = {}
+        ote = {}
 
-    smt = {}
+        smt = {}
 
-    confidence = modules["confidence"](
+        confidence = modules["confidence"](
 
-        market,
+            market,
 
-        structure,
+            structure,
 
-        smart_money,
+            smart_money,
 
-        pd_array,
+            pd_array,
 
-        ote,
+            ote,
 
-        smt
+            smt
+ 
+        )
 
-    )
 
+        return {
 
-    return {
+            "symbol":
 
-        "symbol":
+            symbol_data["symbol"],
 
-        symbol_data["symbol"],
+            "confidence":
 
-        "confidence":
+            confidence
 
-        confidence
-
-    }
+        }
 # ==========================
 # MARKET SCAN ENGINE
 # ==========================
