@@ -2,7 +2,7 @@ import time
 
 
 # ==========================
-# IMPORT MODULES
+# IMPORT MODULES V12
 # ==========================
 
 from utils import *
@@ -16,6 +16,13 @@ from signal import *
 from filters import *
 
 from scanner import *
+
+
+# V12 INTELLIGENCE CORE
+
+from structure_v12 import (
+    get_v12_master_signal_v12
+)
 
 
 
