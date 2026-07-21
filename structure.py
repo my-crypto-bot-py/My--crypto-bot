@@ -15050,4 +15050,2070 @@ def get_confluence_rank_v12(df) -> Dict:
     return confluence_ranking_engine_v12(
         df
     )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2D-14
+# Multi Timeframe Intelligence Layer
+# Institutional Entry Precision Engine
+# Sniper Entry + Candle Confirmation
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# CANDLE CONFIRMATION ENGINE
+# ==========================
+
+def candle_confirmation_v12(df) -> Dict:
+
+
+    if len(df) < 3:
+
+        return {
+
+            "confirmed":
+
+                False
+
+        }
+
+
+
+    open_price = float(
+        df["open"].iloc[-1]
+    )
+
+
+    close_price = float(
+        df["close"].iloc[-1]
+    )
+
+
+    high = float(
+        df["high"].iloc[-1]
+    )
+
+
+    low = float(
+        df["low"].iloc[-1]
+    )
+
+
+
+    body = abs(
+        close_price - open_price
+    )
+
+
+    upper_wick = (
+        high
+        -
+        max(
+            open_price,
+            close_price
+        )
+    )
+
+
+    lower_wick = (
+        min(
+            open_price,
+            close_price
+        )
+        -
+        low
+    )
+
+
+
+    signal = "NONE"
+
+
+
+    if (
+
+        close_price > open_price
+
+        and
+
+        lower_wick > body
+
+    ):
+
+        signal = "BUY_REJECTION"
+
+
+
+    elif (
+
+        close_price < open_price
+
+        and
+
+        upper_wick > body
+
+    ):
+
+        signal = "SELL_REJECTION"
+
+
+
+    elif detect_displacement(df):
+
+        signal = "IMPULSE"
+
+
+
+    return {
+
+        "signal":
+
+            signal,
+
+
+        "confirmed":
+
+            signal != "NONE"
+
+    }
+
+
+
+# ==========================
+# SNIPER ENTRY SCORE
+# ==========================
+
+def sniper_entry_score_v12(df) -> int:
+
+
+    score = 0
+
+
+
+    if candle_confirmation_v12(df)["confirmed"]:
+
+        score += 30
+
+
+
+    if poi_location_check_v12(df):
+
+        score += 25
+
+
+
+    if mtf_liquidity_sweep_v12(df):
+
+        score += 20
+
+
+
+    if detect_mss(df):
+
+        score += 25
+
+
+
+    return min(score,100)
+
+
+
+# ==========================
+# SNIPER ENTRY FILTER
+# ==========================
+
+def sniper_entry_filter_v12(df) -> bool:
+
+
+    direction = optimized_direction_v12(
+        df
+    )
+
+
+    score = sniper_entry_score_v12(
+        df
+    )
+
+
+    if direction == "RANGE":
+
+        return False
+
+
+
+    if score < 80:
+
+        return False
+
+
+
+    return True
+
+
+
+# ==========================
+# PRECISION ENTRY ENGINE
+# ==========================
+
+def precision_entry_engine_v12(df) -> Dict:
+
+
+    direction = optimized_direction_v12(
+        df
+    )
+
+
+    return {
+
+        "direction":
+
+            direction,
+
+
+        "candle":
+
+            candle_confirmation_v12(
+                df
+            ),
+
+
+        "score":
+
+            sniper_entry_score_v12(
+                df
+            ),
+
+
+        "approved":
+
+            sniper_entry_filter_v12(
+                df
+            )
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_precision_entry_v12(df) -> Dict:
+
+    return precision_entry_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2D-15
+# Multi Timeframe Intelligence Layer
+# Institutional Final Execution Router
+# Signal Merge + Final Decision Layer
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# FINAL ENGINE INPUT FUSION
+# ==========================
+
+def final_engine_fusion_v12(df) -> Dict:
+
+
+    modules = {
+
+
+        "structure":
+
+            htf_structure_quality_v12(df),
+
+
+        "liquidity":
+
+            liquidity_reversal_score_v12(df),
+
+
+        "entry":
+
+            sniper_entry_score_v12(df),
+
+
+        "confluence":
+
+            setup_priority_score_v12(df),
+
+
+        "protection":
+
+            signal_quality_filter_v12(df)
+            ["quality"],
+
+
+        "management":
+
+            trade_management_score_v12(df)
+
+    }
+
+
+
+    total = 0
+
+
+    for value in modules.values():
+
+        total += value
+
+
+
+    confidence = int(
+        total /
+        len(modules)
+    )
+
+
+
+    return {
+
+        "modules":
+
+            modules,
+
+
+        "confidence":
+
+            confidence
+
+    }
+
+
+
+# ==========================
+# FINAL DIRECTION ROUTER
+# ==========================
+
+def final_direction_router_v12(df) -> str:
+
+
+    direction = optimized_direction_v12(
+        df
+    )
+
+
+    trigger = execution_trigger_v12(
+        df
+    )
+
+
+    precision = precision_entry_engine_v12(
+        df
+    )
+
+
+
+    votes = []
+
+
+
+    if direction != "RANGE":
+
+        votes.append(
+            direction
+        )
+
+
+
+    if trigger["direction"] != "RANGE":
+
+        votes.append(
+            trigger["direction"]
+        )
+
+
+
+    if precision["direction"] != "RANGE":
+
+        votes.append(
+            precision["direction"]
+        )
+
+
+
+    buy = votes.count(
+        "BUY"
+    )
+
+
+    sell = votes.count(
+        "SELL"
+    )
+
+
+
+    if buy > sell:
+
+        return "BUY"
+
+
+
+    if sell > buy:
+
+        return "SELL"
+
+
+
+    return "RANGE"
+
+
+
+# ==========================
+# FINAL TRADE ROUTER
+# ==========================
+
+def final_execution_router_v12(df) -> Dict:
+
+
+    fusion = final_engine_fusion_v12(
+        df
+    )
+
+
+    direction = final_direction_router_v12(
+        df
+    )
+
+
+    protection = institutional_protection_engine_v12(
+        df
+    )
+
+
+
+    approved = False
+
+
+
+    if (
+
+        fusion["confidence"] >= 85
+
+        and
+
+        direction != "RANGE"
+
+        and
+
+        protection["approved"]
+
+    ):
+
+        approved = True
+
+
+
+    return {
+
+        "signal":
+
+            direction
+            if approved
+            else
+            "NO_TRADE",
+
+
+        "approved":
+
+            approved,
+
+
+        "confidence":
+
+            fusion["confidence"],
+
+
+        "direction":
+
+            direction,
+
+
+        "modules":
+
+            fusion["modules"]
+
+    }
+
+
+
+# ==========================
+# STRUCTURE ENGINE V12 D FINAL
+# ==========================
+
+def structure_engine_v12_d_series_final(df) -> Dict:
+
+    return final_execution_router_v12(
+        df
+    )
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_final_structure_signal_v12(df) -> Dict:
+
+    return structure_engine_v12_d_series_final(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2D-16
+# Multi Timeframe Intelligence Layer
+# Institutional Signal Memory Engine
+# Historical Pattern + Performance Tracking
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict, List
+
+
+# ==========================
+# SIGNAL MEMORY STORAGE
+# ==========================
+
+V12_SIGNAL_MEMORY = []
+
+
+
+# ==========================
+# STORE SIGNAL SNAPSHOT
+# ==========================
+
+def store_signal_memory_v12(
+        signal: Dict
+) -> None:
+
+
+    if not signal:
+
+        return
+
+
+
+    snapshot = {
+
+        "signal":
+
+            signal.get(
+                "signal",
+                "NONE"
+            ),
+
+
+        "direction":
+
+            signal.get(
+                "direction",
+                "NONE"
+            ),
+
+
+        "confidence":
+
+            signal.get(
+                "confidence",
+                0
+            )
+
+    }
+
+
+
+    V12_SIGNAL_MEMORY.append(
+        snapshot
+    )
+
+
+
+    # Keep latest 100 records
+
+    if len(
+        V12_SIGNAL_MEMORY
+    ) > 100:
+
+        del V12_SIGNAL_MEMORY[0]
+
+
+
+# ==========================
+# MEMORY ANALYSIS
+# ==========================
+
+def analyze_signal_memory_v12() -> Dict:
+
+
+    if not V12_SIGNAL_MEMORY:
+
+        return {
+
+            "total":
+
+                0
+
+        }
+
+
+
+    buy = 0
+
+    sell = 0
+
+    avg_confidence = 0
+
+
+
+    for item in V12_SIGNAL_MEMORY:
+
+
+        if item["direction"] == "BUY":
+
+            buy += 1
+
+
+
+        elif item["direction"] == "SELL":
+
+            sell += 1
+
+
+
+        avg_confidence += item["confidence"]
+
+
+
+    total = len(
+        V12_SIGNAL_MEMORY
+    )
+
+
+
+    return {
+
+        "total":
+
+            total,
+
+
+        "buy":
+
+            buy,
+
+
+        "sell":
+
+            sell,
+
+
+        "average_confidence":
+
+            int(
+                avg_confidence / total
+            )
+
+    }
+
+
+
+# ==========================
+# MEMORY CONFIDENCE BOOST
+# ==========================
+
+def memory_confidence_boost_v12() -> int:
+
+
+    analysis = analyze_signal_memory_v12()
+
+
+
+    if analysis["total"] < 10:
+
+        return 0
+
+
+
+    if analysis["average_confidence"] >= 85:
+
+        return 10
+
+
+
+    return 0
+
+
+
+# ==========================
+# FINAL MEMORY FILTER
+# ==========================
+
+def signal_memory_filter_v12(
+        signal: Dict
+) -> Dict:
+
+
+    boost = memory_confidence_boost_v12()
+
+
+
+    confidence = (
+
+        signal.get(
+            "confidence",
+            0
+        )
+
+        +
+
+        boost
+
+    )
+
+
+
+    return {
+
+        "signal":
+
+            signal.get(
+                "signal"
+            ),
+
+
+        "confidence":
+
+            min(
+                confidence,
+                100
+            ),
+
+
+        "memory_boost":
+
+            boost
+
+    }
+
+
+
+# ==========================
+# MEMORY ENGINE OUTPUT
+# ==========================
+
+def signal_memory_engine_v12(
+        signal: Dict
+) -> Dict:
+
+
+    store_signal_memory_v12(
+        signal
+    )
+
+
+    return signal_memory_filter_v12(
+        signal
+    )
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_signal_memory_v12(
+        signal: Dict
+) -> Dict:
+
+    return signal_memory_engine_v12(
+        signal
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2D-17
+# Multi Timeframe Intelligence Layer
+# Institutional Adaptive Scoring Engine
+# Dynamic Weight Adjustment
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# DYNAMIC MODULE WEIGHTS
+# ==========================
+
+def dynamic_weights_v12(df) -> Dict:
+
+
+    state = market_state_engine_v12(
+        df
+    )
+
+
+    phase = state["phase"]
+
+
+
+    weights = {
+
+
+        "structure":
+
+            25,
+
+
+        "liquidity":
+
+            20,
+
+
+        "entry":
+
+            20,
+
+
+        "confluence":
+
+            15,
+
+
+        "risk":
+
+            10,
+
+
+        "protection":
+
+            10
+
+    }
+
+
+
+    if phase == "EXPANSION":
+
+
+        weights["structure"] = 30
+
+        weights["entry"] = 25
+
+
+
+    elif phase == "MANIPULATION":
+
+
+        weights["liquidity"] = 35
+
+        weights["protection"] = 20
+
+
+
+    elif phase == "ACCUMULATION":
+
+
+        weights["risk"] = 25
+
+        weights["protection"] = 25
+
+
+
+    return weights
+
+
+
+# ==========================
+# ADAPTIVE CONFIDENCE ENGINE
+# ==========================
+
+def adaptive_confidence_v12(df) -> int:
+
+
+    modules = {
+
+
+        "structure":
+
+            htf_structure_quality_v12(df),
+
+
+        "liquidity":
+
+            liquidity_reversal_score_v12(df),
+
+
+        "entry":
+
+            sniper_entry_score_v12(df),
+
+
+        "confluence":
+
+            setup_priority_score_v12(df),
+
+
+        "risk":
+
+            trade_management_score_v12(df),
+
+
+        "protection":
+
+            signal_quality_filter_v12(df)
+            ["quality"]
+
+    }
+
+
+
+    weights = dynamic_weights_v12(
+        df
+    )
+
+
+    score = 0
+
+
+
+    for key,value in modules.items():
+
+
+        score += (
+
+            value
+            *
+            weights[key]
+            /
+            100
+
+        )
+
+
+
+    return min(
+        int(score),
+        100
+    )
+
+
+
+# ==========================
+# ADAPTIVE SIGNAL FILTER
+# ==========================
+
+def adaptive_signal_filter_v12(df) -> Dict:
+
+
+    confidence = adaptive_confidence_v12(
+        df
+    )
+
+
+    direction = final_direction_router_v12(
+        df
+    )
+
+
+    approved = False
+
+
+
+    if (
+
+        confidence >= 85
+
+        and
+
+        direction != "RANGE"
+
+    ):
+
+        approved = True
+
+
+
+    return {
+
+        "signal":
+
+            direction
+            if approved
+            else
+            "NO_TRADE",
+
+
+        "confidence":
+
+            confidence,
+
+
+        "approved":
+
+            approved
+
+    }
+
+
+
+# ==========================
+# ADAPTIVE ENGINE
+# ==========================
+
+def adaptive_intelligence_engine_v12(df) -> Dict:
+
+
+    return {
+
+        "signal":
+
+            adaptive_signal_filter_v12(
+                df
+            ),
+
+
+        "weights":
+
+            dynamic_weights_v12(
+                df
+            )
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_adaptive_signal_v12(df) -> Dict:
+
+    return adaptive_intelligence_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2D-18
+# Multi Timeframe Intelligence Layer
+# Institutional Market Delivery Engine
+# Accumulation -> Manipulation -> Expansion Tracking
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# DELIVERY PHASE ENGINE
+# ==========================
+
+def market_delivery_phase_v12(df) -> Dict:
+
+
+    phase = market_phase_v12(
+        df
+    )
+
+
+    direction = optimized_direction_v12(
+        df
+    )
+
+
+    liquidity = mtf_liquidity_sweep_v12(
+        df
+    )
+
+
+    displacement = detect_displacement(
+        df
+    )
+
+
+
+    delivery = "WAIT"
+
+
+
+    if phase == "ACCUMULATION":
+
+        delivery = "BUILD_UP"
+
+
+
+    elif phase == "MANIPULATION":
+
+        delivery = "LIQUIDITY_GRAB"
+
+
+
+    elif (
+
+        phase == "EXPANSION"
+
+        and
+
+        displacement
+
+    ):
+
+        delivery = "DELIVERY"
+
+
+
+    elif phase == "DISTRIBUTION":
+
+        delivery = "EXIT"
+
+
+
+    return {
+
+        "phase":
+
+            phase,
+
+
+        "delivery":
+
+            delivery,
+
+
+        "direction":
+
+            direction,
+
+
+        "liquidity":
+
+            liquidity is not None
+
+    }
+
+
+
+# ==========================
+# DELIVERY STRENGTH SCORE
+# ==========================
+
+def delivery_strength_v12(df) -> int:
+
+
+    state = market_delivery_phase_v12(
+        df
+    )
+
+
+    score = 0
+
+
+
+    if state["delivery"] == "DELIVERY":
+
+        score += 40
+
+
+
+    if state["liquidity"]:
+
+        score += 25
+
+
+
+    if detect_displacement(df):
+
+        score += 20
+
+
+
+    if internal_structure_break(df):
+
+        score += 15
+
+
+
+    return min(score,100)
+
+
+
+# ==========================
+# DELIVERY DIRECTION FILTER
+# ==========================
+
+def delivery_direction_filter_v12(df) -> str:
+
+
+    state = market_delivery_phase_v12(
+        df
+    )
+
+
+    if state["delivery"] != "DELIVERY":
+
+        return "RANGE"
+
+
+
+    return state["direction"]
+
+
+
+# ==========================
+# MARKET DELIVERY ENGINE
+# ==========================
+
+def institutional_delivery_engine_v12(df) -> Dict:
+
+
+    return {
+
+        "state":
+
+            market_delivery_phase_v12(
+                df
+            ),
+
+
+        "strength":
+
+            delivery_strength_v12(
+                df
+            ),
+
+
+        "direction":
+
+            delivery_direction_filter_v12(
+                df
+            )
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_market_delivery_v12(df) -> Dict:
+
+    return institutional_delivery_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2D-19
+# Multi Timeframe Intelligence Layer
+# Institutional Final Validation Engine
+# Last Gate Before Signal Generation
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# FINAL VALIDATION CHECKLIST
+# ==========================
+
+def final_validation_check_v12(df) -> Dict:
+
+
+    checks = {
+
+
+        "market_structure":
+
+            htf_structure_quality_v12(df) >= 70,
+
+
+        "liquidity":
+
+            liquidity_reversal_score_v12(df) >= 70,
+
+
+        "entry":
+
+            sniper_entry_score_v12(df) >= 70,
+
+
+        "confluence":
+
+            setup_priority_score_v12(df) >= 70,
+
+
+        "market_state":
+
+            market_phase_filter_v12(df),
+
+
+        "protection":
+
+            institutional_protection_engine_v12(df)
+            ["approved"],
+
+
+        "delivery":
+
+            delivery_strength_v12(df) >= 70
+
+    }
+
+
+
+    passed = 0
+
+
+
+    for value in checks.values():
+
+        if value:
+
+            passed += 1
+
+
+
+    return {
+
+        "checks":
+
+            checks,
+
+
+        "passed":
+
+            passed,
+
+
+        "total":
+
+            len(checks)
+
+    }
+
+
+
+# ==========================
+# VALIDATION SCORE
+# ==========================
+
+def final_validation_score_v12(df) -> int:
+
+
+    result = final_validation_check_v12(
+        df
+    )
+
+
+    return int(
+
+        (
+            result["passed"]
+
+            /
+
+            result["total"]
+
+        )
+
+        *
+
+        100
+
+    )
+
+
+
+# ==========================
+# FINAL SIGNAL GATE
+# ==========================
+
+def final_signal_gate_v12(df) -> Dict:
+
+
+    score = final_validation_score_v12(
+        df
+    )
+
+
+    direction = final_direction_router_v12(
+        df
+    )
+
+
+    approved = False
+
+
+
+    if (
+
+        score >= 85
+
+        and
+
+        direction != "RANGE"
+
+    ):
+
+        approved = True
+
+
+
+    return {
+
+        "approved":
+
+            approved,
+
+
+        "signal":
+
+            direction
+            if approved
+            else
+            "NO_TRADE",
+
+
+        "validation_score":
+
+            score
+
+    }
+
+
+
+# ==========================
+# VALIDATION ENGINE
+# ==========================
+
+def institutional_validation_engine_v12(df) -> Dict:
+
+
+    return {
+
+        "gate":
+
+            final_signal_gate_v12(
+                df
+            ),
+
+
+        "checklist":
+
+            final_validation_check_v12(
+                df
+            )
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_final_validation_v12(df) -> Dict:
+
+    return institutional_validation_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2D-20
+# Multi Timeframe Intelligence Layer
+# Institutional Final Output Formatter
+# Signal Packaging + Main.py Interface
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# SIGNAL DATA FORMATTER
+# ==========================
+
+def format_signal_output_v12(df) -> Dict:
+
+
+    final = final_signal_gate_v12(
+        df
+    )
+
+
+    direction = final.get(
+        "signal",
+        "NO_TRADE"
+    )
+
+
+    confidence = final.get(
+        "validation_score",
+        0
+    )
+
+
+
+    trade = institutional_trade_management_v12(
+        df
+    )
+
+
+
+    return {
+
+        "signal":
+
+            direction,
+
+
+        "direction":
+
+            direction,
+
+
+        "confidence":
+
+            confidence,
+
+
+        "approved":
+
+            final["approved"],
+
+
+        "entry":
+
+            trade["targets"].get(
+                "entry"
+            )
+            if trade["targets"]
+            else None,
+
+
+        "sl":
+
+            trade["targets"].get(
+                "sl"
+            )
+            if trade["targets"]
+            else None,
+
+
+        "tp1":
+
+            trade["targets"].get(
+                "tp1"
+            )
+            if trade["targets"]
+            else None,
+
+
+        "tp2":
+
+            trade["targets"].get(
+                "tp2"
+            )
+            if trade["targets"]
+            else None,
+
+
+        "tp3":
+
+            trade["targets"].get(
+                "tp3"
+            )
+            if trade["targets"]
+            else None
+
+    }
+
+
+
+# ==========================
+# SIGNAL REASON ENGINE
+# ==========================
+
+def signal_reason_builder_v12(df) -> list:
+
+
+    reasons = []
+
+
+
+    if htf_structure_quality_v12(df) >= 70:
+
+        reasons.append(
+            "HTF_STRUCTURE"
+        )
+
+
+
+    if liquidity_reversal_score_v12(df) >= 70:
+
+        reasons.append(
+            "LIQUIDITY"
+        )
+
+
+
+    if optimized_order_block(df):
+
+        reasons.append(
+            "ORDER_BLOCK"
+        )
+
+
+
+    if optimized_fvg_detection(df):
+
+        reasons.append(
+            "FVG"
+        )
+
+
+
+    if detect_displacement(df):
+
+        reasons.append(
+            "DISPLACEMENT"
+        )
+
+
+
+    if detect_mss(df):
+
+        reasons.append(
+            "MSS"
+        )
+
+
+
+    return reasons
+
+
+
+# ==========================
+# COMPLETE SIGNAL ENGINE
+# ==========================
+
+def complete_signal_engine_v12(df) -> Dict:
+
+
+    output = format_signal_output_v12(
+        df
+    )
+
+
+    output["reasons"] = signal_reason_builder_v12(
+        df
+    )
+
+
+    return output
+
+
+
+# ==========================
+# STRUCTURE ENGINE V12 FINAL ROUTER
+# ==========================
+
+def structure_engine_v12_final(df) -> Dict:
+
+    return complete_signal_engine_v12(
+        df
+    )
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_v12_structure_signal(df) -> Dict:
+
+    return structure_engine_v12_final(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2E-1
+# Execution Intelligence Layer
+# Institutional Entry Timing Engine
+# Candle Timing + Market Momentum Sync
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# ENTRY TIMING ANALYSIS
+# ==========================
+
+def entry_timing_analysis_v12(df) -> Dict:
+
+
+    momentum = detect_displacement(
+        df
+    )
+
+
+    candle = candle_confirmation_v12(
+        df
+    )
+
+
+    structure = detect_mss(
+        df
+    )
+
+
+    timing = "WAIT"
+
+
+    score = 0
+
+
+
+    if structure:
+
+        score += 30
+
+
+
+    if momentum:
+
+        score += 30
+
+
+
+    if candle["confirmed"]:
+
+        score += 20
+
+
+
+    if optimized_liquidity_sweep(df):
+
+        score += 20
+
+
+
+    if score >= 80:
+
+        timing = "EXECUTE"
+
+
+
+    return {
+
+        "timing":
+
+            timing,
+
+
+        "score":
+
+            score,
+
+
+        "momentum":
+
+            momentum,
+
+
+        "candle":
+
+            candle["signal"]
+
+    }
+
+
+
+# ==========================
+# ENTRY DELAY FILTER
+# ==========================
+
+def entry_delay_filter_v12(df) -> bool:
+
+
+    timing = entry_timing_analysis_v12(
+        df
+    )
+
+
+    if timing["timing"] == "EXECUTE":
+
+        return True
+
+
+
+    return False
+
+
+
+# ==========================
+# EXECUTION WINDOW ENGINE
+# ==========================
+
+def execution_window_v12(df) -> Dict:
+
+
+    timing = entry_timing_analysis_v12(
+        df
+    )
+
+
+    direction = optimized_direction_v12(
+        df
+    )
+
+
+
+    return {
+
+        "direction":
+
+            direction,
+
+
+        "window":
+
+            timing["timing"],
+
+
+        "confidence":
+
+            timing["score"],
+
+
+        "allowed":
+
+            entry_delay_filter_v12(
+                df
+            )
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_execution_window_v12(df) -> Dict:
+
+    return execution_window_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2E-2
+# Execution Intelligence Layer
+# Institutional Entry Precision Filter
+# Retracement + Confirmation + Timing Sync
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# RETRACEMENT VALIDATION
+# ==========================
+
+def retracement_validation_v12(df) -> Dict:
+
+
+    direction = optimized_direction_v12(
+        df
+    )
+
+
+    score = 0
+
+
+    if direction == "RANGE":
+
+        return {
+
+            "valid":
+
+                False,
+
+            "score":
+
+                0
+
+        }
+
+
+
+    if poi_location_check_v12(df):
+
+        score += 35
+
+
+
+    if optimized_ote_validation(
+        df,
+        direction
+    ):
+
+        score += 35
+
+
+
+    if mtf_liquidity_sweep_v12(df):
+
+        score += 30
+
+
+
+    return {
+
+        "valid":
+
+            score >= 70,
+
+
+        "score":
+
+            score,
+
+
+        "direction":
+
+            direction
+
+    }
+
+
+
+# ==========================
+# ENTRY PRECISION SCORE
+# ==========================
+
+def precision_filter_score_v12(df) -> int:
+
+
+    retracement = retracement_validation_v12(
+        df
+    )
+
+
+    timing = entry_timing_analysis_v12(
+        df
+    )
+
+
+    score = 0
+
+
+
+    score += retracement["score"] * 0.6
+
+
+    score += timing["score"] * 0.4
+
+
+
+    return int(
+        min(score,100)
+    )
+
+
+
+# ==========================
+# PRECISION ENTRY FILTER
+# ==========================
+
+def precision_entry_filter_v12(df) -> bool:
+
+
+    score = precision_filter_score_v12(
+        df
+    )
+
+
+    if score >= 85:
+
+        return True
+
+
+
+    return False
+
+
+
+# ==========================
+# EXECUTION PRECISION ENGINE
+# ==========================
+
+def execution_precision_engine_v12(df) -> Dict:
+
+
+    return {
+
+        "direction":
+
+            optimized_direction_v12(
+                df
+            ),
+
+
+        "retracement":
+
+            retracement_validation_v12(
+                df
+            ),
+
+
+        "score":
+
+            precision_filter_score_v12(
+                df
+            ),
+
+
+        "approved":
+
+            precision_entry_filter_v12(
+                df
+            )
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_execution_precision_v12(df) -> Dict:
+
+    return execution_precision_engine_v12(
+        df
+    )
     
