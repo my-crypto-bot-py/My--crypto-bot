@@ -411,8 +411,7 @@ def process_signal(
 
 # ==========================
 # V12 MASTER ROUTER
-# ==========================
-
+# ==========================  
 def run_v12_engine(
         market_data
 ):
@@ -423,6 +422,10 @@ def run_v12_engine(
             market_data
         )
 
+        print("RAW V12:", signal)
+
+        if signal is None:
+            return None
 
         if signal.get(
             "approved",
@@ -433,41 +436,28 @@ def run_v12_engine(
 
             BOT_STATE["last_signal"] = signal
 
-
             return {
 
-
                 "direction":
-
-                    signal["signal"],
-
+                    signal.get("signal"),
 
                 "confidence":
-
-                    signal["confidence"],
-
+                    signal.get("confidence", 0),
 
                 "engine":
-
                     "ICT_V12"
-
 
             }
 
-
         return None
 
-
     except Exception as e:
-
 
         BOT_STATE["errors"] += 1
 
         handle_error(e)
 
         return None
-
-
         
 # ==========================
 # BOT PROCESS CYCLE
