@@ -43565,8 +43565,9 @@ def institutional_execution_gate_v12(
         "signal",
         "NO_TRADE"
     )
-
-
+    
+    print("EXECUTION SCORE:", score)
+    print("EXECUTION SIGNAL:", signal)
 
     approved = (
 
