@@ -263,56 +263,41 @@ def import_engines():
         }
 
 
+# ==========================
+# SIGNAL ANALYZER 
+# ==========================  
+def analyze_symbol(symbol_data, modules):
 
-    # ==========================
-    # SIGNAL ANALYZER
-    # ==========================
+    if symbol_data is None:
+        return None
+
     df = symbol_data["data"]
- 
+
     from market import market_engine_v5
 
-        market = market_engine_v5(df)
+    market = market_engine_v5(df)
 
-        print("MARKET ENGINE:", market)
+    print("MARKET ENGINE:", market)
 
-        structure = {}
+    structure = {}
+    smart_money = {}
+    pd_array = {}
+    ote = {}
+    smt = {}
 
-        smart_money = {}
+    confidence = modules["confidence"](
+        market,
+        structure,
+        smart_money,
+        pd_array,
+        ote,
+        smt
+    )
 
-        pd_array = {}
-
-        ote = {}
-
-        smt = {}
-
-        confidence = modules["confidence"](
-
-            market,
-
-            structure,
-
-            smart_money,
-
-            pd_array,
-
-            ote,
-
-            smt
- 
-        )
-
-
-        return {
-
-            "symbol":
-
-            symbol_data["symbol"],
-
-            "confidence":
-
-            confidence
-
-        }
+    return {
+        "symbol": symbol_data["symbol"],
+        "confidence": confidence
+    }
 # ==========================
 # MARKET SCAN ENGINE
 # ==========================
