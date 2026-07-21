@@ -33391,3 +33391,12718 @@ def get_entry_matrix_v12(df) -> Dict:
     return institutional_entry_matrix_engine_v12(
         df
     )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2H-11
+# Advanced Execution Intelligence Layer
+# Institutional Smart Money Re-Entry Engine
+# Pullback + Continuation + Reclaim Detection
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# PULLBACK DETECTOR
+# ==========================
+
+def smart_money_pullback_v12(df) -> Dict:
+
+
+    if len(df) < 30:
+
+        return {
+
+            "pullback":
+
+                False,
+
+            "direction":
+
+                "NONE",
+
+            "score":
+
+                0
+
+        }
+
+
+
+    current = float(
+        df["close"].iloc[-1]
+    )
+
+
+    previous = float(
+        df["close"].iloc[-10]
+    )
+
+
+
+    move = current - previous
+
+
+
+    direction = "NONE"
+
+    score = 0
+
+    pullback = False
+
+
+
+    if move < 0:
+
+
+        direction = "BUY"
+
+        pullback = True
+
+        score = 70
+
+
+
+    elif move > 0:
+
+
+        direction = "SELL"
+
+        pullback = True
+
+        score = 70
+
+
+
+    return {
+
+
+        "pullback":
+
+            pullback,
+
+
+        "direction":
+
+            direction,
+
+
+        "score":
+
+            score
+
+    }
+
+
+
+# ==========================
+# RECLAIM CONFIRMATION
+# ==========================
+
+def reclaim_confirmation_v12(df) -> Dict:
+
+
+    pullback = smart_money_pullback_v12(
+        df
+    )
+
+
+    structure = get_structure_memory_v12(
+        df
+    )
+
+
+
+    confidence = pullback["score"]
+
+
+
+    if structure["score"] >= 70:
+
+        confidence += 20
+
+
+
+    return {
+
+
+        "direction":
+
+            pullback["direction"],
+
+
+        "confidence":
+
+            min(
+                confidence,
+                100
+            ),
+
+
+        "approved":
+
+            confidence >= 80
+
+    }
+
+
+
+# ==========================
+# RE-ENTRY ENGINE
+# ==========================
+
+def institutional_reentry_engine_v12(df) -> Dict:
+
+
+    result = reclaim_confirmation_v12(
+        df
+    )
+
+
+    return {
+
+
+        "signal":
+
+            result["direction"]
+            if result["approved"]
+
+            else
+
+            "NO_TRADE",
+
+
+        "confidence":
+
+            result["confidence"]
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_reentry_engine_v12(df) -> Dict:
+
+    return institutional_reentry_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2H-12
+# Advanced Execution Intelligence Layer
+# Institutional Momentum Continuation Engine
+# Trend Strength + Impulse + Follow Through
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# MOMENTUM STRENGTH ENGINE
+# ==========================
+
+def momentum_strength_v12(df) -> Dict:
+
+
+    if len(df) < 30:
+
+        return {
+
+            "strength":
+
+                0,
+
+            "direction":
+
+                "NONE"
+
+        }
+
+
+
+    recent_move = (
+
+        float(df["close"].iloc[-1])
+
+        -
+
+        float(df["close"].iloc[-10])
+
+    )
+
+
+
+    avg_range = (
+
+        abs(
+
+            df["high"]
+
+            -
+
+            df["low"]
+
+        )
+
+        .tail(20)
+
+        .mean()
+
+    )
+
+
+
+    if avg_range == 0:
+
+        return {
+
+            "strength":
+
+                0,
+
+            "direction":
+
+                "NONE"
+
+        }
+
+
+
+    strength = (
+
+        abs(recent_move)
+
+        /
+
+        avg_range
+
+    ) * 100
+
+
+
+    direction = "NONE"
+
+
+
+    if recent_move > 0:
+
+        direction = "BUY"
+
+
+
+    elif recent_move < 0:
+
+        direction = "SELL"
+
+
+
+    return {
+
+
+        "strength":
+
+            min(
+                int(strength),
+                100
+            ),
+
+
+        "direction":
+
+            direction
+
+    }
+
+
+
+# ==========================
+# CONTINUATION VALIDATOR
+# ==========================
+
+def momentum_continuation_v12(df) -> Dict:
+
+
+    momentum = momentum_strength_v12(
+        df
+    )
+
+
+    structure = get_structure_memory_v12(
+        df
+    )
+
+
+    confidence = momentum["strength"]
+
+
+
+    if structure["score"] >= 70:
+
+        confidence += 20
+
+
+
+    return {
+
+
+        "direction":
+
+            momentum["direction"],
+
+
+        "confidence":
+
+            min(
+                confidence,
+                100
+            ),
+
+
+        "approved":
+
+            confidence >= 80
+
+    }
+
+
+
+# ==========================
+# MOMENTUM EXECUTION ENGINE
+# ==========================
+
+def institutional_momentum_execution_engine_v12(df) -> Dict:
+
+
+    result = momentum_continuation_v12(
+        df
+    )
+
+
+    return {
+
+
+        "signal":
+
+            result["direction"]
+            if result["approved"]
+
+            else
+
+            "NO_TRADE",
+
+
+        "confidence":
+
+            result["confidence"]
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_momentum_execution_v12(df) -> Dict:
+
+    return institutional_momentum_execution_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2H-13
+# Advanced Execution Intelligence Layer
+# Institutional Volatility Expansion Engine
+# ATR Expansion + Breakout Energy + Risk Filter
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# VOLATILITY EXPANSION DETECTOR
+# ==========================
+
+def volatility_expansion_v12(df) -> Dict:
+
+
+    if len(df) < 30:
+
+        return {
+
+            "state":
+
+                "UNKNOWN",
+
+            "score":
+
+                0
+
+        }
+
+
+
+    current_range = (
+
+        float(df["high"].iloc[-1])
+
+        -
+
+        float(df["low"].iloc[-1])
+
+    )
+
+
+
+    average_range = (
+
+        (
+
+            df["high"]
+
+            -
+
+            df["low"]
+
+        )
+
+        .tail(20)
+
+        .mean()
+
+    )
+
+
+
+    if average_range == 0:
+
+        return {
+
+            "state":
+
+                "UNKNOWN",
+
+            "score":
+
+                0
+
+        }
+
+
+
+    expansion_ratio = (
+
+        current_range /
+
+        average_range
+
+    )
+
+
+
+    state = "NORMAL"
+
+    score = 50
+
+
+
+    if expansion_ratio >= 2:
+
+
+        state = "EXPANSION"
+
+        score = 90
+
+
+
+    elif expansion_ratio <= 0.6:
+
+
+        state = "COMPRESSION"
+
+        score = 75
+
+
+
+    return {
+
+
+        "state":
+
+            state,
+
+
+        "ratio":
+
+            round(
+                expansion_ratio,
+                2
+            ),
+
+
+        "score":
+
+            score
+
+    }
+
+
+
+# ==========================
+# EXPANSION DIRECTION
+# ==========================
+
+def volatility_direction_v12(df) -> Dict:
+
+
+    volatility = volatility_expansion_v12(
+        df
+    )
+
+
+    candle = (
+
+        float(df["close"].iloc[-1])
+
+        -
+
+        float(df["open"].iloc[-1])
+
+    )
+
+
+
+    direction = "NONE"
+
+
+
+    if candle > 0:
+
+        direction = "BUY"
+
+
+
+    elif candle < 0:
+
+        direction = "SELL"
+
+
+
+    return {
+
+
+        "direction":
+
+            direction,
+
+
+        "state":
+
+            volatility["state"],
+
+
+        "confidence":
+
+            volatility["score"]
+
+    }
+
+
+
+# ==========================
+# VOLATILITY EXECUTION FILTER
+# ==========================
+
+def volatility_execution_filter_v12(df) -> Dict:
+
+
+    result = volatility_direction_v12(
+        df
+    )
+
+
+    approved = (
+
+        result["state"]
+
+        ==
+
+        "EXPANSION"
+
+        and
+
+        result["confidence"]
+
+        >=
+
+        80
+
+    )
+
+
+
+    return {
+
+
+        "approved":
+
+            approved,
+
+
+        "direction":
+
+            result["direction"],
+
+
+        "confidence":
+
+            result["confidence"]
+
+    }
+
+
+
+# ==========================
+# VOLATILITY ENGINE
+# ==========================
+
+def institutional_volatility_engine_v12(df) -> Dict:
+
+
+    return volatility_execution_filter_v12(
+        df
+    )
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_volatility_execution_v12(df) -> Dict:
+
+    return institutional_volatility_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2H-14
+# Advanced Execution Intelligence Layer
+# Institutional Range Expansion Engine
+# Consolidation Break + Target Projection
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# RANGE DETECTION ENGINE
+# ==========================
+
+def detect_trading_range_v12(df) -> Dict:
+
+
+    if len(df) < 50:
+
+        return {
+
+            "range":
+
+                False,
+
+            "high":
+
+                None,
+
+            "low":
+
+                None
+
+        }
+
+
+
+    range_high = float(
+        df["high"].tail(30).max()
+    )
+
+
+    range_low = float(
+        df["low"].tail(30).min()
+    )
+
+
+
+    avg_range = (
+
+        df["high"].tail(30)
+
+        -
+
+        df["low"].tail(30)
+
+    ).mean()
+
+
+
+    total_range = (
+
+        range_high
+
+        -
+
+        range_low
+
+    )
+
+
+
+    compressed = (
+
+        total_range
+
+        <
+
+        avg_range * 10
+
+    )
+
+
+
+    return {
+
+
+        "range":
+
+            compressed,
+
+
+        "high":
+
+            range_high,
+
+
+        "low":
+
+            range_low
+
+    }
+
+
+
+# ==========================
+# RANGE BREAKOUT DETECTOR
+# ==========================
+
+def range_expansion_detector_v12(df) -> Dict:
+
+
+    range_data = detect_trading_range_v12(
+        df
+    )
+
+
+    if not range_data["range"]:
+
+        return {
+
+
+            "breakout":
+
+                False,
+
+
+            "direction":
+
+                "NONE",
+
+
+            "score":
+
+                0
+
+        }
+
+
+
+    close = float(
+        df["close"].iloc[-1]
+    )
+
+
+    direction = "NONE"
+
+    score = 0
+
+
+
+    if close > range_data["high"]:
+
+
+        direction = "BUY"
+
+        score = 85
+
+
+
+    elif close < range_data["low"]:
+
+
+        direction = "SELL"
+
+        score = 85
+
+
+
+    return {
+
+
+        "breakout":
+
+            score >= 80,
+
+
+        "direction":
+
+            direction,
+
+
+        "score":
+
+            score
+
+    }
+
+
+
+# ==========================
+# TARGET PROJECTION ENGINE
+# ==========================
+
+def range_target_projection_v12(df) -> Dict:
+
+
+    data = detect_trading_range_v12(
+        df
+    )
+
+
+    if not data["range"]:
+
+        return {}
+
+
+
+    size = (
+
+        data["high"]
+
+        -
+
+        data["low"]
+
+    )
+
+
+
+    return {
+
+
+        "upside_target":
+
+            round(
+                data["high"] + size,
+                4
+            ),
+
+
+        "downside_target":
+
+            round(
+                data["low"] - size,
+                4
+            )
+
+    }
+
+
+
+# ==========================
+# RANGE EXECUTION ENGINE
+# ==========================
+
+def institutional_range_expansion_engine_v12(df) -> Dict:
+
+
+    breakout = range_expansion_detector_v12(
+        df
+    )
+
+
+    return {
+
+
+        "approved":
+
+            breakout["breakout"],
+
+
+        "direction":
+
+            breakout["direction"],
+
+
+        "confidence":
+
+            breakout["score"],
+
+
+        "targets":
+
+            range_target_projection_v12(
+                df
+            )
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_range_expansion_v12(df) -> Dict:
+
+    return institutional_range_expansion_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2H-15
+# Advanced Execution Intelligence Layer
+# Institutional Market Regime Engine
+# Trend + Range + Transition Classification
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# MARKET REGIME DETECTOR
+# ==========================
+
+def market_regime_v12(df) -> Dict:
+
+
+    if len(df) < 50:
+
+        return {
+
+            "regime":
+
+                "UNKNOWN",
+
+            "score":
+
+                0
+
+        }
+
+
+
+    highs = df["high"].tail(50)
+
+    lows = df["low"].tail(50)
+
+    closes = df["close"].tail(50)
+
+
+
+    recent_high = float(
+        highs.iloc[-1]
+    )
+
+
+    previous_high = float(
+        highs.iloc[0]
+    )
+
+
+    recent_low = float(
+        lows.iloc[-1]
+    )
+
+
+    previous_low = float(
+        lows.iloc[0]
+    )
+
+
+
+    price_change = (
+
+        float(closes.iloc[-1])
+
+        -
+
+        float(closes.iloc[0])
+
+    )
+
+
+
+    volatility = (
+
+        (
+
+            highs -
+
+            lows
+
+        )
+
+        .mean()
+
+    )
+
+
+
+    regime = "RANGE"
+
+    score = 60
+
+
+
+    if (
+
+        price_change > volatility * 5
+
+        and
+
+        recent_high > previous_high
+
+    ):
+
+
+        regime = "TREND_UP"
+
+        score = 85
+
+
+
+    elif (
+
+        price_change < -(volatility * 5)
+
+        and
+
+        recent_low < previous_low
+
+    ):
+
+
+        regime = "TREND_DOWN"
+
+        score = 85
+
+
+
+    elif volatility < (
+
+        (
+
+            highs -
+
+            lows
+
+        )
+
+        .mean()
+
+    ):
+
+
+        regime = "COMPRESSION"
+
+        score = 75
+
+
+
+    return {
+
+
+        "regime":
+
+            regime,
+
+
+        "score":
+
+            score
+
+    }
+
+
+
+# ==========================
+# REGIME DIRECTION ENGINE
+# ==========================
+
+def regime_direction_v12(df) -> Dict:
+
+
+    regime = market_regime_v12(
+        df
+    )
+
+
+    direction = "NONE"
+
+
+
+    if regime["regime"] == "TREND_UP":
+
+        direction = "BUY"
+
+
+
+    elif regime["regime"] == "TREND_DOWN":
+
+        direction = "SELL"
+
+
+
+    return {
+
+
+        "direction":
+
+            direction,
+
+
+        "regime":
+
+            regime["regime"],
+
+
+        "confidence":
+
+            regime["score"]
+
+    }
+
+
+
+# ==========================
+# REGIME FILTER
+# ==========================
+
+def regime_filter_v12(df) -> bool:
+
+
+    result = regime_direction_v12(
+        df
+    )
+
+
+    return (
+
+        result["confidence"]
+
+        >=
+
+        75
+
+        and
+
+        result["direction"]
+
+        !=
+
+        "NONE"
+
+    )
+
+
+
+# ==========================
+# MARKET REGIME ENGINE
+# ==========================
+
+def institutional_market_regime_engine_v12(df) -> Dict:
+
+
+    result = regime_direction_v12(
+        df
+    )
+
+
+    return {
+
+
+        "approved":
+
+            regime_filter_v12(
+                df
+            ),
+
+
+        "direction":
+
+            result["direction"],
+
+
+        "regime":
+
+            result["regime"],
+
+
+        "confidence":
+
+            result["confidence"]
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_market_regime_v12(df) -> Dict:
+
+    return institutional_market_regime_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2H-16
+# Advanced Execution Intelligence Layer
+# Institutional Trend Continuation Engine
+# Pullback Strength + Trend Persistence + Confirmation
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# TREND PERSISTENCE ANALYSIS
+# ==========================
+
+def trend_persistence_v12(df) -> Dict:
+
+
+    if len(df) < 50:
+
+        return {
+
+            "trend":
+
+                "NONE",
+
+            "score":
+
+                0
+
+        }
+
+
+
+    bullish = 0
+
+    bearish = 0
+
+
+
+    for i in range(
+        len(df)-30,
+        len(df)
+    ):
+
+
+        close = float(
+            df["close"].iloc[i]
+        )
+
+
+        previous = float(
+            df["close"].iloc[i-1]
+        )
+
+
+
+        if close > previous:
+
+            bullish += 1
+
+
+
+        elif close < previous:
+
+            bearish += 1
+
+
+
+    score = 0
+
+    trend = "NONE"
+
+
+
+    if bullish > bearish:
+
+
+        trend = "BUY"
+
+        score = int(
+
+            (bullish / 30)
+
+            *
+
+            100
+
+        )
+
+
+
+    elif bearish > bullish:
+
+
+        trend = "SELL"
+
+        score = int(
+
+            (bearish / 30)
+
+            *
+
+            100
+
+        )
+
+
+
+    return {
+
+
+        "trend":
+
+            trend,
+
+
+        "score":
+
+            min(
+                score,
+                100
+            )
+
+    }
+
+
+
+# ==========================
+# TREND PULLBACK VALIDATION
+# ==========================
+
+def trend_pullback_validation_v12(df) -> Dict:
+
+
+    persistence = trend_persistence_v12(
+        df
+    )
+
+
+    zone = get_premium_discount_v12(
+        df
+    )
+
+
+
+    confidence = persistence["score"]
+
+
+
+    if (
+
+        persistence["trend"] == "BUY"
+
+        and
+
+        zone["direction"] == "BUY"
+
+    ):
+
+
+        confidence += 15
+
+
+
+    elif (
+
+        persistence["trend"] == "SELL"
+
+        and
+
+        zone["direction"] == "SELL"
+
+    ):
+
+
+        confidence += 15
+
+
+
+    return {
+
+
+        "direction":
+
+            persistence["trend"],
+
+
+        "confidence":
+
+            min(
+                confidence,
+                100
+            ),
+
+
+        "approved":
+
+            confidence >= 80
+
+    }
+
+
+
+# ==========================
+# CONTINUATION ENGINE
+# ==========================
+
+def institutional_trend_continuation_engine_v12(df) -> Dict:
+
+
+    result = trend_pullback_validation_v12(
+        df
+    )
+
+
+    return {
+
+
+        "signal":
+
+            result["direction"]
+            if result["approved"]
+
+            else
+
+            "NO_TRADE",
+
+
+        "confidence":
+
+            result["confidence"]
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_trend_continuation_v12(df) -> Dict:
+
+    return institutional_trend_continuation_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2H-17
+# Advanced Execution Intelligence Layer
+# Institutional Liquidity Targeting Engine
+# External Range Liquidity + Internal Liquidity Mapping
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict, List
+
+
+# ==========================
+# LIQUIDITY POOL DETECTOR
+# ==========================
+
+def detect_liquidity_pools_v12(df) -> List[Dict]:
+
+
+    pools = []
+
+
+
+    if len(df) < 30:
+
+        return pools
+
+
+
+    for i in range(
+        5,
+        len(df)-5
+    ):
+
+
+        high = float(
+            df["high"].iloc[i]
+        )
+
+
+        low = float(
+            df["low"].iloc[i]
+        )
+
+
+
+        left_high = float(
+            df["high"].iloc[i-5:i].max()
+        )
+
+
+        right_high = float(
+            df["high"].iloc[i+1:i+6].max()
+        )
+
+
+
+        left_low = float(
+            df["low"].iloc[i-5:i].min()
+        )
+
+
+        right_low = float(
+            df["low"].iloc[i+1:i+6].min()
+        )
+
+
+
+        # Buy side liquidity
+
+        if (
+
+            high >= left_high
+
+            and
+
+            high >= right_high
+
+        ):
+
+
+            pools.append({
+
+
+                "type":
+
+                    "BUY_SIDE_LIQUIDITY",
+
+
+                "price":
+
+                    high
+
+            })
+
+
+
+        # Sell side liquidity
+
+        if (
+
+            low <= left_low
+
+            and
+
+            low <= right_low
+
+        ):
+
+
+            pools.append({
+
+
+                "type":
+
+                    "SELL_SIDE_LIQUIDITY",
+
+
+                "price":
+
+                    low
+
+            })
+
+
+
+    return pools
+
+
+
+# ==========================
+# TARGET SELECTION ENGINE
+# ==========================
+
+def liquidity_target_selection_v12(df) -> Dict:
+
+
+    pools = detect_liquidity_pools_v12(
+        df
+    )
+
+
+    if not pools:
+
+        return {
+
+
+            "target":
+
+                None,
+
+
+            "direction":
+
+                "NONE",
+
+
+            "score":
+
+                0
+
+        }
+
+
+
+    price = float(
+        df["close"].iloc[-1]
+    )
+
+
+
+    nearest = min(
+
+        pools,
+
+        key=lambda x:
+
+        abs(
+            x["price"] - price
+        )
+
+    )
+
+
+
+    direction = "NONE"
+
+    score = 70
+
+
+
+    if nearest["type"] == "BUY_SIDE_LIQUIDITY":
+
+
+        direction = "BUY"
+
+
+
+    elif nearest["type"] == "SELL_SIDE_LIQUIDITY":
+
+
+        direction = "SELL"
+
+
+
+    return {
+
+
+        "target":
+
+            nearest["price"],
+
+
+        "direction":
+
+            direction,
+
+
+        "score":
+
+            score
+
+    }
+
+
+
+# ==========================
+# LIQUIDITY TARGET FILTER
+# ==========================
+
+def liquidity_target_filter_v12(df) -> Dict:
+
+
+    target = liquidity_target_selection_v12(
+        df
+    )
+
+
+    confirmation = get_global_confluence_v12(
+        df
+    )
+
+
+
+    confidence = target["score"]
+
+
+
+    if (
+
+        target["direction"]
+
+        ==
+
+        confirmation["direction"]
+
+    ):
+
+        confidence += 20
+
+
+
+    return {
+
+
+        "direction":
+
+            target["direction"],
+
+
+        "confidence":
+
+            min(
+                confidence,
+                100
+            ),
+
+
+        "approved":
+
+            confidence >= 80
+
+    }
+
+
+
+# ==========================
+# LIQUIDITY TARGET ENGINE
+# ==========================
+
+def institutional_liquidity_target_engine_v12(df) -> Dict:
+
+
+    return liquidity_target_filter_v12(
+        df
+    )
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_liquidity_target_v12(df) -> Dict:
+
+    return institutional_liquidity_target_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2H-18
+# Advanced Execution Intelligence Layer
+# Institutional Market Maker Model Engine
+# Accumulation + Manipulation + Distribution
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# MARKET MAKER PHASE DETECTOR
+# ==========================
+
+def market_maker_phase_v12(df) -> Dict:
+
+
+    if len(df) < 60:
+
+        return {
+
+            "phase":
+
+                "UNKNOWN",
+
+            "score":
+
+                0
+
+        }
+
+
+
+    ranges = (
+
+        df["high"].tail(30)
+
+        -
+
+        df["low"].tail(30)
+
+    )
+
+
+    avg_range = float(
+        ranges.mean()
+    )
+
+
+    recent_range = (
+
+        float(df["high"].iloc[-1])
+
+        -
+
+        float(df["low"].iloc[-1])
+
+    )
+
+
+
+    price_move = (
+
+        float(df["close"].iloc[-1])
+
+        -
+
+        float(df["close"].iloc[-30])
+
+    )
+
+
+
+    phase = "ACCUMULATION"
+
+    score = 60
+
+
+
+    # Compression before move
+
+    if recent_range < avg_range * 0.7:
+
+
+        phase = "ACCUMULATION"
+
+        score = 80
+
+
+
+    # Liquidity grab phase
+
+    elif abs(price_move) < avg_range:
+
+
+        phase = "MANIPULATION"
+
+        score = 75
+
+
+
+    # Strong delivery
+
+    elif abs(price_move) > avg_range * 5:
+
+
+        phase = "DISTRIBUTION"
+
+        score = 90
+
+
+
+    return {
+
+
+        "phase":
+
+            phase,
+
+
+        "score":
+
+            score
+
+    }
+
+
+
+# ==========================
+# SMART MONEY PHASE LOGIC
+# ==========================
+
+def smart_money_phase_validation_v12(df) -> Dict:
+
+
+    phase = market_maker_phase_v12(
+        df
+    )
+
+
+    direction = "NONE"
+
+
+
+    if phase["phase"] == "DISTRIBUTION":
+
+
+        if float(df["close"].iloc[-1]) > float(df["open"].iloc[-1]):
+
+            direction = "BUY"
+
+        else:
+
+            direction = "SELL"
+
+
+
+    elif phase["phase"] == "MANIPULATION":
+
+
+        sweep = reversal_liquidity_sweep_v12(
+            df
+        )
+
+
+        direction = sweep["direction"]
+
+
+
+    return {
+
+
+        "phase":
+
+            phase["phase"],
+
+
+        "direction":
+
+            direction,
+
+
+        "confidence":
+
+            phase["score"]
+
+    }
+
+
+
+# ==========================
+# MARKET MAKER ENGINE
+# ==========================
+
+def institutional_market_maker_engine_v12(df) -> Dict:
+
+
+    result = smart_money_phase_validation_v12(
+        df
+    )
+
+
+    return {
+
+
+        "phase":
+
+            result["phase"],
+
+
+        "signal":
+
+            result["direction"],
+
+
+        "confidence":
+
+            result["confidence"]
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_market_maker_phase_v12(df) -> Dict:
+
+    return institutional_market_maker_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2H-19
+# Advanced Execution Intelligence Layer
+# Institutional Smart Money Trap Detection Engine
+# Stop Hunt + Fake Breakout + Liquidity Trap
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# STOP HUNT DETECTOR
+# ==========================
+
+def stop_hunt_detection_v12(df) -> Dict:
+
+
+    if len(df) < 30:
+
+        return {
+
+            "trap":
+
+                False,
+
+            "direction":
+
+                "NONE",
+
+            "score":
+
+                0
+
+        }
+
+
+
+    recent_high = float(
+        df["high"].tail(20).max()
+    )
+
+
+    recent_low = float(
+        df["low"].tail(20).min()
+    )
+
+
+    current_high = float(
+        df["high"].iloc[-1]
+    )
+
+
+    current_low = float(
+        df["low"].iloc[-1]
+    )
+
+
+    current_close = float(
+        df["close"].iloc[-1]
+    )
+
+
+
+    direction = "NONE"
+
+    score = 0
+
+    trap = False
+
+
+
+    # Buy side liquidity trap
+
+    if (
+
+        current_high > recent_high
+
+        and
+
+        current_close < recent_high
+
+    ):
+
+
+        trap = True
+
+        direction = "SELL"
+
+        score = 85
+
+
+
+    # Sell side liquidity trap
+
+    elif (
+
+        current_low < recent_low
+
+        and
+
+        current_close > recent_low
+
+    ):
+
+
+        trap = True
+
+        direction = "BUY"
+
+        score = 85
+
+
+
+    return {
+
+
+        "trap":
+
+            trap,
+
+
+        "direction":
+
+            direction,
+
+
+        "score":
+
+            score
+
+    }
+
+
+
+# ==========================
+# FALSE BREAKOUT VALIDATOR
+# ==========================
+
+def fake_breakout_filter_v12(df) -> Dict:
+
+
+    trap = stop_hunt_detection_v12(
+        df
+    )
+
+
+    breakout = get_breakout_engine_v12(
+        df
+    )
+
+
+
+    confidence = trap["score"]
+
+
+
+    if (
+
+        trap["direction"]
+
+        !=
+
+        breakout["signal"]
+
+    ):
+
+        confidence += 15
+
+
+
+    return {
+
+
+        "fake_breakout":
+
+            trap["trap"],
+
+
+        "direction":
+
+            trap["direction"],
+
+
+        "confidence":
+
+            min(
+                confidence,
+                100
+            )
+
+    }
+
+
+
+# ==========================
+# TRAP EXECUTION ENGINE
+# ==========================
+
+def institutional_trap_detection_engine_v12(df) -> Dict:
+
+
+    result = fake_breakout_filter_v12(
+        df
+    )
+
+
+    return {
+
+
+        "signal":
+
+            result["direction"]
+            if result["fake_breakout"]
+
+            else
+
+            "NO_TRADE",
+
+
+        "confidence":
+
+            result["confidence"]
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_trap_detection_v12(df) -> Dict:
+
+    return institutional_trap_detection_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2H-20
+# Advanced Execution Intelligence Layer
+# Institutional Execution Master Controller
+# Complete H-Layer Integration
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# ADVANCED EXECUTION STATUS
+# ==========================
+
+def advanced_execution_status_v12(df) -> Dict:
+
+
+    engines = {
+
+
+        "precision_entry":
+
+            get_precision_entry_v12(df),
+
+
+        "breakout":
+
+            get_breakout_engine_v12(df),
+
+
+        "reversal":
+
+            get_reversal_engine_v12(df),
+
+
+        "order_flow":
+
+            get_order_flow_v12(df),
+
+
+        "fvg":
+
+            get_fvg_execution_v12(df),
+
+
+        "order_block":
+
+            get_order_block_execution_v12(df),
+
+
+        "breaker":
+
+            get_breaker_block_v12(df),
+
+
+        "regime":
+
+            get_market_regime_v12(df),
+
+
+        "liquidity_target":
+
+            get_liquidity_target_v12(df),
+
+
+        "trap":
+
+            get_trap_detection_v12(df)
+
+    }
+
+
+
+    return engines
+
+
+
+# ==========================
+# EXECUTION VOTE ENGINE
+# ==========================
+
+def execution_vote_engine_v12(df) -> Dict:
+
+
+    status = advanced_execution_status_v12(
+        df
+    )
+
+
+    buy_votes = 0
+
+    sell_votes = 0
+
+
+
+    for name, data in status.items():
+
+
+        direction = data.get(
+            "direction",
+            data.get(
+                "signal",
+                "NONE"
+            )
+        )
+
+
+
+        if direction == "BUY":
+
+            buy_votes += 1
+
+
+
+        elif direction == "SELL":
+
+            sell_votes += 1
+
+
+
+    direction = "NO_TRADE"
+
+
+
+    if buy_votes >= 3:
+
+        direction = "BUY"
+
+
+
+    elif sell_votes >= 3:
+
+        direction = "SELL"
+
+
+
+    return {
+
+
+        "direction":
+
+            direction,
+
+
+        "buy_votes":
+
+            buy_votes,
+
+
+        "sell_votes":
+
+            sell_votes
+
+    }
+
+
+
+# ==========================
+# FINAL EXECUTION APPROVAL
+# ==========================
+
+def advanced_execution_decision_v12(df) -> Dict:
+
+
+    votes = execution_vote_engine_v12(
+        df
+    )
+
+
+    confirmation = get_entry_matrix_v12(
+        df
+    )
+
+
+
+    confidence = confirmation["confidence"]
+
+
+
+    approved = (
+
+        votes["direction"]
+
+        !=
+
+        "NO_TRADE"
+
+        and
+
+        confidence >= 85
+
+    )
+
+
+
+    return {
+
+
+        "approved":
+
+            approved,
+
+
+        "signal":
+
+            votes["direction"],
+
+
+        "confidence":
+
+            confidence,
+
+
+        "votes":
+
+            votes
+
+    }
+
+
+
+# ==========================
+# ADVANCED EXECUTION ENGINE
+# ==========================
+
+def institutional_advanced_execution_engine_v12(df) -> Dict:
+
+
+    result = advanced_execution_decision_v12(
+        df
+    )
+
+
+    return {
+
+
+        "layer":
+
+            "2H_ADVANCED_EXECUTION",
+
+
+        "signal":
+
+            result["signal"],
+
+
+        "confidence":
+
+            result["confidence"],
+
+
+        "approved":
+
+            result["approved"]
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_advanced_execution_v12(df) -> Dict:
+
+    return institutional_advanced_execution_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2I-1
+# Adaptive Learning Intelligence Layer
+# Historical Signal Performance Tracker
+# Win Rate + Accuracy Memory Engine
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict, List
+from datetime import datetime, timezone
+
+
+# ==========================
+# SIGNAL MEMORY STORAGE
+# ==========================
+
+V12_SIGNAL_MEMORY = []
+
+
+
+# ==========================
+# STORE SIGNAL RESULT
+# ==========================
+
+def store_signal_memory_v12(
+        signal: Dict
+) -> Dict:
+
+
+    record = {
+
+
+        "id":
+
+            len(
+                V12_SIGNAL_MEMORY
+            ) + 1,
+
+
+        "time":
+
+            datetime.now(
+                timezone.utc
+            ).isoformat(),
+
+
+        "direction":
+
+            signal.get(
+                "signal",
+                "NONE"
+            ),
+
+
+        "entry":
+
+            signal.get(
+                "entry"
+            ),
+
+
+        "confidence":
+
+            signal.get(
+                "confidence",
+                0
+            ),
+
+
+        "result":
+
+            "PENDING"
+
+    }
+
+
+
+    V12_SIGNAL_MEMORY.append(
+        record
+    )
+
+
+    return record
+
+
+
+# ==========================
+# UPDATE TRADE RESULT
+# ==========================
+
+def update_signal_result_v12(
+        signal_id: int,
+        result: str
+) -> Dict:
+
+
+    for signal in V12_SIGNAL_MEMORY:
+
+
+        if signal["id"] == signal_id:
+
+
+            signal["result"] = result
+
+
+            return signal
+
+
+
+    return {}
+
+
+
+# ==========================
+# PERFORMANCE ANALYZER
+# ==========================
+
+def signal_performance_v12() -> Dict:
+
+
+    total = len(
+        V12_SIGNAL_MEMORY
+    )
+
+
+    wins = 0
+
+    losses = 0
+
+
+
+    for signal in V12_SIGNAL_MEMORY:
+
+
+        if signal["result"] == "WIN":
+
+            wins += 1
+
+
+        elif signal["result"] == "LOSS":
+
+            losses += 1
+
+
+
+    accuracy = 0
+
+
+
+    if total > 0:
+
+        accuracy = int(
+
+            (
+
+                wins /
+
+                total
+
+            )
+
+            *
+
+            100
+
+        )
+
+
+
+    return {
+
+
+        "total":
+
+            total,
+
+
+        "wins":
+
+            wins,
+
+
+        "losses":
+
+            losses,
+
+
+        "accuracy":
+
+            accuracy
+
+    }
+
+
+
+# ==========================
+# LEARNING MEMORY ENGINE
+# ==========================
+
+def adaptive_learning_memory_v12() -> Dict:
+
+
+    return {
+
+
+        "signals":
+
+            len(
+                V12_SIGNAL_MEMORY
+            ),
+
+
+        "performance":
+
+            signal_performance_v12()
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_learning_memory_v12() -> Dict:
+
+    return adaptive_learning_memory_v12()
+    
+# ==========================
+# STRUCTURE ENGINE V12
+# PART 2I-2
+# Adaptive Learning Intelligence Layer
+# Confidence Optimization Engine
+# Dynamic Signal Confidence Adjustment
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# CONFIDENCE HISTORY ANALYZER
+# ==========================
+
+def confidence_history_analysis_v12() -> Dict:
+
+
+    memory = V12_SIGNAL_MEMORY
+
+
+    if len(memory) < 10:
+
+        return {
+
+
+            "adjustment":
+
+                0,
+
+
+            "confidence":
+
+                50
+
+        }
+
+
+
+    high_confidence = []
+
+    low_confidence = []
+
+
+
+    for signal in memory:
+
+
+        if signal["confidence"] >= 85:
+
+
+            high_confidence.append(
+                signal
+            )
+
+
+        else:
+
+
+            low_confidence.append(
+                signal
+            )
+
+
+
+    wins = 0
+
+    total_high = len(
+        high_confidence
+    )
+
+
+
+    for signal in high_confidence:
+
+
+        if signal["result"] == "WIN":
+
+            wins += 1
+
+
+
+    accuracy = 0
+
+
+
+    if total_high > 0:
+
+
+        accuracy = (
+
+            wins /
+
+            total_high
+
+        ) * 100
+
+
+
+    adjustment = 0
+
+
+
+    if accuracy >= 70:
+
+
+        adjustment = 10
+
+
+
+    elif accuracy < 40:
+
+
+        adjustment = -10
+
+
+
+    return {
+
+
+        "accuracy":
+
+            int(accuracy),
+
+
+        "adjustment":
+
+            adjustment
+
+    }
+
+
+
+# ==========================
+# DYNAMIC CONFIDENCE ENGINE
+# ==========================
+
+def dynamic_confidence_adjustment_v12(
+        base_confidence: int
+) -> Dict:
+
+
+    history = confidence_history_analysis_v12()
+
+
+
+    final_confidence = (
+
+        base_confidence
+
+        +
+
+        history["adjustment"]
+
+    )
+
+
+
+    return {
+
+
+        "base":
+
+            base_confidence,
+
+
+        "adjustment":
+
+            history["adjustment"],
+
+
+        "final":
+
+            max(
+
+                min(
+
+                    final_confidence,
+
+                    100
+
+                ),
+
+                0
+
+            )
+
+    }
+
+
+
+# ==========================
+# CONFIDENCE LEARNING FILTER
+# ==========================
+
+def confidence_learning_filter_v12(
+        confidence: int
+) -> bool:
+
+
+    result = dynamic_confidence_adjustment_v12(
+        confidence
+    )
+
+
+    return result["final"] >= 85
+
+
+
+# ==========================
+# ADAPTIVE CONFIDENCE ENGINE
+# ==========================
+
+def adaptive_confidence_engine_v12(
+        confidence: int
+) -> Dict:
+
+
+    return dynamic_confidence_adjustment_v12(
+        confidence
+    )
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_adaptive_confidence_v12(
+        confidence: int
+) -> Dict:
+
+    return adaptive_confidence_engine_v12(
+        confidence
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2I-3
+# Adaptive Learning Intelligence Layer
+# Pattern Recognition Memory Engine
+# Market Behaviour Pattern Storage + Matching
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict, List
+
+
+# ==========================
+# PATTERN MEMORY STORAGE
+# ==========================
+
+V12_PATTERN_MEMORY = []
+
+
+
+# ==========================
+# CREATE MARKET PATTERN
+# ==========================
+
+def create_market_pattern_v12(df) -> Dict:
+
+
+    if len(df) < 20:
+
+        return {}
+
+
+
+    pattern = {
+
+
+        "trend":
+
+            optimized_direction_v12(
+                df
+            ),
+
+
+        "volatility":
+
+            get_volatility_intelligence_v12(
+                df
+            )
+            ["volatility"]
+            ["state"],
+
+
+        "structure":
+
+            get_structure_memory_v12(
+                df
+            )
+            ["structure"]
+            ["event"],
+
+
+        "volume":
+
+            float(
+                df["volume"].tail(10).mean()
+            )
+
+    }
+
+
+
+    return pattern
+
+
+
+# ==========================
+# STORE PATTERN
+# ==========================
+
+def store_pattern_memory_v12(
+        pattern: Dict,
+        result: str
+) -> Dict:
+
+
+    record = {
+
+
+        "pattern":
+
+            pattern,
+
+
+        "result":
+
+            result
+
+    }
+
+
+
+    V12_PATTERN_MEMORY.append(
+        record
+    )
+
+
+
+    return record
+
+
+
+# ==========================
+# PATTERN SIMILARITY
+# ==========================
+
+def pattern_similarity_v12(
+        current: Dict,
+        saved: Dict
+) -> int:
+
+
+    score = 0
+
+
+
+    if (
+
+        current.get("trend")
+
+        ==
+
+        saved.get("trend")
+
+    ):
+
+        score += 25
+
+
+
+    if (
+
+        current.get("volatility")
+
+        ==
+
+        saved.get("volatility")
+
+    ):
+
+        score += 25
+
+
+
+    if (
+
+        current.get("structure")
+
+        ==
+
+        saved.get("structure")
+
+    ):
+
+        score += 30
+
+
+
+    return score
+
+
+
+# ==========================
+# PATTERN PREDICTION ENGINE
+# ==========================
+
+def pattern_prediction_v12(df) -> Dict:
+
+
+    current = create_market_pattern_v12(
+        df
+    )
+
+
+    matches = []
+
+
+
+    for item in V12_PATTERN_MEMORY:
+
+
+        similarity = pattern_similarity_v12(
+
+            current,
+
+            item["pattern"]
+
+        )
+
+
+        if similarity >= 60:
+
+
+            matches.append(
+                item
+            )
+
+
+
+    wins = 0
+
+
+
+    for match in matches:
+
+
+        if match["result"] == "WIN":
+
+            wins += 1
+
+
+
+    confidence = 0
+
+
+
+    if matches:
+
+
+        confidence = int(
+
+            (
+
+                wins /
+
+                len(matches)
+
+            )
+
+            *
+
+            100
+
+        )
+
+
+
+    return {
+
+
+        "matches":
+
+            len(matches),
+
+
+        "prediction_confidence":
+
+            confidence
+
+    }
+
+
+
+# ==========================
+# PATTERN LEARNING ENGINE
+# ==========================
+
+def adaptive_pattern_learning_engine_v12(df) -> Dict:
+
+
+    return pattern_prediction_v12(
+        df
+    )
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_pattern_learning_v12(df) -> Dict:
+
+    return adaptive_pattern_learning_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2I-4
+# Adaptive Learning Intelligence Layer
+# Trade Parameter Optimization Engine
+# Dynamic SL / TP / Risk Adjustment Memory
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# PARAMETER MEMORY
+# ==========================
+
+V12_PARAMETER_MEMORY = []
+
+
+
+# ==========================
+# STORE TRADE PARAMETERS
+# ==========================
+
+def store_trade_parameters_v12(
+        trade: Dict
+) -> Dict:
+
+
+    record = {
+
+
+        "direction":
+
+            trade.get(
+                "direction",
+                "NONE"
+            ),
+
+
+        "confidence":
+
+            trade.get(
+                "confidence",
+                0
+            ),
+
+
+        "risk":
+
+            trade.get(
+                "risk",
+                0
+            ),
+
+
+        "rr":
+
+            trade.get(
+                "rr",
+                0
+            ),
+
+
+        "result":
+
+            "PENDING"
+
+    }
+
+
+
+    V12_PARAMETER_MEMORY.append(
+        record
+    )
+
+
+
+    return record
+
+
+
+# ==========================
+# PARAMETER PERFORMANCE
+# ==========================
+
+def parameter_performance_v12() -> Dict:
+
+
+    total = len(
+        V12_PARAMETER_MEMORY
+    )
+
+
+    wins = 0
+
+    losses = 0
+
+
+
+    for item in V12_PARAMETER_MEMORY:
+
+
+        if item["result"] == "WIN":
+
+            wins += 1
+
+
+
+        elif item["result"] == "LOSS":
+
+            losses += 1
+
+
+
+    accuracy = 0
+
+
+
+    if total:
+
+        accuracy = int(
+
+            (
+
+                wins /
+
+                total
+
+            )
+
+            *
+
+            100
+
+        )
+
+
+
+    return {
+
+
+        "total":
+
+            total,
+
+
+        "accuracy":
+
+            accuracy,
+
+
+        "wins":
+
+            wins,
+
+
+        "losses":
+
+            losses
+
+    }
+
+
+
+# ==========================
+# RISK OPTIMIZER
+# ==========================
+
+def optimize_risk_parameter_v12(
+        base_risk: float
+) -> Dict:
+
+
+    performance = parameter_performance_v12()
+
+
+
+    risk = base_risk
+
+
+
+    if performance["accuracy"] >= 70:
+
+
+        risk *= 1.10
+
+
+
+    elif performance["accuracy"] < 40:
+
+
+        risk *= 0.75
+
+
+
+    return {
+
+
+        "base_risk":
+
+            base_risk,
+
+
+        "optimized_risk":
+
+            round(
+                risk,
+                2
+            )
+
+    }
+
+
+
+# ==========================
+# RR OPTIMIZER
+# ==========================
+
+def optimize_rr_parameter_v12(
+        base_rr: float
+) -> Dict:
+
+
+    performance = parameter_performance_v12()
+
+
+
+    rr = base_rr
+
+
+
+    if performance["accuracy"] >= 70:
+
+
+        rr += 0.5
+
+
+
+    elif performance["accuracy"] < 40:
+
+
+        rr -= 0.5
+
+
+
+    return {
+
+
+        "base_rr":
+
+            base_rr,
+
+
+        "optimized_rr":
+
+            max(
+                rr,
+                1
+            )
+
+    }
+
+
+
+# ==========================
+# PARAMETER LEARNING ENGINE
+# ==========================
+
+def adaptive_parameter_engine_v12(
+        risk: float,
+        rr: float
+) -> Dict:
+
+
+    return {
+
+
+        "risk":
+
+            optimize_risk_parameter_v12(
+                risk
+            ),
+
+
+        "rr":
+
+            optimize_rr_parameter_v12(
+                rr
+            )
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_parameter_optimizer_v12(
+        risk,
+        rr
+) -> Dict:
+
+    return adaptive_parameter_engine_v12(
+        risk,
+        rr
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2I-5
+# Adaptive Learning Intelligence Layer
+# Market Condition Adaptation Engine
+# Session + Volatility + Structure Adaptation
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+from datetime import datetime, timezone
+
+
+# ==========================
+# MARKET CONDITION MEMORY
+# ==========================
+
+V12_CONDITION_MEMORY = []
+
+
+
+# ==========================
+# MARKET CONDITION SNAPSHOT
+# ==========================
+
+def create_market_condition_v12(df) -> Dict:
+
+
+    volatility = get_volatility_intelligence_v12(
+        df
+    )
+
+
+    regime = get_market_regime_v12(
+        df
+    )
+
+
+    structure = get_structure_memory_v12(
+        df
+    )
+
+
+
+    hour = datetime.now(
+        timezone.utc
+    ).hour
+
+
+
+    session = "ASIA"
+
+
+
+    if 7 <= hour < 13:
+
+        session = "LONDON"
+
+
+    elif 13 <= hour < 21:
+
+        session = "NEW_YORK"
+
+
+
+    return {
+
+
+        "session":
+
+            session,
+
+
+        "volatility":
+
+            volatility["volatility"]
+            ["state"],
+
+
+        "regime":
+
+            regime["regime"],
+
+
+        "structure":
+
+            structure["structure"]
+            ["event"]
+
+    }
+
+
+
+# ==========================
+# CONDITION STORAGE
+# ==========================
+
+def store_condition_memory_v12(
+        condition: Dict,
+        result: str
+) -> Dict:
+
+
+    record = {
+
+
+        "condition":
+
+            condition,
+
+
+        "result":
+
+            result
+
+    }
+
+
+
+    V12_CONDITION_MEMORY.append(
+        record
+    )
+
+
+
+    return record
+
+
+
+# ==========================
+# CONDITION PERFORMANCE
+# ==========================
+
+def condition_accuracy_v12(
+        current: Dict
+) -> int:
+
+
+    matches = []
+
+
+
+    for item in V12_CONDITION_MEMORY:
+
+
+        score = 0
+
+
+
+        saved = item["condition"]
+
+
+
+        for key in current:
+
+
+            if (
+
+                current[key]
+
+                ==
+
+                saved.get(key)
+
+            ):
+
+                score += 25
+
+
+
+        if score >= 75:
+
+            matches.append(
+                item
+            )
+
+
+
+    if not matches:
+
+        return 0
+
+
+
+    wins = 0
+
+
+
+    for item in matches:
+
+
+        if item["result"] == "WIN":
+
+            wins += 1
+
+
+
+    return int(
+
+        (
+
+            wins /
+
+            len(matches)
+
+        )
+
+        *
+
+        100
+
+    )
+
+
+
+# ==========================
+# ADAPTIVE MARKET ENGINE
+# ==========================
+
+def adaptive_market_condition_engine_v12(
+        df
+) -> Dict:
+
+
+    current = create_market_condition_v12(
+        df
+    )
+
+
+    accuracy = condition_accuracy_v12(
+        current
+    )
+
+
+
+    return {
+
+
+        "condition":
+
+            current,
+
+
+        "historical_accuracy":
+
+            accuracy,
+
+
+        "adapted":
+
+            accuracy >= 60
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_market_adaptation_v12(df) -> Dict:
+
+    return adaptive_market_condition_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2I-6
+# Adaptive Learning Intelligence Layer
+# Signal Quality Learning Engine
+# Weak Signal Detection + Filtering Memory
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# SIGNAL QUALITY MEMORY
+# ==========================
+
+V12_SIGNAL_QUALITY_MEMORY = []
+
+
+
+# ==========================
+# CREATE SIGNAL PROFILE
+# ==========================
+
+def create_signal_profile_v12(
+        signal: Dict
+) -> Dict:
+
+
+    return {
+
+
+        "direction":
+
+            signal.get(
+                "signal",
+                "NONE"
+            ),
+
+
+        "confidence":
+
+            signal.get(
+                "confidence",
+                0
+            ),
+
+
+        "structure":
+
+            signal.get(
+                "structure",
+                "NONE"
+            ),
+
+
+        "risk":
+
+            signal.get(
+                "risk",
+                0
+            )
+
+    }
+
+
+
+# ==========================
+# STORE SIGNAL QUALITY
+# ==========================
+
+def store_signal_quality_v12(
+        profile: Dict,
+        result: str
+) -> Dict:
+
+
+    record = {
+
+
+        "profile":
+
+            profile,
+
+
+        "result":
+
+            result
+
+    }
+
+
+
+    V12_SIGNAL_QUALITY_MEMORY.append(
+        record
+    )
+
+
+    return record
+
+
+
+# ==========================
+# WEAK SIGNAL ANALYZER
+# ==========================
+
+def weak_signal_analysis_v12(
+        profile: Dict
+) -> Dict:
+
+
+    penalty = 0
+
+    reasons = []
+
+
+
+    if profile["confidence"] < 75:
+
+
+        penalty += 20
+
+        reasons.append(
+            "LOW_CONFIDENCE"
+        )
+
+
+
+    if profile["direction"] == "NONE":
+
+
+        penalty += 30
+
+        reasons.append(
+            "NO_DIRECTION"
+        )
+
+
+
+    if profile["structure"] == "NONE":
+
+
+        penalty += 20
+
+        reasons.append(
+            "NO_STRUCTURE"
+        )
+
+
+
+    quality = max(
+
+        100 - penalty,
+
+        0
+
+    )
+
+
+
+    return {
+
+
+        "quality":
+
+            quality,
+
+
+        "blocked":
+
+            quality < 70,
+
+
+        "reasons":
+
+            reasons
+
+    }
+
+
+
+# ==========================
+# SIGNAL LEARNING FILTER
+# ==========================
+
+def signal_quality_filter_v12(
+        signal: Dict
+) -> Dict:
+
+
+    profile = create_signal_profile_v12(
+        signal
+    )
+
+
+    analysis = weak_signal_analysis_v12(
+        profile
+    )
+
+
+
+    return {
+
+
+        "approved":
+
+            not analysis["blocked"],
+
+
+        "quality":
+
+            analysis["quality"],
+
+
+        "reasons":
+
+            analysis["reasons"]
+
+    }
+
+
+
+# ==========================
+# ADAPTIVE QUALITY ENGINE
+# ==========================
+
+def adaptive_signal_quality_engine_v12(
+        signal: Dict
+) -> Dict:
+
+
+    return signal_quality_filter_v12(
+        signal
+    )
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_signal_quality_v12(
+        signal: Dict
+) -> Dict:
+
+    return adaptive_signal_quality_engine_v12(
+        signal
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2I-7
+# Adaptive Learning Intelligence Layer
+# Institutional Mistake Detection Engine
+# Error Pattern Recognition + Correction Memory
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict, List
+
+
+# ==========================
+# ERROR MEMORY STORAGE
+# ==========================
+
+V12_ERROR_MEMORY = []
+
+
+
+# ==========================
+# RECORD TRADING ERROR
+# ==========================
+
+def record_trade_error_v12(
+        error_type: str,
+        details: Dict
+) -> Dict:
+
+
+    record = {
+
+
+        "type":
+
+            error_type,
+
+
+        "details":
+
+            details,
+
+
+        "count":
+
+            1
+
+    }
+
+
+
+    V12_ERROR_MEMORY.append(
+        record
+    )
+
+
+    return record
+
+
+
+# ==========================
+# ERROR PATTERN ANALYSIS
+# ==========================
+
+def analyze_error_patterns_v12() -> Dict:
+
+
+    patterns = {}
+
+
+
+    for error in V12_ERROR_MEMORY:
+
+
+        name = error["type"]
+
+
+
+        if name not in patterns:
+
+            patterns[name] = 0
+
+
+
+        patterns[name] += 1
+
+
+
+    highest = None
+
+    maximum = 0
+
+
+
+    for key, value in patterns.items():
+
+
+        if value > maximum:
+
+
+            maximum = value
+
+            highest = key
+
+
+
+    return {
+
+
+        "patterns":
+
+            patterns,
+
+
+        "most_common":
+
+            highest,
+
+
+        "frequency":
+
+            maximum
+
+    }
+
+
+
+# ==========================
+# CORRECTION RULE ENGINE
+# ==========================
+
+def generate_correction_rule_v12() -> Dict:
+
+
+    analysis = analyze_error_patterns_v12()
+
+
+
+    rules = []
+
+
+
+    if analysis["most_common"]:
+
+
+        rules.append({
+
+            "avoid":
+
+                analysis["most_common"],
+
+
+            "priority":
+
+                "HIGH"
+
+        })
+
+
+
+    return {
+
+
+        "rules":
+
+            rules,
+
+
+        "active":
+
+            len(rules) > 0
+
+    }
+
+
+
+# ==========================
+# ERROR LEARNING ENGINE
+# ==========================
+
+def adaptive_error_learning_engine_v12() -> Dict:
+
+
+    return {
+
+
+        "errors":
+
+            len(
+                V12_ERROR_MEMORY
+            ),
+
+
+        "analysis":
+
+            analyze_error_patterns_v12(),
+
+
+        "correction":
+
+            generate_correction_rule_v12()
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_error_learning_v12() -> Dict:
+
+    return adaptive_error_learning_engine_v12()
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2I-8
+# Adaptive Learning Intelligence Layer
+# Institutional Market Bias Learning Engine
+# Historical Bias Accuracy + Dynamic Bias Correction
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# BIAS MEMORY STORAGE
+# ==========================
+
+V12_BIAS_MEMORY = []
+
+
+
+# ==========================
+# STORE MARKET BIAS
+# ==========================
+
+def store_bias_memory_v12(
+        bias: Dict,
+        result: str
+) -> Dict:
+
+
+    record = {
+
+
+        "bias":
+
+            bias.get(
+                "direction",
+                "NONE"
+            ),
+
+
+        "confidence":
+
+            bias.get(
+                "confidence",
+                0
+            ),
+
+
+        "result":
+
+            result
+
+    }
+
+
+
+    V12_BIAS_MEMORY.append(
+        record
+    )
+
+
+    return record
+
+
+
+# ==========================
+# BIAS PERFORMANCE ANALYZER
+# ==========================
+
+def bias_accuracy_v12() -> Dict:
+
+
+    total = len(
+        V12_BIAS_MEMORY
+    )
+
+
+    wins = 0
+
+
+
+    for item in V12_BIAS_MEMORY:
+
+
+        if item["result"] == "WIN":
+
+            wins += 1
+
+
+
+    accuracy = 0
+
+
+
+    if total:
+
+
+        accuracy = int(
+
+            (
+
+                wins /
+
+                total
+
+            )
+
+            *
+
+            100
+
+        )
+
+
+
+    return {
+
+
+        "total":
+
+            total,
+
+
+        "accuracy":
+
+            accuracy
+
+    }
+
+
+
+# ==========================
+# BIAS CORRECTION ENGINE
+# ==========================
+
+def dynamic_bias_correction_v12(
+        current_bias: str
+) -> Dict:
+
+
+    performance = bias_accuracy_v12()
+
+
+
+    corrected = current_bias
+
+
+    confidence = 50
+
+
+
+    if performance["accuracy"] >= 70:
+
+
+        confidence = 85
+
+
+
+    elif performance["accuracy"] < 40:
+
+
+        confidence = 40
+
+
+
+        corrected = "NEUTRAL"
+
+
+
+    return {
+
+
+        "bias":
+
+            corrected,
+
+
+        "confidence":
+
+            confidence
+
+    }
+
+
+
+# ==========================
+# ADAPTIVE BIAS ENGINE
+# ==========================
+
+def adaptive_bias_learning_engine_v12(
+        current_bias: str
+) -> Dict:
+
+
+    return dynamic_bias_correction_v12(
+        current_bias
+    )
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_bias_learning_v12(
+        current_bias: str
+) -> Dict:
+
+    return adaptive_bias_learning_engine_v12(
+        current_bias
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2I-9
+# Adaptive Learning Intelligence Layer
+# Institutional Entry Timing Learning Engine
+# Session Timing + Execution Window Optimization
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+from datetime import datetime, timezone
+
+
+# ==========================
+# TIMING MEMORY STORAGE
+# ==========================
+
+V12_TIMING_MEMORY = []
+
+
+
+# ==========================
+# CREATE TIMING PROFILE
+# ==========================
+
+def create_timing_profile_v12() -> Dict:
+
+
+    now = datetime.now(
+        timezone.utc
+    )
+
+
+    hour = now.hour
+
+
+
+    session = "ASIA"
+
+
+
+    if 7 <= hour < 13:
+
+        session = "LONDON"
+
+
+    elif 13 <= hour < 21:
+
+        session = "NEW_YORK"
+
+
+
+    return {
+
+
+        "hour":
+
+            hour,
+
+
+        "session":
+
+            session
+
+    }
+
+
+
+# ==========================
+# STORE TIMING RESULT
+# ==========================
+
+def store_timing_memory_v12(
+        result: str
+) -> Dict:
+
+
+    profile = create_timing_profile_v12()
+
+
+
+    record = {
+
+
+        "profile":
+
+            profile,
+
+
+        "result":
+
+            result
+
+    }
+
+
+
+    V12_TIMING_MEMORY.append(
+        record
+    )
+
+
+    return record
+
+
+
+# ==========================
+# TIMING ACCURACY
+# ==========================
+
+def timing_accuracy_v12() -> Dict:
+
+
+    if not V12_TIMING_MEMORY:
+
+
+        return {
+
+
+            "accuracy":
+
+                0
+
+        }
+
+
+
+    wins = 0
+
+
+
+    for item in V12_TIMING_MEMORY:
+
+
+        if item["result"] == "WIN":
+
+            wins += 1
+
+
+
+    return {
+
+
+        "accuracy":
+
+            int(
+
+                (
+
+                    wins /
+
+                    len(
+                        V12_TIMING_MEMORY
+                    )
+
+                )
+
+                *
+
+                100
+
+            )
+
+    }
+
+
+
+# ==========================
+# ENTRY WINDOW OPTIMIZER
+# ==========================
+
+def optimize_entry_window_v12() -> Dict:
+
+
+    best_sessions = {}
+
+
+
+    for item in V12_TIMING_MEMORY:
+
+
+        session = item["profile"]["session"]
+
+
+
+        if session not in best_sessions:
+
+
+            best_sessions[session] = {
+
+
+                "wins":
+
+                    0,
+
+
+                "total":
+
+                    0
+
+            }
+
+
+
+        best_sessions[session]["total"] += 1
+
+
+
+        if item["result"] == "WIN":
+
+            best_sessions[session]["wins"] += 1
+
+
+
+    best_session = None
+
+    best_accuracy = 0
+
+
+
+    for session, data in best_sessions.items():
+
+
+        accuracy = (
+
+            data["wins"]
+
+            /
+
+            data["total"]
+
+        ) * 100
+
+
+
+        if accuracy > best_accuracy:
+
+
+            best_accuracy = accuracy
+
+            best_session = session
+
+
+
+    return {
+
+
+        "best_session":
+
+            best_session,
+
+
+        "accuracy":
+
+            int(best_accuracy)
+
+    }
+
+
+
+# ==========================
+# TIMING LEARNING ENGINE
+# ==========================
+
+def adaptive_timing_learning_engine_v12() -> Dict:
+
+
+    return {
+
+
+        "timing_accuracy":
+
+            timing_accuracy_v12(),
+
+
+        "optimized_window":
+
+            optimize_entry_window_v12()
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_timing_learning_v12() -> Dict:
+
+    return adaptive_timing_learning_engine_v12()
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2I-10
+# Adaptive Learning Intelligence Layer
+# Institutional Risk Behaviour Learning Engine
+# Drawdown + Risk Exposure Adaptation Memory
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# RISK MEMORY STORAGE
+# ==========================
+
+V12_RISK_MEMORY = []
+
+
+
+# ==========================
+# STORE RISK EVENT
+# ==========================
+
+def store_risk_event_v12(
+        event: Dict
+) -> Dict:
+
+
+    record = {
+
+
+        "risk":
+
+            event.get(
+                "risk",
+                0
+            ),
+
+
+        "drawdown":
+
+            event.get(
+                "drawdown",
+                0
+            ),
+
+
+        "result":
+
+            event.get(
+                "result",
+                "UNKNOWN"
+            )
+
+    }
+
+
+
+    V12_RISK_MEMORY.append(
+        record
+    )
+
+
+    return record
+
+
+
+# ==========================
+# RISK PERFORMANCE ANALYSIS
+# ==========================
+
+def risk_behavior_analysis_v12() -> Dict:
+
+
+    if not V12_RISK_MEMORY:
+
+
+        return {
+
+
+            "risk_state":
+
+                "UNKNOWN",
+
+
+            "adjustment":
+
+                0
+
+        }
+
+
+
+    losses = 0
+
+    total_drawdown = 0
+
+
+
+    for item in V12_RISK_MEMORY:
+
+
+        if item["result"] == "LOSS":
+
+            losses += 1
+
+
+
+        total_drawdown += item["drawdown"]
+
+
+
+    loss_ratio = (
+
+        losses /
+
+        len(
+            V12_RISK_MEMORY
+        )
+
+    ) * 100
+
+
+
+    avg_drawdown = (
+
+        total_drawdown /
+
+        len(
+            V12_RISK_MEMORY
+        )
+
+    )
+
+
+
+    adjustment = 0
+
+    state = "NORMAL"
+
+
+
+    if loss_ratio > 50:
+
+
+        state = "HIGH_RISK"
+
+        adjustment = -25
+
+
+
+    elif avg_drawdown > 5:
+
+
+        state = "DRAWDOWN"
+
+        adjustment = -15
+
+
+
+    return {
+
+
+        "risk_state":
+
+            state,
+
+
+        "adjustment":
+
+            adjustment,
+
+
+        "loss_ratio":
+
+            int(loss_ratio)
+
+    }
+
+
+
+# ==========================
+# DYNAMIC RISK ADJUSTER
+# ==========================
+
+def dynamic_risk_adjustment_v12(
+        base_risk: float
+) -> Dict:
+
+
+    analysis = risk_behavior_analysis_v12()
+
+
+
+    adjusted = (
+
+        base_risk
+
+        +
+
+        (
+
+            base_risk *
+
+            analysis["adjustment"]
+
+            /
+
+            100
+
+        )
+
+    )
+
+
+
+    return {
+
+
+        "base_risk":
+
+            base_risk,
+
+
+        "adjusted_risk":
+
+            round(
+                max(
+                    adjusted,
+                    0.1
+                ),
+                2
+            ),
+
+
+        "state":
+
+            analysis["risk_state"]
+
+    }
+
+
+
+# ==========================
+# RISK LEARNING ENGINE
+# ==========================
+
+def adaptive_risk_learning_engine_v12(
+        base_risk: float
+) -> Dict:
+
+
+    return dynamic_risk_adjustment_v12(
+        base_risk
+    )
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_risk_learning_v12(
+        base_risk: float
+) -> Dict:
+
+    return adaptive_risk_learning_engine_v12(
+        base_risk
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2I-11
+# Adaptive Learning Intelligence Layer
+# Institutional Trade Management Learning Engine
+# Partial TP + Trailing + Exit Behaviour Memory
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# TRADE MANAGEMENT MEMORY
+# ==========================
+
+V12_MANAGEMENT_MEMORY = []
+
+
+
+# ==========================
+# STORE MANAGEMENT RESULT
+# ==========================
+
+def store_management_memory_v12(
+        trade: Dict
+) -> Dict:
+
+
+    record = {
+
+
+        "direction":
+
+            trade.get(
+                "direction",
+                "NONE"
+            ),
+
+
+        "entry":
+
+            trade.get(
+                "entry",
+                0
+            ),
+
+
+        "exit":
+
+            trade.get(
+                "exit",
+                0
+            ),
+
+
+        "management":
+
+            trade.get(
+                "management",
+                "NONE"
+            ),
+
+
+        "result":
+
+            trade.get(
+                "result",
+                "UNKNOWN"
+            )
+
+    }
+
+
+
+    V12_MANAGEMENT_MEMORY.append(
+        record
+    )
+
+
+    return record
+
+
+
+# ==========================
+# EXIT BEHAVIOUR ANALYZER
+# ==========================
+
+def exit_behavior_analysis_v12() -> Dict:
+
+
+    if not V12_MANAGEMENT_MEMORY:
+
+
+        return {
+
+
+            "best_exit":
+
+                "UNKNOWN",
+
+
+            "accuracy":
+
+                0
+
+        }
+
+
+
+    styles = {}
+
+
+
+    for item in V12_MANAGEMENT_MEMORY:
+
+
+        style = item["management"]
+
+
+
+        if style not in styles:
+
+            styles[style] = {
+
+
+                "wins":
+
+                    0,
+
+
+                "total":
+
+                    0
+
+            }
+
+
+
+        styles[style]["total"] += 1
+
+
+
+        if item["result"] == "WIN":
+
+            styles[style]["wins"] += 1
+
+
+
+    best_style = None
+
+    best_accuracy = 0
+
+
+
+    for style, data in styles.items():
+
+
+        accuracy = (
+
+            data["wins"]
+
+            /
+
+            data["total"]
+
+        ) * 100
+
+
+
+        if accuracy > best_accuracy:
+
+
+            best_accuracy = accuracy
+
+            best_style = style
+
+
+
+    return {
+
+
+        "best_exit":
+
+            best_style,
+
+
+        "accuracy":
+
+            int(best_accuracy)
+
+    }
+
+
+
+# ==========================
+# EXIT OPTIMIZER
+# ==========================
+
+def optimize_trade_management_v12(
+        default_style: str
+) -> Dict:
+
+
+    analysis = exit_behavior_analysis_v12()
+
+
+
+    style = default_style
+
+
+
+    if analysis["best_exit"]:
+
+
+        style = analysis["best_exit"]
+
+
+
+    return {
+
+
+        "management":
+
+            style,
+
+
+        "confidence":
+
+            analysis["accuracy"]
+
+    }
+
+
+
+# ==========================
+# TRADE MANAGEMENT ENGINE
+# ==========================
+
+def adaptive_trade_management_engine_v12(
+        default_style: str
+) -> Dict:
+
+
+    return optimize_trade_management_v12(
+        default_style
+    )
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_trade_management_learning_v12(
+        default_style: str
+) -> Dict:
+
+    return adaptive_trade_management_engine_v12(
+        default_style
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2I-12
+# Adaptive Learning Intelligence Layer
+# Institutional Strategy Selection Engine
+# Multi Strategy Performance Ranking
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# STRATEGY MEMORY STORAGE
+# ==========================
+
+V12_STRATEGY_MEMORY = []
+
+
+
+# ==========================
+# STORE STRATEGY RESULT
+# ==========================
+
+def store_strategy_result_v12(
+        strategy: str,
+        result: str,
+        confidence: int
+) -> Dict:
+
+
+    record = {
+
+
+        "strategy":
+
+            strategy,
+
+
+        "result":
+
+            result,
+
+
+        "confidence":
+
+            confidence
+
+    }
+
+
+
+    V12_STRATEGY_MEMORY.append(
+        record
+    )
+
+
+    return record
+
+
+
+# ==========================
+# STRATEGY PERFORMANCE
+# ==========================
+
+def strategy_performance_v12() -> Dict:
+
+
+    performance = {}
+
+
+
+    for item in V12_STRATEGY_MEMORY:
+
+
+        strategy = item["strategy"]
+
+
+
+        if strategy not in performance:
+
+
+            performance[strategy] = {
+
+
+                "wins":
+
+                    0,
+
+
+                "total":
+
+                    0
+
+            }
+
+
+
+        performance[strategy]["total"] += 1
+
+
+
+        if item["result"] == "WIN":
+
+
+            performance[strategy]["wins"] += 1
+
+
+
+    for strategy, data in performance.items():
+
+
+        if data["total"]:
+
+
+            data["accuracy"] = int(
+
+                (
+
+                    data["wins"]
+
+                    /
+
+                    data["total"]
+
+                )
+
+                *
+
+                100
+
+            )
+
+
+
+    return performance
+
+
+
+# ==========================
+# BEST STRATEGY SELECTOR
+# ==========================
+
+def select_best_strategy_v12() -> Dict:
+
+
+    performance = strategy_performance_v12()
+
+
+
+    best = None
+
+    accuracy = 0
+
+
+
+    for strategy, data in performance.items():
+
+
+        if data.get("accuracy",0) > accuracy:
+
+
+            accuracy = data["accuracy"]
+
+            best = strategy
+
+
+
+    return {
+
+
+        "strategy":
+
+            best,
+
+
+        "accuracy":
+
+            accuracy
+
+    }
+
+
+
+# ==========================
+# ADAPTIVE STRATEGY ENGINE
+# ==========================
+
+def adaptive_strategy_selection_engine_v12() -> Dict:
+
+
+    return {
+
+
+        "ranking":
+
+            strategy_performance_v12(),
+
+
+        "selected":
+
+            select_best_strategy_v12()
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_strategy_learning_v12() -> Dict:
+
+    return adaptive_strategy_selection_engine_v12()
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2I-13
+# Adaptive Learning Intelligence Layer
+# Institutional Confidence Calibration Engine
+# Probability Calibration + Signal Reliability Mapping
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# CONFIDENCE MEMORY STORAGE
+# ==========================
+
+V12_CONFIDENCE_MEMORY = []
+
+
+
+# ==========================
+# STORE CONFIDENCE RESULT
+# ==========================
+
+def store_confidence_result_v12(
+        confidence: int,
+        result: str
+) -> Dict:
+
+
+    record = {
+
+
+        "confidence":
+
+            confidence,
+
+
+        "result":
+
+            result
+
+    }
+
+
+
+    V12_CONFIDENCE_MEMORY.append(
+        record
+    )
+
+
+    return record
+
+
+
+# ==========================
+# CONFIDENCE CALIBRATION
+# ==========================
+
+def confidence_calibration_v12() -> Dict:
+
+
+    zones = {
+
+
+        "85_100":
+
+            {
+
+                "wins": 0,
+
+                "total": 0
+
+            },
+
+
+        "70_84":
+
+            {
+
+                "wins": 0,
+
+                "total": 0
+
+            },
+
+
+        "below_70":
+
+            {
+
+                "wins": 0,
+
+                "total": 0
+
+            }
+
+    }
+
+
+
+    for item in V12_CONFIDENCE_MEMORY:
+
+
+        confidence = item["confidence"]
+
+
+
+        if confidence >= 85:
+
+
+            zone = "85_100"
+
+
+
+        elif confidence >= 70:
+
+
+            zone = "70_84"
+
+
+
+        else:
+
+
+            zone = "below_70"
+
+
+
+        zones[zone]["total"] += 1
+
+
+
+        if item["result"] == "WIN":
+
+
+            zones[zone]["wins"] += 1
+
+
+
+    for zone in zones:
+
+
+        total = zones[zone]["total"]
+
+
+
+        if total:
+
+
+            zones[zone]["accuracy"] = int(
+
+                (
+
+                    zones[zone]["wins"]
+
+                    /
+
+                    total
+
+                )
+
+                *
+
+                100
+
+            )
+
+
+        else:
+
+
+            zones[zone]["accuracy"] = 0
+
+
+
+    return zones
+
+
+
+# ==========================
+# CONFIDENCE ADJUSTER
+# ==========================
+
+def calibrate_signal_confidence_v12(
+        raw_confidence: int
+) -> Dict:
+
+
+    calibration = confidence_calibration_v12()
+
+
+
+    adjustment = 0
+
+
+
+    high_accuracy = calibration["85_100"]["accuracy"]
+
+
+
+    if high_accuracy >= 75:
+
+
+        adjustment = 5
+
+
+
+    elif high_accuracy < 50:
+
+
+        adjustment = -10
+
+
+
+    final = raw_confidence + adjustment
+
+
+
+    return {
+
+
+        "raw":
+
+            raw_confidence,
+
+
+        "adjustment":
+
+            adjustment,
+
+
+        "final":
+
+            max(
+
+                min(
+
+                    final,
+
+                    100
+
+                ),
+
+                0
+
+            )
+
+    }
+
+
+
+# ==========================
+# CALIBRATION ENGINE
+# ==========================
+
+def adaptive_confidence_calibration_engine_v12(
+        confidence: int
+) -> Dict:
+
+
+    return calibrate_signal_confidence_v12(
+        confidence
+    )
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_confidence_calibration_v12(
+        confidence: int
+) -> Dict:
+
+    return adaptive_confidence_calibration_engine_v12(
+        confidence
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2I-14
+# Adaptive Learning Intelligence Layer
+# Institutional Market Regime Memory Engine
+# Regime Performance + Adaptive Switching
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# REGIME MEMORY STORAGE
+# ==========================
+
+V12_REGIME_MEMORY = []
+
+
+
+# ==========================
+# STORE REGIME RESULT
+# ==========================
+
+def store_regime_result_v12(
+        regime: str,
+        result: str,
+        direction: str
+) -> Dict:
+
+
+    record = {
+
+
+        "regime":
+
+            regime,
+
+
+        "direction":
+
+            direction,
+
+
+        "result":
+
+            result
+
+    }
+
+
+
+    V12_REGIME_MEMORY.append(
+        record
+    )
+
+
+    return record
+
+
+
+# ==========================
+# REGIME PERFORMANCE ANALYSIS
+# ==========================
+
+def regime_performance_v12() -> Dict:
+
+
+    performance = {}
+
+
+
+    for item in V12_REGIME_MEMORY:
+
+
+        regime = item["regime"]
+
+
+
+        if regime not in performance:
+
+
+            performance[regime] = {
+
+
+                "wins":
+
+                    0,
+
+
+                "total":
+
+                    0
+
+            }
+
+
+
+        performance[regime]["total"] += 1
+
+
+
+        if item["result"] == "WIN":
+
+
+            performance[regime]["wins"] += 1
+
+
+
+    for regime, data in performance.items():
+
+
+        if data["total"]:
+
+
+            data["accuracy"] = int(
+
+                (
+
+                    data["wins"]
+
+                    /
+
+                    data["total"]
+
+                )
+
+                *
+
+                100
+
+            )
+
+
+
+    return performance
+
+
+
+# ==========================
+# REGIME SELECTOR
+# ==========================
+
+def best_market_regime_v12() -> Dict:
+
+
+    performance = regime_performance_v12()
+
+
+
+    best = None
+
+    accuracy = 0
+
+
+
+    for regime, data in performance.items():
+
+
+        if data.get("accuracy", 0) > accuracy:
+
+
+            accuracy = data["accuracy"]
+
+            best = regime
+
+
+
+    return {
+
+
+        "preferred_regime":
+
+            best,
+
+
+        "accuracy":
+
+            accuracy
+
+    }
+
+
+
+# ==========================
+# REGIME SWITCH ENGINE
+# ==========================
+
+def adaptive_regime_switch_v12(
+        current_regime: str
+) -> Dict:
+
+
+    best = best_market_regime_v12()
+
+
+
+    selected = current_regime
+
+
+
+    if (
+
+        best["preferred_regime"]
+
+        and
+
+        best["accuracy"] >= 70
+
+    ):
+
+
+        selected = best["preferred_regime"]
+
+
+
+    return {
+
+
+        "current":
+
+            current_regime,
+
+
+        "selected":
+
+            selected,
+
+
+        "confidence":
+
+            best["accuracy"]
+
+    }
+
+
+
+# ==========================
+# REGIME LEARNING ENGINE
+# ==========================
+
+def adaptive_regime_learning_engine_v12(
+        current_regime: str
+) -> Dict:
+
+
+    return adaptive_regime_switch_v12(
+        current_regime
+    )
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_regime_learning_v12(
+        current_regime: str
+) -> Dict:
+
+    return adaptive_regime_learning_engine_v12(
+        current_regime
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2I-15
+# Adaptive Learning Intelligence Layer
+# Institutional Signal Filtering Memory Engine
+# Noise Reduction + False Signal Blocking
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# FILTER MEMORY STORAGE
+# ==========================
+
+V12_FILTER_MEMORY = []
+
+
+
+# ==========================
+# CREATE FILTER PROFILE
+# ==========================
+
+def create_filter_profile_v12(
+        signal: Dict
+) -> Dict:
+
+
+    return {
+
+
+        "confidence":
+
+            signal.get(
+                "confidence",
+                0
+            ),
+
+
+        "volume":
+
+            signal.get(
+                "volume_score",
+                0
+            ),
+
+
+        "structure":
+
+            signal.get(
+                "structure_score",
+                0
+            ),
+
+
+        "liquidity":
+
+            signal.get(
+                "liquidity_score",
+                0
+            ),
+
+
+        "direction":
+
+            signal.get(
+                "direction",
+                "NONE"
+            )
+
+    }
+
+
+
+# ==========================
+# NOISE DETECTION ENGINE
+# ==========================
+
+def detect_signal_noise_v12(
+        profile: Dict
+) -> Dict:
+
+
+    penalty = 0
+
+    reasons = []
+
+
+
+    if profile["confidence"] < 70:
+
+
+        penalty += 25
+
+        reasons.append(
+            "LOW_CONFIDENCE"
+        )
+
+
+
+    if profile["structure"] < 60:
+
+
+        penalty += 20
+
+        reasons.append(
+            "WEAK_STRUCTURE"
+        )
+
+
+
+    if profile["liquidity"] < 50:
+
+
+        penalty += 20
+
+        reasons.append(
+            "NO_LIQUIDITY_CONFIRMATION"
+        )
+
+
+
+    if profile["direction"] == "NONE":
+
+
+        penalty += 30
+
+        reasons.append(
+            "NO_DIRECTION"
+        )
+
+
+
+    quality = max(
+
+        100 - penalty,
+
+        0
+
+    )
+
+
+
+    return {
+
+
+        "quality":
+
+            quality,
+
+
+        "noise":
+
+            quality < 70,
+
+
+        "reasons":
+
+            reasons
+
+    }
+
+
+
+# ==========================
+# FILTER MEMORY STORE
+# ==========================
+
+def store_filter_memory_v12(
+        signal: Dict,
+        result: str
+) -> Dict:
+
+
+    profile = create_filter_profile_v12(
+        signal
+    )
+
+
+    record = {
+
+
+        "profile":
+
+            profile,
+
+
+        "result":
+
+            result
+
+    }
+
+
+
+    V12_FILTER_MEMORY.append(
+        record
+    )
+
+
+    return record
+
+
+
+# ==========================
+# FINAL SIGNAL FILTER
+# ==========================
+
+def institutional_signal_filter_v12(
+        signal: Dict
+) -> Dict:
+
+
+    profile = create_filter_profile_v12(
+        signal
+    )
+
+
+    analysis = detect_signal_noise_v12(
+        profile
+    )
+
+
+
+    return {
+
+
+        "approved":
+
+            not analysis["noise"],
+
+
+        "quality":
+
+            analysis["quality"],
+
+
+        "reasons":
+
+            analysis["reasons"]
+
+    }
+
+
+
+# ==========================
+# ADAPTIVE FILTER ENGINE
+# ==========================
+
+def adaptive_signal_filter_engine_v12(
+        signal: Dict
+) -> Dict:
+
+
+    return institutional_signal_filter_v12(
+        signal
+    )
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_signal_filter_v12(
+        signal: Dict
+) -> Dict:
+
+    return adaptive_signal_filter_engine_v12(
+        signal
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2I-16
+# Adaptive Learning Intelligence Layer
+# Institutional Signal Ranking Engine
+# Multi Factor Signal Priority + Selection
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict, List
+
+
+# ==========================
+# SIGNAL RANK MEMORY
+# ==========================
+
+V12_SIGNAL_RANK_MEMORY = []
+
+
+
+# ==========================
+# CREATE SIGNAL PROFILE
+# ==========================
+
+def create_signal_rank_profile_v12(
+        signal: Dict
+) -> Dict:
+
+
+    return {
+
+
+        "direction":
+
+            signal.get(
+                "direction",
+                "NONE"
+            ),
+
+
+        "confidence":
+
+            signal.get(
+                "confidence",
+                0
+            ),
+
+
+        "structure":
+
+            signal.get(
+                "structure_score",
+                0
+            ),
+
+
+        "liquidity":
+
+            signal.get(
+                "liquidity_score",
+                0
+            ),
+
+
+        "timing":
+
+            signal.get(
+                "timing_score",
+                0
+            )
+
+    }
+
+
+
+# ==========================
+# SIGNAL RANK CALCULATOR
+# ==========================
+
+def calculate_signal_rank_v12(
+        profile: Dict
+) -> int:
+
+
+    score = (
+
+        profile["confidence"] * 0.40
+
+        +
+
+        profile["structure"] * 0.25
+
+        +
+
+        profile["liquidity"] * 0.20
+
+        +
+
+        profile["timing"] * 0.15
+
+    )
+
+
+
+    return int(
+
+        min(
+
+            score,
+
+            100
+
+        )
+
+    )
+
+
+
+# ==========================
+# STORE RANK MEMORY
+# ==========================
+
+def store_signal_rank_v12(
+        signal: Dict
+) -> Dict:
+
+
+    profile = create_signal_rank_profile_v12(
+        signal
+    )
+
+
+    rank = calculate_signal_rank_v12(
+        profile
+    )
+
+
+
+    record = {
+
+
+        "profile":
+
+            profile,
+
+
+        "rank":
+
+            rank
+
+    }
+
+
+
+    V12_SIGNAL_RANK_MEMORY.append(
+        record
+    )
+
+
+    return record
+
+
+
+# ==========================
+# SIGNAL SORTER
+# ==========================
+
+def rank_signals_v12(
+        signals: List[Dict]
+) -> List[Dict]:
+
+
+    ranked = []
+
+
+
+    for signal in signals:
+
+
+        ranked.append(
+
+            store_signal_rank_v12(
+                signal
+            )
+
+        )
+
+
+
+    ranked.sort(
+
+        key=lambda x:
+
+        x["rank"],
+
+        reverse=True
+
+    )
+
+
+
+    return ranked
+
+
+
+# ==========================
+# BEST SIGNAL SELECTOR
+# ==========================
+
+def select_best_signal_v12(
+        signals: List[Dict]
+) -> Dict:
+
+
+    ranked = rank_signals_v12(
+        signals
+    )
+
+
+
+    if not ranked:
+
+
+        return {
+
+
+            "signal":
+
+                None,
+
+
+            "rank":
+
+                0
+
+        }
+
+
+
+    return ranked[0]
+
+
+
+# ==========================
+# ADAPTIVE RANK ENGINE
+# ==========================
+
+def adaptive_signal_rank_engine_v12(
+        signals: List[Dict]
+) -> Dict:
+
+
+    selected = select_best_signal_v12(
+        signals
+    )
+
+
+    return {
+
+
+        "selected":
+
+            selected,
+
+
+        "count":
+
+            len(signals)
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_signal_rank_v12(
+        signals: List[Dict]
+) -> Dict:
+
+    return adaptive_signal_rank_engine_v12(
+        signals
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2I-17
+# Adaptive Learning Intelligence Layer
+# Institutional Trade Outcome Prediction Engine
+# Probability Forecast + Historical Matching
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# OUTCOME MEMORY STORAGE
+# ==========================
+
+V12_OUTCOME_MEMORY = []
+
+
+
+# ==========================
+# STORE TRADE OUTCOME
+# ==========================
+
+def store_trade_outcome_v12(
+        trade: Dict,
+        result: str
+) -> Dict:
+
+
+    record = {
+
+
+        "direction":
+
+            trade.get(
+                "direction",
+                "NONE"
+            ),
+
+
+        "confidence":
+
+            trade.get(
+                "confidence",
+                0
+            ),
+
+
+        "structure":
+
+            trade.get(
+                "structure_score",
+                0
+            ),
+
+
+        "result":
+
+            result
+
+    }
+
+
+
+    V12_OUTCOME_MEMORY.append(
+        record
+    )
+
+
+    return record
+
+
+
+# ==========================
+# SIMILARITY CHECK
+# ==========================
+
+def outcome_similarity_v12(
+        current: Dict,
+        saved: Dict
+) -> int:
+
+
+    score = 0
+
+
+
+    if current["direction"] == saved["direction"]:
+
+        score += 30
+
+
+
+    if abs(
+
+        current["confidence"]
+
+        -
+
+        saved["confidence"]
+
+    ) <= 10:
+
+
+        score += 30
+
+
+
+    if abs(
+
+        current["structure"]
+
+        -
+
+        saved["structure"]
+
+    ) <= 15:
+
+
+        score += 40
+
+
+
+    return score
+
+
+
+# ==========================
+# OUTCOME PREDICTION
+# ==========================
+
+def predict_trade_outcome_v12(
+        trade: Dict
+) -> Dict:
+
+
+    matches = []
+
+
+
+    for item in V12_OUTCOME_MEMORY:
+
+
+        similarity = outcome_similarity_v12(
+
+            trade,
+
+            item
+
+        )
+
+
+
+        if similarity >= 70:
+
+
+            matches.append(
+                item
+            )
+
+
+
+    if not matches:
+
+
+        return {
+
+
+            "probability":
+
+                50,
+
+
+            "samples":
+
+                0
+
+        }
+
+
+
+    wins = 0
+
+
+
+    for item in matches:
+
+
+        if item["result"] == "WIN":
+
+            wins += 1
+
+
+
+    probability = int(
+
+        (
+
+            wins /
+
+            len(matches)
+
+        )
+
+        *
+
+        100
+
+    )
+
+
+
+    return {
+
+
+        "probability":
+
+            probability,
+
+
+        "samples":
+
+            len(matches)
+
+    }
+
+
+
+# ==========================
+# PREDICTION ENGINE
+# ==========================
+
+def adaptive_outcome_prediction_engine_v12(
+        trade: Dict
+) -> Dict:
+
+
+    prediction = predict_trade_outcome_v12(
+        trade
+    )
+
+
+    return {
+
+
+        "win_probability":
+
+            prediction["probability"],
+
+
+        "history_samples":
+
+            prediction["samples"],
+
+
+        "approved":
+
+            prediction["probability"] >= 70
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_outcome_prediction_v12(
+        trade: Dict
+) -> Dict:
+
+    return adaptive_outcome_prediction_engine_v12(
+        trade
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2I-18
+# Adaptive Learning Intelligence Layer
+# Institutional Market Replay Engine
+# Historical Scenario Matching + Decision Replay
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict, List
+
+
+# ==========================
+# MARKET REPLAY MEMORY
+# ==========================
+
+V12_REPLAY_MEMORY = []
+
+
+
+# ==========================
+# CREATE MARKET SNAPSHOT
+# ==========================
+
+def create_market_snapshot_v12(
+        df
+) -> Dict:
+
+
+    if len(df) < 30:
+
+        return {}
+
+
+
+    return {
+
+
+        "direction":
+
+            optimized_direction_v12(
+                df
+            ),
+
+
+        "regime":
+
+            get_market_regime_v12(
+                df
+            )
+            ["regime"],
+
+
+        "volatility":
+
+            get_volatility_intelligence_v12(
+                df
+            )
+            ["volatility"]
+            ["state"],
+
+
+        "structure":
+
+            get_structure_memory_v12(
+                df
+            )
+            ["structure"]
+            ["event"],
+
+
+        "price":
+
+            float(
+                df["close"].iloc[-1]
+            )
+
+    }
+
+
+
+# ==========================
+# STORE MARKET SCENARIO
+# ==========================
+
+def store_replay_memory_v12(
+        snapshot: Dict,
+        result: str
+) -> Dict:
+
+
+    record = {
+
+
+        "snapshot":
+
+            snapshot,
+
+
+        "result":
+
+            result
+
+    }
+
+
+
+    V12_REPLAY_MEMORY.append(
+        record
+    )
+
+
+    return record
+
+
+
+# ==========================
+# SCENARIO MATCHING
+# ==========================
+
+def match_previous_scenarios_v12(
+        current: Dict
+) -> List[Dict]:
+
+
+    matches = []
+
+
+
+    for item in V12_REPLAY_MEMORY:
+
+
+        saved = item["snapshot"]
+
+
+        score = 0
+
+
+
+        if current["direction"] == saved["direction"]:
+
+            score += 25
+
+
+
+        if current["regime"] == saved["regime"]:
+
+            score += 25
+
+
+
+        if current["volatility"] == saved["volatility"]:
+
+            score += 25
+
+
+
+        if current["structure"] == saved["structure"]:
+
+            score += 25
+
+
+
+        if score >= 75:
+
+            matches.append(
+                item
+            )
+
+
+
+    return matches
+
+
+
+# ==========================
+# REPLAY DECISION ENGINE
+# ==========================
+
+def replay_prediction_v12(
+        df
+) -> Dict:
+
+
+    current = create_market_snapshot_v12(
+        df
+    )
+
+
+    matches = match_previous_scenarios_v12(
+        current
+    )
+
+
+
+    if not matches:
+
+
+        return {
+
+
+            "confidence":
+
+                50,
+
+
+            "samples":
+
+                0
+
+        }
+
+
+
+    wins = 0
+
+
+
+    for item in matches:
+
+
+        if item["result"] == "WIN":
+
+            wins += 1
+
+
+
+    confidence = int(
+
+        (
+
+            wins /
+
+            len(matches)
+
+        )
+
+        *
+
+        100
+
+    )
+
+
+
+    return {
+
+
+        "confidence":
+
+            confidence,
+
+
+        "samples":
+
+            len(matches)
+
+    }
+
+
+
+# ==========================
+# MARKET REPLAY ENGINE
+# ==========================
+
+def adaptive_market_replay_engine_v12(
+        df
+) -> Dict:
+
+
+    result = replay_prediction_v12(
+        df
+    )
+
+
+    return {
+
+
+        "historical_confidence":
+
+            result["confidence"],
+
+
+        "samples":
+
+            result["samples"],
+
+
+        "approved":
+
+            result["confidence"] >= 70
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_market_replay_v12(
+        df
+) -> Dict:
+
+    return adaptive_market_replay_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2I-19
+# Adaptive Learning Intelligence Layer
+# Institutional Decision Fusion Engine
+# AI Style Multi Layer Confirmation Aggregator
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# DECISION MEMORY
+# ==========================
+
+V12_DECISION_MEMORY = []
+
+
+
+# ==========================
+# CREATE DECISION PROFILE
+# ==========================
+
+def create_decision_profile_v12(
+        data: Dict
+) -> Dict:
+
+
+    return {
+
+
+        "structure":
+
+            data.get(
+                "structure",
+                0
+            ),
+
+
+        "confidence":
+
+            data.get(
+                "confidence",
+                0
+            ),
+
+
+        "liquidity":
+
+            data.get(
+                "liquidity",
+                0
+            ),
+
+
+        "timing":
+
+            data.get(
+                "timing",
+                0
+            ),
+
+
+        "history":
+
+            data.get(
+                "history",
+                0
+            )
+
+    }
+
+
+
+# ==========================
+# DECISION SCORE ENGINE
+# ==========================
+
+def calculate_decision_score_v12(
+        profile: Dict
+) -> int:
+
+
+    score = (
+
+        profile["structure"] * 0.25
+
+        +
+
+        profile["confidence"] * 0.30
+
+        +
+
+        profile["liquidity"] * 0.20
+
+        +
+
+        profile["timing"] * 0.10
+
+        +
+
+        profile["history"] * 0.15
+
+    )
+
+
+
+    return int(
+
+        min(
+
+            score,
+
+            100
+
+        )
+
+    )
+
+
+
+# ==========================
+# STORE DECISION MEMORY
+# ==========================
+
+def store_decision_memory_v12(
+        decision: Dict
+) -> Dict:
+
+
+    profile = create_decision_profile_v12(
+        decision
+    )
+
+
+    score = calculate_decision_score_v12(
+        profile
+    )
+
+
+
+    record = {
+
+
+        "profile":
+
+            profile,
+
+
+        "score":
+
+            score
+
+    }
+
+
+
+    V12_DECISION_MEMORY.append(
+        record
+    )
+
+
+    return record
+
+
+
+# ==========================
+# FINAL DECISION ENGINE
+# ==========================
+
+def institutional_decision_fusion_v12(
+        decision: Dict
+) -> Dict:
+
+
+    result = store_decision_memory_v12(
+        decision
+    )
+
+
+
+    approved = (
+
+        result["score"]
+
+        >=
+
+        85
+
+    )
+
+
+
+    return {
+
+
+        "approved":
+
+            approved,
+
+
+        "decision_score":
+
+            result["score"],
+
+
+        "grade":
+
+            (
+
+                "A"
+
+                if result["score"] >= 90
+
+                else
+
+                "B"
+
+                if result["score"] >= 80
+
+                else
+
+                "C"
+
+            )
+
+    }
+
+
+
+# ==========================
+# ADAPTIVE FUSION ENGINE
+# ==========================
+
+def adaptive_decision_engine_v12(
+        decision: Dict
+) -> Dict:
+
+
+    return institutional_decision_fusion_v12(
+        decision
+    )
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_decision_fusion_v12(
+        decision: Dict
+) -> Dict:
+
+    return adaptive_decision_engine_v12(
+        decision
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2I-20
+# Adaptive Learning Intelligence Layer
+# Institutional Self Optimization Engine
+# Complete I-Layer Learning Controller
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# SELF OPTIMIZATION MEMORY
+# ==========================
+
+V12_OPTIMIZATION_MEMORY = []
+
+
+
+# ==========================
+# COLLECT SYSTEM PERFORMANCE
+# ==========================
+
+def collect_system_performance_v12() -> Dict:
+
+
+    performance = {
+
+
+        "signal":
+
+            signal_performance_v12(),
+
+
+        "strategy":
+
+            strategy_performance_v12(),
+
+
+        "regime":
+
+            regime_performance_v12(),
+
+
+        "confidence":
+
+            confidence_calibration_v12()
+
+    }
+
+
+
+    return performance
+
+
+
+# ==========================
+# OPTIMIZATION DECISION
+# ==========================
+
+def optimization_decision_v12() -> Dict:
+
+
+    performance = collect_system_performance_v12()
+
+
+
+    adjustments = []
+
+
+
+    signal_accuracy = performance["signal"].get(
+        "accuracy",
+        0
+    )
+
+
+
+    if signal_accuracy < 50:
+
+
+        adjustments.append(
+            "IMPROVE_SIGNAL_FILTER"
+        )
+
+
+
+    strategy_data = performance["strategy"]
+
+
+
+    if not strategy_data:
+
+
+        adjustments.append(
+            "COLLECT_MORE_STRATEGY_DATA"
+        )
+
+
+
+    confidence_data = performance["confidence"]
+
+
+
+    if confidence_data:
+
+        high_zone = confidence_data.get(
+            "85_100",
+            {}
+        )
+
+
+        if high_zone.get(
+            "accuracy",
+            0
+        ) < 50:
+
+
+            adjustments.append(
+                "REDUCE_CONFIDENCE_BIAS"
+            )
+
+
+
+    return {
+
+
+        "adjustments":
+
+            adjustments,
+
+
+        "count":
+
+            len(adjustments)
+
+    }
+
+
+
+# ==========================
+# APPLY OPTIMIZATION RULES
+# ==========================
+
+def apply_optimization_rules_v12() -> Dict:
+
+
+    decision = optimization_decision_v12()
+
+
+
+    record = {
+
+
+        "rules":
+
+            decision["adjustments"],
+
+
+        "status":
+
+            "UPDATED"
+
+    }
+
+
+
+    V12_OPTIMIZATION_MEMORY.append(
+        record
+    )
+
+
+    return record
+
+
+
+# ==========================
+# SELF LEARNING CONTROLLER
+# ==========================
+
+def institutional_self_optimization_engine_v12() -> Dict:
+
+
+    performance = collect_system_performance_v12()
+
+
+    optimization = apply_optimization_rules_v12()
+
+
+
+    return {
+
+
+        "layer":
+
+            "2I_ADAPTIVE_LEARNING",
+
+
+        "performance":
+
+            performance,
+
+
+        "optimization":
+
+            optimization
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_self_optimization_v12() -> Dict:
+
+    return institutional_self_optimization_engine_v12()
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2J-1
+# Institutional AI Controller Layer
+# Unified Market Intelligence Aggregator
+# All V12 Engines Synchronization Core
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# AI CONTROLLER MEMORY
+# ==========================
+
+V12_AI_CONTROLLER_MEMORY = []
+
+
+
+# ==========================
+# COLLECT ALL INTELLIGENCE
+# ==========================
+
+def collect_v12_intelligence_v12(
+        df
+) -> Dict:
+
+
+    intelligence = {
+
+
+        "structure":
+
+            get_structure_memory_v12(
+                df
+            ),
+
+
+        "confidence":
+
+            get_adaptive_confidence_v12(
+                0
+            ),
+
+
+        "regime":
+
+            get_market_regime_v12(
+                df
+            ),
+
+
+        "liquidity":
+
+            get_liquidity_target_v12(
+                df
+            ),
+
+
+        "execution":
+
+            get_advanced_execution_v12(
+                df
+            ),
+
+
+        "learning":
+
+            get_learning_memory_v12()
+
+    }
+
+
+
+    return intelligence
+
+
+
+# ==========================
+# AI DECISION SCORE
+# ==========================
+
+def calculate_ai_controller_score_v12(
+        intelligence: Dict
+) -> int:
+
+
+    score = 0
+
+
+
+    execution = intelligence.get(
+        "execution",
+        {}
+    )
+
+
+    regime = intelligence.get(
+        "regime",
+        {}
+    )
+
+
+    liquidity = intelligence.get(
+        "liquidity",
+        {}
+    )
+
+
+
+    score += execution.get(
+        "confidence",
+        0
+    ) * 0.40
+
+
+
+    score += regime.get(
+        "confidence",
+        0
+    ) * 0.30
+
+
+
+    score += liquidity.get(
+        "score",
+        0
+    ) * 0.30
+
+
+
+    return int(
+
+        min(
+
+            score,
+
+            100
+
+        )
+
+    )
+
+
+
+# ==========================
+# AI CONTROLLER DECISION
+# ==========================
+
+def institutional_ai_controller_v12(
+        df
+) -> Dict:
+
+
+    intelligence = collect_v12_intelligence_v12(
+        df
+    )
+
+
+    score = calculate_ai_controller_score_v12(
+        intelligence
+    )
+
+
+
+    approved = (
+
+        score >= 85
+
+    )
+
+
+
+    result = {
+
+
+        "approved":
+
+            approved,
+
+
+        "score":
+
+            score,
+
+
+        "intelligence":
+
+            intelligence
+
+    }
+
+
+
+    V12_AI_CONTROLLER_MEMORY.append(
+        result
+    )
+
+
+    return result
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_ai_controller_v12(
+        df
+) -> Dict:
+
+
+    return institutional_ai_controller_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2J-2
+# Institutional AI Controller Layer
+# Multi Timeframe Intelligence Synchronization
+# HTF + LTF Decision Alignment Engine
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# MULTI TIMEFRAME MEMORY
+# ==========================
+
+V12_MTF_MEMORY = []
+
+
+
+# ==========================
+# TIMEFRAME ANALYSIS
+# ==========================
+
+def analyze_timeframe_v12(
+        df,
+        timeframe: str
+) -> Dict:
+
+
+    if len(df) < 20:
+
+        return {
+
+
+            "timeframe":
+
+                timeframe,
+
+
+            "direction":
+
+                "NONE",
+
+
+            "confidence":
+
+                0
+
+        }
+
+
+
+    bullish = 0
+
+    bearish = 0
+
+
+
+    for i in range(
+        len(df)-20,
+        len(df)
+    ):
+
+
+        close = float(
+            df["close"].iloc[i]
+        )
+
+
+        open_price = float(
+            df["open"].iloc[i]
+        )
+
+
+
+        if close > open_price:
+
+            bullish += 1
+
+
+        else:
+
+            bearish += 1
+
+
+
+    direction = "NONE"
+
+    confidence = 0
+
+
+
+    if bullish > bearish:
+
+
+        direction = "BUY"
+
+        confidence = int(
+
+            (
+
+                bullish /
+
+                20
+
+            )
+
+            *
+
+            100
+
+        )
+
+
+
+    elif bearish > bullish:
+
+
+        direction = "SELL"
+
+        confidence = int(
+
+            (
+
+                bearish /
+
+                20
+
+            )
+
+            *
+
+            100
+
+        )
+
+
+
+    return {
+
+
+        "timeframe":
+
+            timeframe,
+
+
+        "direction":
+
+            direction,
+
+
+        "confidence":
+
+            confidence
+
+    }
+
+
+
+# ==========================
+# MTF ALIGNMENT ENGINE
+# ==========================
+
+def multi_timeframe_alignment_v12(
+        htf_df,
+        ltf_df
+) -> Dict:
+
+
+    htf = analyze_timeframe_v12(
+        htf_df,
+        "HTF"
+    )
+
+
+    ltf = analyze_timeframe_v12(
+        ltf_df,
+        "LTF"
+    )
+
+
+
+    alignment = False
+
+    direction = "NONE"
+
+
+
+    if (
+
+        htf["direction"]
+
+        ==
+
+        ltf["direction"]
+
+        and
+
+        htf["direction"] != "NONE"
+
+    ):
+
+
+        alignment = True
+
+        direction = htf["direction"]
+
+
+
+    confidence = int(
+
+        (
+
+            htf["confidence"]
+
+            +
+
+            ltf["confidence"]
+
+        )
+
+        /
+
+        2
+
+    )
+
+
+
+    result = {
+
+
+        "aligned":
+
+            alignment,
+
+
+        "direction":
+
+            direction,
+
+
+        "confidence":
+
+            confidence,
+
+
+        "htf":
+
+            htf,
+
+
+        "ltf":
+
+            ltf
+
+    }
+
+
+
+    V12_MTF_MEMORY.append(
+        result
+    )
+
+
+    return result
+
+
+
+# ==========================
+# MTF AI ENGINE
+# ==========================
+
+def institutional_mtf_intelligence_v12(
+        htf_df,
+        ltf_df
+) -> Dict:
+
+
+    return multi_timeframe_alignment_v12(
+        htf_df,
+        ltf_df
+    )
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_mtf_alignment_v12(
+        htf_df,
+        ltf_df
+) -> Dict:
+
+
+    return institutional_mtf_intelligence_v12(
+        htf_df,
+        ltf_df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2J-3
+# Institutional AI Controller Layer
+# Market Context Understanding Engine
+# Price Action + Structure Context Fusion
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# MARKET CONTEXT MEMORY
+# ==========================
+
+V12_CONTEXT_MEMORY = []
+
+
+
+# ==========================
+# BUILD MARKET CONTEXT
+# ==========================
+
+def build_market_context_v12(
+        df
+) -> Dict:
+
+
+    if len(df) < 50:
+
+        return {
+
+
+            "context":
+
+                "UNKNOWN",
+
+
+            "score":
+
+                0
+
+        }
+
+
+
+    current_price = float(
+        df["close"].iloc[-1]
+    )
+
+
+    highest = float(
+        df["high"].tail(50).max()
+    )
+
+
+    lowest = float(
+        df["low"].tail(50).min()
+    )
+
+
+
+    range_position = (
+
+        (
+
+            current_price -
+
+            lowest
+
+        )
+
+        /
+
+        (
+
+            highest -
+
+            lowest
+
+        )
+
+    ) * 100
+
+
+
+    context = "RANGE"
+
+    score = 60
+
+
+
+    if range_position > 75:
+
+
+        context = "PREMIUM"
+
+        score = 80
+
+
+
+    elif range_position < 25:
+
+
+        context = "DISCOUNT"
+
+        score = 80
+
+
+
+    elif range_position >= 40 and range_position <= 60:
+
+
+        context = "BALANCED"
+
+        score = 70
+
+
+
+    return {
+
+
+        "context":
+
+            context,
+
+
+        "score":
+
+            score,
+
+
+        "position":
+
+            int(range_position)
+
+    }
+
+
+
+# ==========================
+# CONTEXT DIRECTION FILTER
+# ==========================
+
+def context_direction_filter_v12(
+        df
+) -> Dict:
+
+
+    context = build_market_context_v12(
+        df
+    )
+
+
+    direction = "NONE"
+
+
+
+    if context["context"] == "DISCOUNT":
+
+
+        direction = "BUY"
+
+
+
+    elif context["context"] == "PREMIUM":
+
+
+        direction = "SELL"
+
+
+
+    return {
+
+
+        "direction":
+
+            direction,
+
+
+        "confidence":
+
+            context["score"],
+
+
+        "context":
+
+            context["context"]
+
+    }
+
+
+
+# ==========================
+# CONTEXT FUSION ENGINE
+# ==========================
+
+def institutional_context_engine_v12(
+        df
+) -> Dict:
+
+
+    result = context_direction_filter_v12(
+        df
+    )
+
+
+    V12_CONTEXT_MEMORY.append(
+        result
+    )
+
+
+    return {
+
+
+        "signal":
+
+            result["direction"],
+
+
+        "confidence":
+
+            result["confidence"],
+
+
+        "context":
+
+            result["context"]
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_market_context_v12(
+        df
+) -> Dict:
+
+
+    return institutional_context_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2J-4
+# Institutional AI Controller Layer
+# Smart Money Decision Fusion Engine
+# Liquidity + Structure + Context Combination
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# SMART MONEY FUSION MEMORY
+# ==========================
+
+V12_SMART_MONEY_MEMORY = []
+
+
+
+# ==========================
+# COLLECT SMART MONEY DATA
+# ==========================
+
+def collect_smart_money_intelligence_v12(
+        df
+) -> Dict:
+
+
+    data = {
+
+
+        "liquidity":
+
+            get_liquidity_target_v12(
+                df
+            ),
+
+
+        "context":
+
+            get_market_context_v12(
+                df
+            ),
+
+
+        "execution":
+
+            get_advanced_execution_v12(
+                df
+            ),
+
+
+        "trap":
+
+            get_trap_detection_v12(
+                df
+            )
+
+    }
+
+
+
+    return data
+
+
+
+# ==========================
+# SMART MONEY SCORE
+# ==========================
+
+def calculate_smart_money_score_v12(
+        data: Dict
+) -> int:
+
+
+    score = 0
+
+
+
+    liquidity = data["liquidity"]
+
+    context = data["context"]
+
+    execution = data["execution"]
+
+    trap = data["trap"]
+
+
+
+    score += liquidity.get(
+        "score",
+        0
+    ) * 0.30
+
+
+
+    score += context.get(
+        "confidence",
+        0
+    ) * 0.25
+
+
+
+    score += execution.get(
+        "confidence",
+        0
+    ) * 0.35
+
+
+
+    if trap.get(
+        "signal",
+        "NO_TRADE"
+    ) != "NO_TRADE":
+
+
+        score += 10
+
+
+
+    return int(
+
+        min(
+
+            score,
+
+            100
+
+        )
+
+    )
+
+
+
+# ==========================
+# SMART MONEY DECISION
+# ==========================
+
+def smart_money_decision_engine_v12(
+        df
+) -> Dict:
+
+
+    data = collect_smart_money_intelligence_v12(
+        df
+    )
+
+
+    score = calculate_smart_money_score_v12(
+        data
+    )
+
+
+
+    signal = "NO_TRADE"
+
+
+
+    if score >= 85:
+
+
+        context_signal = data["context"].get(
+            "signal",
+            "NONE"
+        )
+
+
+        if context_signal != "NONE":
+
+            signal = context_signal
+
+
+
+    result = {
+
+
+        "signal":
+
+            signal,
+
+
+        "score":
+
+            score,
+
+
+        "approved":
+
+            score >= 85,
+
+
+        "components":
+
+            data
+
+    }
+
+
+
+    V12_SMART_MONEY_MEMORY.append(
+        result
+    )
+
+
+    return result
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_smart_money_fusion_v12(
+        df
+) -> Dict:
+
+
+    return smart_money_decision_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2J-5
+# Institutional AI Controller Layer
+# AI Entry Validation Engine
+# Multi Confirmation Entry Approval
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# ENTRY VALIDATION MEMORY
+# ==========================
+
+V12_ENTRY_VALIDATION_MEMORY = []
+
+
+
+# ==========================
+# ENTRY CHECK COLLECTOR
+# ==========================
+
+def collect_entry_validation_data_v12(
+        df
+) -> Dict:
+
+
+    data = {
+
+
+        "structure":
+
+            get_structure_memory_v12(
+                df
+            ),
+
+
+        "order_block":
+
+            get_order_block_execution_v12(
+                df
+            ),
+
+
+        "fvg":
+
+            get_fvg_execution_v12(
+                df
+            ),
+
+
+        "liquidity":
+
+            get_liquidity_target_v12(
+                df
+            ),
+
+
+        "smart_money":
+
+            get_smart_money_fusion_v12(
+                df
+            )
+
+    }
+
+
+
+    return data
+
+
+
+# ==========================
+# ENTRY SCORE ENGINE
+# ==========================
+
+def calculate_entry_score_v12(
+        data: Dict
+) -> int:
+
+
+    score = 0
+
+
+
+    structure = data["structure"]
+
+    order_block = data["order_block"]
+
+    fvg = data["fvg"]
+
+    liquidity = data["liquidity"]
+
+    smart_money = data["smart_money"]
+
+
+
+    score += structure.get(
+        "confidence",
+        0
+    ) * 0.25
+
+
+
+    score += order_block.get(
+        "confidence",
+        0
+    ) * 0.20
+
+
+
+    score += fvg.get(
+        "confidence",
+        0
+    ) * 0.15
+
+
+
+    score += liquidity.get(
+        "score",
+        0
+    ) * 0.20
+
+
+
+    score += smart_money.get(
+        "score",
+        0
+    ) * 0.20
+
+
+
+    return int(
+
+        min(
+
+            score,
+
+            100
+
+        )
+
+    )
+
+
+
+# ==========================
+# ENTRY APPROVAL ENGINE
+# ==========================
+
+def ai_entry_validation_v12(
+        df
+) -> Dict:
+
+
+    data = collect_entry_validation_data_v12(
+        df
+    )
+
+
+    score = calculate_entry_score_v12(
+        data
+    )
+
+
+
+    approved = (
+
+        score >= 85
+
+    )
+
+
+
+    signal = "NO_TRADE"
+
+
+
+    if approved:
+
+
+        signal = data["smart_money"].get(
+            "signal",
+            "NO_TRADE"
+        )
+
+
+
+    result = {
+
+
+        "approved":
+
+            approved,
+
+
+        "signal":
+
+            signal,
+
+
+        "entry_score":
+
+            score,
+
+
+        "components":
+
+            data
+
+    }
+
+
+
+    V12_ENTRY_VALIDATION_MEMORY.append(
+        result
+    )
+
+
+    return result
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_ai_entry_validation_v12(
+        df
+) -> Dict:
+
+
+    return ai_entry_validation_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2J-6
+# Institutional AI Controller Layer
+# AI Trade Confidence Fusion Engine
+# Final Confidence Calculation
+# Multi Engine Weight Adjustment
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# CONFIDENCE FUSION MEMORY
+# ==========================
+
+V12_CONFIDENCE_FUSION_MEMORY = []
+
+
+
+# ==========================
+# COLLECT CONFIDENCE INPUTS
+# ==========================
+
+def collect_confidence_inputs_v12(
+        df
+) -> Dict:
+
+
+    return {
+
+
+        "entry":
+
+            get_ai_entry_validation_v12(
+                df
+            ),
+
+
+        "execution":
+
+            get_advanced_execution_v12(
+                df
+            ),
+
+
+        "quality":
+
+            get_signal_quality_v12(
+                {
+
+                    "confidence": 85,
+
+                    "direction": "NONE"
+
+                }
+
+            ),
+
+
+        "learning":
+
+            get_learning_memory_v12()
+
+    }
+
+
+
+# ==========================
+# CONFIDENCE FUSION CALCULATOR
+# ==========================
+
+def calculate_final_confidence_v12(
+        data: Dict
+) -> int:
+
+
+    score = 0
+
+
+
+    entry = data["entry"]
+
+    execution = data["execution"]
+
+    quality = data["quality"]
+
+
+
+    score += entry.get(
+        "entry_score",
+        0
+    ) * 0.45
+
+
+
+    score += execution.get(
+        "confidence",
+        0
+    ) * 0.35
+
+
+
+    score += quality.get(
+        "quality",
+        0
+    ) * 0.20
+
+
+
+    return int(
+
+        min(
+
+            score,
+
+            100
+
+        )
+
+    )
+
+
+
+# ==========================
+# FINAL CONFIDENCE ENGINE
+# ==========================
+
+def institutional_confidence_fusion_v12(
+        df
+) -> Dict:
+
+
+    data = collect_confidence_inputs_v12(
+        df
+    )
+
+
+    confidence = calculate_final_confidence_v12(
+        data
+    )
+
+
+
+    approved = (
+
+        confidence >= 85
+
+    )
+
+
+
+    result = {
+
+
+        "confidence":
+
+            confidence,
+
+
+        "approved":
+
+            approved,
+
+
+        "layer":
+
+            "2J_CONFIDENCE_FUSION",
+
+
+        "components":
+
+            data
+
+    }
+
+
+
+    V12_CONFIDENCE_FUSION_MEMORY.append(
+        result
+    )
+
+
+    return result
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_final_confidence_v12(
+        df
+) -> Dict:
+
+
+    return institutional_confidence_fusion_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2J-7
+# Institutional AI Controller Layer
+# AI Trade Direction Decision Engine
+# Final BUY / SELL / NO TRADE Controller
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# DIRECTION MEMORY
+# ==========================
+
+V12_DIRECTION_MEMORY = []
+
+
+
+# ==========================
+# COLLECT DIRECTION DATA
+# ==========================
+
+def collect_direction_inputs_v12(
+        df
+) -> Dict:
+
+
+    return {
+
+
+        "structure":
+
+            get_structure_memory_v12(
+                df
+            ),
+
+
+        "context":
+
+            get_market_context_v12(
+                df
+            ),
+
+
+        "smart_money":
+
+            get_smart_money_fusion_v12(
+                df
+            ),
+
+
+        "mtf":
+
+            get_mtf_alignment_v12(
+                df,
+                df
+            ),
+
+
+        "execution":
+
+            get_advanced_execution_v12(
+                df
+            )
+
+    }
+
+
+
+# ==========================
+# DIRECTION SCORE ENGINE
+# ==========================
+
+def calculate_direction_score_v12(
+        data: Dict
+) -> Dict:
+
+
+    buy = 0
+
+    sell = 0
+
+
+
+    components = [
+
+        data["structure"],
+
+        data["context"],
+
+        data["smart_money"],
+
+        data["mtf"],
+
+        data["execution"]
+
+    ]
+
+
+
+    for item in components:
+
+
+        signal = item.get(
+            "signal",
+            item.get(
+                "direction",
+                "NONE"
+            )
+        )
+
+
+
+        confidence = item.get(
+            "confidence",
+            item.get(
+                "score",
+                0
+            )
+        )
+
+
+
+        if signal == "BUY":
+
+
+            buy += confidence
+
+
+
+        elif signal == "SELL":
+
+
+            sell += confidence
+
+
+
+    direction = "NO_TRADE"
+
+    confidence = 0
+
+
+
+    if buy > sell:
+
+
+        direction = "BUY"
+
+        confidence = min(
+
+            int(buy / 5),
+
+            100
+
+        )
+
+
+
+    elif sell > buy:
+
+
+        direction = "SELL"
+
+        confidence = min(
+
+            int(sell / 5),
+
+            100
+
+        )
+
+
+
+    return {
+
+
+        "direction":
+
+            direction,
+
+
+        "confidence":
+
+            confidence,
+
+
+        "buy_score":
+
+            buy,
+
+
+        "sell_score":
+
+            sell
+
+    }
+
+
+
+# ==========================
+# AI DIRECTION CONTROLLER
+# ==========================
+
+def institutional_direction_controller_v12(
+        df
+) -> Dict:
+
+
+    data = collect_direction_inputs_v12(
+        df
+    )
+
+
+    result = calculate_direction_score_v12(
+        data
+    )
+
+
+    approved = (
+
+        result["confidence"]
+
+        >=
+
+        85
+
+    )
+
+
+
+    output = {
+
+
+        "signal":
+
+            result["direction"],
+
+
+        "confidence":
+
+            result["confidence"],
+
+
+        "approved":
+
+            approved,
+
+
+        "scores":
+
+            {
+
+
+                "buy":
+
+                    result["buy_score"],
+
+
+                "sell":
+
+                    result["sell_score"]
+
+            }
+
+    }
+
+
+
+    V12_DIRECTION_MEMORY.append(
+        output
+    )
+
+
+    return output
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_direction_controller_v12(
+        df
+) -> Dict:
+
+
+    return institutional_direction_controller_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2J-8
+# Institutional AI Controller Layer
+# AI Entry Timing Synchronization Engine
+# Precision Execution Window Detector
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+from datetime import datetime, timezone
+
+
+# ==========================
+# TIMING CONTROLLER MEMORY
+# ==========================
+
+V12_TIMING_CONTROLLER_MEMORY = []
+
+
+
+# ==========================
+# CURRENT SESSION ANALYZER
+# ==========================
+
+def analyze_current_session_v12() -> Dict:
+
+
+    hour = datetime.now(
+        timezone.utc
+    ).hour
+
+
+
+    session = "ASIA"
+
+    strength = 50
+
+
+
+    if 7 <= hour < 13:
+
+
+        session = "LONDON"
+
+        strength = 80
+
+
+
+    elif 13 <= hour < 21:
+
+
+        session = "NEW_YORK"
+
+        strength = 85
+
+
+
+    return {
+
+
+        "session":
+
+            session,
+
+
+        "strength":
+
+            strength
+
+    }
+
+
+
+# ==========================
+# ENTRY WINDOW CALCULATOR
+# ==========================
+
+def calculate_entry_window_score_v12(
+        df
+) -> Dict:
+
+
+    session = analyze_current_session_v12()
+
+
+
+    volatility = get_volatility_intelligence_v12(
+        df
+    )
+
+
+    regime = get_market_regime_v12(
+        df
+    )
+
+
+
+    score = 0
+
+
+
+    score += session["strength"] * 0.40
+
+
+
+    score += volatility.get(
+        "confidence",
+        50
+    ) * 0.30
+
+
+
+    score += regime.get(
+        "confidence",
+        50
+    ) * 0.30
+
+
+
+    return {
+
+
+        "window_score":
+
+            int(
+                min(
+                    score,
+                    100
+                )
+            ),
+
+
+        "session":
+
+            session["session"]
+
+    }
+
+
+
+# ==========================
+# PRECISION TIMING ENGINE
+# ==========================
+
+def precision_entry_timing_v12(
+        df
+) -> Dict:
+
+
+    result = calculate_entry_window_score_v12(
+        df
+    )
+
+
+    approved = (
+
+        result["window_score"]
+
+        >=
+
+        75
+
+    )
+
+
+
+    output = {
+
+
+        "approved":
+
+            approved,
+
+
+        "timing_score":
+
+            result["window_score"],
+
+
+        "session":
+
+            result["session"]
+
+    }
+
+
+
+    V12_TIMING_CONTROLLER_MEMORY.append(
+        output
+    )
+
+
+    return output
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_precision_timing_v12(
+        df
+) -> Dict:
+
+
+    return precision_entry_timing_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2J-9
+# Institutional AI Controller Layer
+# AI Risk Management Controller
+# Dynamic SL / TP / Position Safety Engine
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# RISK CONTROLLER MEMORY
+# ==========================
+
+V12_RISK_CONTROLLER_MEMORY = []
+
+
+
+# ==========================
+# COLLECT RISK INPUTS
+# ==========================
+
+def collect_risk_inputs_v12(
+        df,
+        entry: float,
+        direction: str
+) -> Dict:
+
+
+    atr = 0
+
+
+
+    try:
+
+        atr = float(
+            df["high"].tail(14).max()
+
+            -
+
+            df["low"].tail(14).min()
+        )
+
+    except Exception:
+
+        atr = 0
+
+
+
+    return {
+
+
+        "entry":
+
+            entry,
+
+
+        "direction":
+
+            direction,
+
+
+        "atr":
+
+            atr,
+
+
+        "volatility":
+
+            get_volatility_intelligence_v12(
+                df
+            )
+
+    }
+
+
+
+# ==========================
+# STOP LOSS CALCULATOR
+# ==========================
+
+def calculate_dynamic_sl_v12(
+        data: Dict
+) -> float:
+
+
+    entry = data["entry"]
+
+    atr = data["atr"]
+
+
+
+    if data["direction"] == "BUY":
+
+
+        return round(
+
+            entry -
+
+            (
+
+                atr * 1.5
+
+            ),
+
+            2
+
+        )
+
+
+
+    elif data["direction"] == "SELL":
+
+
+        return round(
+
+            entry +
+
+            (
+
+                atr * 1.5
+
+            ),
+
+            2
+
+        )
+
+
+
+    return entry
+
+
+
+# ==========================
+# TAKE PROFIT CALCULATOR
+# ==========================
+
+def calculate_dynamic_tp_v12(
+        data: Dict,
+        sl: float
+) -> float:
+
+
+    entry = data["entry"]
+
+
+
+    risk = abs(
+
+        entry -
+
+        sl
+
+    )
+
+
+
+    if data["direction"] == "BUY":
+
+
+        return round(
+
+            entry +
+
+            (
+
+                risk * 3
+
+            ),
+
+            2
+
+        )
+
+
+
+    elif data["direction"] == "SELL":
+
+
+        return round(
+
+            entry -
+
+            (
+
+                risk * 3
+
+            ),
+
+            2
+
+        )
+
+
+
+    return entry
+
+
+
+# ==========================
+# AI RISK CONTROLLER
+# ==========================
+
+def institutional_risk_controller_v12(
+        df,
+        entry: float,
+        direction: str
+) -> Dict:
+
+
+    data = collect_risk_inputs_v12(
+        df,
+        entry,
+        direction
+    )
+
+
+    sl = calculate_dynamic_sl_v12(
+        data
+    )
+
+
+    tp = calculate_dynamic_tp_v12(
+        data,
+        sl
+    )
+
+
+
+    output = {
+
+
+        "entry":
+
+            entry,
+
+
+        "stop_loss":
+
+            sl,
+
+
+        "take_profit":
+
+            tp,
+
+
+        "risk_reward":
+
+            3,
+
+
+        "approved":
+
+            direction != "NONE"
+
+    }
+
+
+
+    V12_RISK_CONTROLLER_MEMORY.append(
+        output
+    )
+
+
+    return output
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_risk_controller_v12(
+        df,
+        entry,
+        direction
+) -> Dict:
+
+
+    return institutional_risk_controller_v12(
+        df,
+        entry,
+        direction
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2J-10
+# Institutional AI Controller Layer
+# AI Trade Execution Controller
+# Final Order Approval + Execution Gate
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# EXECUTION CONTROLLER MEMORY
+# ==========================
+
+V12_EXECUTION_CONTROLLER_MEMORY = []
+
+
+
+# ==========================
+# COLLECT EXECUTION DATA
+# ==========================
+
+def collect_execution_inputs_v12(
+        df
+) -> Dict:
+
+
+    return {
+
+
+        "direction":
+
+            get_direction_controller_v12(
+                df
+            ),
+
+
+        "confidence":
+
+            get_final_confidence_v12(
+                df
+            ),
+
+
+        "timing":
+
+            get_precision_timing_v12(
+                df
+            ),
+
+
+        "risk":
+
+            get_ai_entry_validation_v12(
+                df
+            )
+
+    }
+
+
+
+# ==========================
+# EXECUTION SCORE
+# ==========================
+
+def calculate_execution_score_v12(
+        data: Dict
+) -> int:
+
+
+    score = 0
+
+
+
+    score += data["direction"].get(
+        "confidence",
+        0
+    ) * 0.35
+
+
+
+    score += data["confidence"].get(
+        "confidence",
+        0
+    ) * 0.35
+
+
+
+    score += data["timing"].get(
+        "timing_score",
+        0
+    ) * 0.20
+
+
+
+    score += (
+
+        100
+
+        if data["risk"].get(
+            "approved",
+            False
+        )
+
+        else
+
+        0
+
+    ) * 0.10
+
+
+
+    return int(
+
+        min(
+
+            score,
+
+            100
+
+        )
+
+    )
+
+
+
+# ==========================
+# FINAL EXECUTION GATE
+# ==========================
+
+def institutional_execution_gate_v12(
+        df
+) -> Dict:
+
+
+    data = collect_execution_inputs_v12(
+        df
+    )
+
+
+    score = calculate_execution_score_v12(
+        data
+    )
+
+
+
+    signal = data["direction"].get(
+        "signal",
+        "NO_TRADE"
+    )
+
+
+
+    approved = (
+
+        score >= 85
+
+        and
+
+        signal != "NO_TRADE"
+
+    )
+
+
+
+    result = {
+
+
+        "execute":
+
+            approved,
+
+
+        "signal":
+
+            signal,
+
+
+        "execution_score":
+
+            score,
+
+
+        "reason":
+
+            (
+
+                "ALL_CONFIRMATION_PASSED"
+
+                if approved
+
+                else
+
+                "FILTER_FAILED"
+
+            )
+
+    }
+
+
+
+    V12_EXECUTION_CONTROLLER_MEMORY.append(
+        result
+    )
+
+
+    return result
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_execution_gate_v12(
+        df
+) -> Dict:
+
+
+    return institutional_execution_gate_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2J-11
+# Institutional AI Controller Layer
+# AI Position Management Controller
+# Dynamic Position Size + Exposure Control
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# POSITION MEMORY
+# ==========================
+
+V12_POSITION_MEMORY = []
+
+
+
+# ==========================
+# POSITION INPUT ANALYZER
+# ==========================
+
+def collect_position_inputs_v12(
+        balance: float,
+        risk_percent: float,
+        confidence: int,
+        volatility: str
+) -> Dict:
+
+
+    return {
+
+
+        "balance":
+
+            balance,
+
+
+        "risk_percent":
+
+            risk_percent,
+
+
+        "confidence":
+
+            confidence,
+
+
+        "volatility":
+
+            volatility
+
+    }
+
+
+
+# ==========================
+# RISK MULTIPLIER ENGINE
+# ==========================
+
+def calculate_risk_multiplier_v12(
+        data: Dict
+) -> float:
+
+
+    multiplier = 1.0
+
+
+
+    if data["confidence"] >= 90:
+
+
+        multiplier = 1.2
+
+
+
+    elif data["confidence"] < 75:
+
+
+        multiplier = 0.5
+
+
+
+    if data["volatility"] == "HIGH":
+
+
+        multiplier *= 0.7
+
+
+
+    elif data["volatility"] == "LOW":
+
+
+        multiplier *= 1.1
+
+
+
+    return round(
+        multiplier,
+        2
+    )
+
+
+
+# ==========================
+# POSITION SIZE CALCULATOR
+# ==========================
+
+def calculate_position_size_v12(
+        balance: float,
+        risk_percent: float,
+        multiplier: float
+) -> float:
+
+
+    risk_amount = (
+
+        balance
+
+        *
+
+        risk_percent
+
+        /
+
+        100
+
+    )
+
+
+
+    position = (
+
+        risk_amount
+
+        *
+
+        multiplier
+
+    )
+
+
+
+    return round(
+        position,
+        2
+    )
+
+
+
+# ==========================
+# AI POSITION CONTROLLER
+# ==========================
+
+def institutional_position_controller_v12(
+        balance: float,
+        risk_percent: float,
+        confidence: int,
+        volatility: str
+) -> Dict:
+
+
+    data = collect_position_inputs_v12(
+        balance,
+        risk_percent,
+        confidence,
+        volatility
+    )
+
+
+    multiplier = calculate_risk_multiplier_v12(
+        data
+    )
+
+
+    size = calculate_position_size_v12(
+        balance,
+        risk_percent,
+        multiplier
+    )
+
+
+
+    result = {
+
+
+        "position_size":
+
+            size,
+
+
+        "risk_multiplier":
+
+            multiplier,
+
+
+        "confidence":
+
+            confidence,
+
+
+        "approved":
+
+            confidence >= 75
+
+    }
+
+
+
+    V12_POSITION_MEMORY.append(
+        result
+    )
+
+
+    return result
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_position_controller_v12(
+        balance,
+        risk_percent,
+        confidence,
+        volatility
+) -> Dict:
+
+
+    return institutional_position_controller_v12(
+        balance,
+        risk_percent,
+        confidence,
+        volatility
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2J-12
+# Institutional AI Controller Layer
+# AI Trade Lifecycle Controller
+# Entry → Management → Exit State Machine
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# TRADE LIFECYCLE MEMORY
+# ==========================
+
+V12_TRADE_LIFECYCLE_MEMORY = []
+
+
+
+# ==========================
+# TRADE STATES
+# ==========================
+
+V12_STATES = [
+
+    "WAITING",
+
+    "ENTRY",
+
+    "ACTIVE",
+
+    "PROTECTED",
+
+    "EXIT"
+
+]
+
+
+
+# ==========================
+# CREATE TRADE STATE
+# ==========================
+
+def create_trade_state_v12(
+        trade: Dict
+) -> Dict:
+
+
+    return {
+
+
+        "id":
+
+            trade.get(
+                "id",
+                "UNKNOWN"
+            ),
+
+
+        "signal":
+
+            trade.get(
+                "signal",
+                "NONE"
+            ),
+
+
+        "entry":
+
+            trade.get(
+                "entry",
+                0
+            ),
+
+
+        "current":
+
+            trade.get(
+                "current",
+                0
+            ),
+
+
+        "state":
+
+            "WAITING"
+
+    }
+
+
+
+# ==========================
+# STATE TRANSITION ENGINE
+# ==========================
+
+def update_trade_state_v12(
+        trade: Dict
+) -> Dict:
+
+
+    state = trade["state"]
+
+
+
+    if state == "WAITING":
+
+
+        if trade["signal"] != "NONE":
+
+            state = "ENTRY"
+
+
+
+    elif state == "ENTRY":
+
+
+        state = "ACTIVE"
+
+
+
+    elif state == "ACTIVE":
+
+
+        if trade["current"] != 0:
+
+
+            state = "PROTECTED"
+
+
+
+    elif state == "PROTECTED":
+
+
+        if trade["current"] == 0:
+
+
+            state = "EXIT"
+
+
+
+    trade["state"] = state
+
+
+
+    return trade
+
+
+
+# ==========================
+# STORE LIFECYCLE MEMORY
+# ==========================
+
+def store_trade_lifecycle_v12(
+        trade: Dict
+) -> Dict:
+
+
+    updated = update_trade_state_v12(
+        trade
+    )
+
+
+    V12_TRADE_LIFECYCLE_MEMORY.append(
+        updated
+    )
+
+
+    return updated
+
+
+
+# ==========================
+# AI TRADE MONITOR
+# ==========================
+
+def institutional_trade_lifecycle_controller_v12(
+        trade: Dict
+) -> Dict:
+
+
+    state = store_trade_lifecycle_v12(
+        trade
+    )
+
+
+
+    return {
+
+
+        "trade_id":
+
+            state["id"],
+
+
+        "state":
+
+            state["state"],
+
+
+        "active":
+
+            state["state"]
+
+            !=
+
+            "EXIT"
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_trade_lifecycle_v12(
+        trade: Dict
+) -> Dict:
+
+
+    return institutional_trade_lifecycle_controller_v12(
+        trade
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2J-13
+# Institutional AI Controller Layer
+# AI Market Anomaly Detection Engine
+# Abnormal Price Action + Behaviour Detection
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# ANOMALY MEMORY
+# ==========================
+
+V12_ANOMALY_MEMORY = []
+
+
+
+# ==========================
+# MARKET SNAPSHOT
+# ==========================
+
+def create_anomaly_snapshot_v12(
+        df
+) -> Dict:
+
+
+    if len(df) < 20:
+
+
+        return {}
+
+
+
+    current_volume = float(
+        df["volume"].iloc[-1]
+    )
+
+
+    avg_volume = float(
+        df["volume"].tail(20).mean()
+    )
+
+
+    current_range = float(
+        df["high"].iloc[-1]
+
+        -
+
+        df["low"].iloc[-1]
+    )
+
+
+    avg_range = float(
+
+        (
+
+            df["high"]
+
+            -
+
+            df["low"]
+
+        )
+
+        .tail(20)
+
+        .mean()
+
+    )
+
+
+
+    return {
+
+
+        "volume_ratio":
+
+            current_volume /
+
+            avg_volume
+
+            if avg_volume
+
+            else 0,
+
+
+        "range_ratio":
+
+            current_range /
+
+            avg_range
+
+            if avg_range
+
+            else 0
+
+    }
+
+
+
+# ==========================
+# ANOMALY DETECTOR
+# ==========================
+
+def detect_market_anomaly_v12(
+        df
+) -> Dict:
+
+
+    snapshot = create_anomaly_snapshot_v12(
+        df
+    )
+
+
+
+    score = 0
+
+    reasons = []
+
+
+
+    if snapshot.get(
+        "volume_ratio",
+        0
+    ) > 2:
+
+
+        score += 40
+
+        reasons.append(
+            "VOLUME_SPIKE"
+        )
+
+
+
+    if snapshot.get(
+        "range_ratio",
+        0
+    ) > 2:
+
+
+        score += 40
+
+        reasons.append(
+            "PRICE_EXPANSION"
+        )
+
+
+
+    anomaly = score >= 60
+
+
+
+    result = {
+
+
+        "anomaly":
+
+            anomaly,
+
+
+        "score":
+
+            score,
+
+
+        "reasons":
+
+            reasons
+
+    }
+
+
+
+    V12_ANOMALY_MEMORY.append(
+        result
+    )
+
+
+    return result
+
+
+
+# ==========================
+# ANOMALY FILTER ENGINE
+# ==========================
+
+def anomaly_filter_v12(
+        df
+) -> Dict:
+
+
+    result = detect_market_anomaly_v12(
+        df
+    )
+
+
+    return {
+
+
+        "safe":
+
+            not result["anomaly"],
+
+
+        "anomaly_score":
+
+            result["score"],
+
+
+        "reasons":
+
+            result["reasons"]
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_market_anomaly_v12(
+        df
+) -> Dict:
+
+
+    return anomaly_filter_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2J-14
+# Institutional AI Controller Layer
+# AI Liquidity Risk Control Engine
+# Liquidity Sweep Validation + Trap Protection
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# LIQUIDITY CONTROL MEMORY
+# ==========================
+
+V12_LIQUIDITY_CONTROL_MEMORY = []
+
+
+
+# ==========================
+# LIQUIDITY SNAPSHOT
+# ==========================
+
+def create_liquidity_control_snapshot_v12(
+        df
+) -> Dict:
+
+
+    if len(df) < 30:
+
+
+        return {
+
+
+            "high_liquidity":
+
+                0,
+
+
+            "low_liquidity":
+
+                0
+
+        }
+
+
+
+    recent_high = float(
+        df["high"].tail(20).max()
+    )
+
+
+    recent_low = float(
+        df["low"].tail(20).min()
+    )
+
+
+    current = float(
+        df["close"].iloc[-1]
+    )
+
+
+
+    high_distance = abs(
+
+        recent_high -
+
+        current
+
+    )
+
+
+
+    low_distance = abs(
+
+        current -
+
+        recent_low
+
+    )
+
+
+
+    return {
+
+
+        "near_high":
+
+            high_distance,
+
+
+        "near_low":
+
+            low_distance,
+
+
+        "high":
+
+            recent_high,
+
+
+        "low":
+
+            recent_low
+
+    }
+
+
+
+# ==========================
+# LIQUIDITY SWEEP DETECTOR
+# ==========================
+
+def detect_liquidity_sweep_v12(
+        df
+) -> Dict:
+
+
+    snapshot = create_liquidity_control_snapshot_v12(
+        df
+    )
+
+
+
+    signal = "NONE"
+
+    confidence = 0
+
+
+
+    current_high = float(
+        df["high"].iloc[-1]
+    )
+
+
+    current_low = float(
+        df["low"].iloc[-1]
+    )
+
+
+
+    if current_high > snapshot["high"]:
+
+
+        signal = "BUY_SIDE_SWEEP"
+
+        confidence = 80
+
+
+
+    elif current_low < snapshot["low"]:
+
+
+        signal = "SELL_SIDE_SWEEP"
+
+        confidence = 80
+
+
+
+    return {
+
+
+        "signal":
+
+            signal,
+
+
+        "confidence":
+
+            confidence
+
+    }
+
+
+
+# ==========================
+# LIQUIDITY PROTECTION ENGINE
+# ==========================
+
+def liquidity_risk_control_v12(
+        df
+) -> Dict:
+
+
+    sweep = detect_liquidity_sweep_v12(
+        df
+    )
+
+
+    blocked = False
+
+
+
+    if sweep["signal"] != "NONE":
+
+
+        blocked = False
+
+
+
+    result = {
+
+
+        "sweep":
+
+            sweep["signal"],
+
+
+        "confidence":
+
+            sweep["confidence"],
+
+
+        "blocked":
+
+            blocked
+
+    }
+
+
+
+    V12_LIQUIDITY_CONTROL_MEMORY.append(
+        result
+    )
+
+
+    return result
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_liquidity_control_v12(
+        df
+) -> Dict:
+
+
+    return liquidity_risk_control_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2J-15
+# Institutional AI Controller Layer
+# AI Market Sentiment Intelligence Engine
+# Buyer/Seller Pressure + Momentum Balance
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# SENTIMENT MEMORY
+# ==========================
+
+V12_SENTIMENT_MEMORY = []
+
+
+
+# ==========================
+# SENTIMENT SNAPSHOT
+# ==========================
+
+def create_sentiment_snapshot_v12(
+        df
+) -> Dict:
+
+
+    if len(df) < 20:
+
+
+        return {
+
+
+            "buy_pressure":
+
+                0,
+
+
+            "sell_pressure":
+
+                0
+
+        }
+
+
+
+    buy_pressure = 0
+
+    sell_pressure = 0
+
+
+
+    for i in range(
+
+        len(df)-20,
+
+        len(df)
+
+    ):
+
+
+        close = float(
+            df["close"].iloc[i]
+        )
+
+
+        open_price = float(
+            df["open"].iloc[i]
+        )
+
+
+        volume = float(
+            df["volume"].iloc[i]
+        )
+
+
+
+        if close > open_price:
+
+
+            buy_pressure += volume
+
+
+
+        elif close < open_price:
+
+
+            sell_pressure += volume
+
+
+
+    return {
+
+
+        "buy_pressure":
+
+            buy_pressure,
+
+
+        "sell_pressure":
+
+            sell_pressure
+
+    }
+
+
+
+# ==========================
+# SENTIMENT BALANCE ENGINE
+# ==========================
+
+def calculate_market_sentiment_v12(
+        df
+) -> Dict:
+
+
+    snapshot = create_sentiment_snapshot_v12(
+        df
+    )
+
+
+
+    total = (
+
+        snapshot["buy_pressure"]
+
+        +
+
+        snapshot["sell_pressure"]
+
+    )
+
+
+
+    if total == 0:
+
+
+        return {
+
+
+            "sentiment":
+
+                "NEUTRAL",
+
+
+            "confidence":
+
+                0
+
+        }
+
+
+
+    buy_percent = (
+
+        snapshot["buy_pressure"]
+
+        /
+
+        total
+
+    ) * 100
+
+
+
+    sell_percent = (
+
+        snapshot["sell_pressure"]
+
+        /
+
+        total
+
+    ) * 100
+
+
+
+    sentiment = "NEUTRAL"
+
+    confidence = 50
+
+
+
+    if buy_percent > 60:
+
+
+        sentiment = "BULLISH"
+
+        confidence = int(
+            buy_percent
+        )
+
+
+
+    elif sell_percent > 60:
+
+
+        sentiment = "BEARISH"
+
+        confidence = int(
+            sell_percent
+        )
+
+
+
+    return {
+
+
+        "sentiment":
+
+            sentiment,
+
+
+        "confidence":
+
+            confidence,
+
+
+        "buy_percent":
+
+            int(
+                buy_percent
+            ),
+
+
+        "sell_percent":
+
+            int(
+                sell_percent
+            )
+
+    }
+
+
+
+# ==========================
+# AI SENTIMENT ENGINE
+# ==========================
+
+def institutional_sentiment_engine_v12(
+        df
+) -> Dict:
+
+
+    result = calculate_market_sentiment_v12(
+        df
+    )
+
+
+    V12_SENTIMENT_MEMORY.append(
+        result
+    )
+
+
+    return result
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_market_sentiment_v12(
+        df
+) -> Dict:
+
+
+    return institutional_sentiment_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2J-16
+# Institutional AI Controller Layer
+# AI Market Condition Classification Engine
+# Trend / Range / Expansion / Compression Detection
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# MARKET CONDITION MEMORY
+# ==========================
+
+V12_MARKET_CONDITION_MEMORY = []
+
+
+
+# ==========================
+# VOLATILITY CONDITION
+# ==========================
+
+def calculate_market_volatility_state_v12(
+        df
+) -> Dict:
+
+
+    if len(df) < 30:
+
+
+        return {
+
+
+            "state":
+
+                "UNKNOWN",
+
+
+            "score":
+
+                0
+
+        }
+
+
+
+    ranges = []
+
+
+
+    for i in range(
+
+        len(df)-20,
+
+        len(df)
+
+    ):
+
+
+        ranges.append(
+
+            float(
+                df["high"].iloc[i]
+            )
+
+            -
+
+            float(
+                df["low"].iloc[i]
+            )
+
+        )
+
+
+
+    current = ranges[-1]
+
+
+    average = sum(ranges) / len(ranges)
+
+
+
+    ratio = (
+
+        current /
+
+        average
+
+    ) if average else 0
+
+
+
+    state = "NORMAL"
+
+    score = 50
+
+
+
+    if ratio > 1.8:
+
+
+        state = "EXPANSION"
+
+        score = 85
+
+
+
+    elif ratio < 0.6:
+
+
+        state = "COMPRESSION"
+
+        score = 75
+
+
+
+    return {
+
+
+        "state":
+
+            state,
+
+
+        "score":
+
+            score
+
+    }
+
+
+
+# ==========================
+# TREND CONDITION
+# ==========================
+
+def detect_market_trend_state_v12(
+        df
+) -> Dict:
+
+
+    if len(df) < 50:
+
+
+        return {
+
+
+            "trend":
+
+                "NONE",
+
+
+            "confidence":
+
+                0
+
+        }
+
+
+
+    first = float(
+        df["close"].iloc[-50]
+    )
+
+
+    last = float(
+        df["close"].iloc[-1]
+    )
+
+
+
+    change = (
+
+        (
+
+            last -
+
+            first
+
+        )
+
+        /
+
+        first
+
+    ) * 100
+
+
+
+    trend = "RANGE"
+
+    confidence = 50
+
+
+
+    if change > 2:
+
+
+        trend = "UPTREND"
+
+        confidence = 80
+
+
+
+    elif change < -2:
+
+
+        trend = "DOWNTREND"
+
+        confidence = 80
+
+
+
+    return {
+
+
+        "trend":
+
+            trend,
+
+
+        "confidence":
+
+            confidence
+
+    }
+
+
+
+# ==========================
+# MARKET CONDITION ENGINE
+# ==========================
+
+def classify_market_condition_v12(
+        df
+) -> Dict:
+
+
+    volatility = calculate_market_volatility_state_v12(
+        df
+    )
+
+
+    trend = detect_market_trend_state_v12(
+        df
+    )
+
+
+
+    condition = "RANGE"
+
+
+
+    if volatility["state"] == "EXPANSION":
+
+
+        condition = "VOLATILE"
+
+
+
+    if trend["trend"] != "RANGE":
+
+
+        condition = trend["trend"]
+
+
+
+    result = {
+
+
+        "condition":
+
+            condition,
+
+
+        "trend":
+
+            trend["trend"],
+
+
+        "volatility":
+
+            volatility["state"],
+
+
+        "confidence":
+
+            int(
+
+                (
+
+                    trend["confidence"]
+
+                    +
+
+                    volatility["score"]
+
+                )
+
+                /
+
+                2
+
+            )
+
+    }
+
+
+
+    V12_MARKET_CONDITION_MEMORY.append(
+        result
+    )
+
+
+    return result
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_market_condition_v12(
+        df
+) -> Dict:
+
+
+    return classify_market_condition_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2J-17
+# Institutional AI Controller Layer
+# AI Trade Opportunity Scanner Engine
+# High Probability Setup Detection
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# OPPORTUNITY MEMORY
+# ==========================
+
+V12_OPPORTUNITY_MEMORY = []
+
+
+
+# ==========================
+# COLLECT OPPORTUNITY DATA
+# ==========================
+
+def collect_opportunity_data_v12(
+        df
+) -> Dict:
+
+
+    return {
+
+
+        "direction":
+
+            get_direction_controller_v12(
+                df
+            ),
+
+
+        "condition":
+
+            get_market_condition_v12(
+                df
+            ),
+
+
+        "sentiment":
+
+            get_market_sentiment_v12(
+                df
+            ),
+
+
+        "execution":
+
+            get_execution_gate_v12(
+                df
+            ),
+
+
+        "anomaly":
+
+            get_market_anomaly_v12(
+                df
+            )
+
+    }
+
+
+
+# ==========================
+# OPPORTUNITY SCORE
+# ==========================
+
+def calculate_opportunity_score_v12(
+        data: Dict
+) -> int:
+
+
+    score = 0
+
+
+
+    score += data["direction"].get(
+        "confidence",
+        0
+    ) * 0.35
+
+
+
+    score += data["condition"].get(
+        "confidence",
+        0
+    ) * 0.20
+
+
+
+    score += data["sentiment"].get(
+        "confidence",
+        0
+    ) * 0.20
+
+
+
+    score += (
+
+        100
+
+        if data["execution"].get(
+            "execute",
+            False
+        )
+
+        else
+
+        0
+
+    ) * 0.25
+
+
+
+    if data["anomaly"].get(
+        "safe",
+        True
+    ) is False:
+
+
+        score -= 20
+
+
+
+    return int(
+
+        max(
+
+            min(
+
+                score,
+
+                100
+
+            ),
+
+            0
+
+        )
+
+    )
+
+
+
+# ==========================
+# OPPORTUNITY DETECTOR
+# ==========================
+
+def detect_trade_opportunity_v12(
+        df
+) -> Dict:
+
+
+    data = collect_opportunity_data_v12(
+        df
+    )
+
+
+    score = calculate_opportunity_score_v12(
+        data
+    )
+
+
+
+    signal = data["direction"].get(
+        "signal",
+        "NO_TRADE"
+    )
+
+
+
+    result = {
+
+
+        "opportunity":
+
+            score >= 85,
+
+
+        "signal":
+
+            signal,
+
+
+        "score":
+
+            score,
+
+
+        "reason":
+
+            (
+
+                "HIGH_PROBABILITY_SETUP"
+
+                if score >= 85
+
+                else
+
+                "WAIT_CONFIRMATION"
+
+            )
+
+    }
+
+
+
+    V12_OPPORTUNITY_MEMORY.append(
+        result
+    )
+
+
+    return result
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_trade_opportunity_v12(
+        df
+) -> Dict:
+
+
+    return detect_trade_opportunity_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2J-18
+# Institutional AI Controller Layer
+# AI Trade Alert Generation Engine
+# Signal Formatting + Priority Classification
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# ALERT MEMORY
+# ==========================
+
+V12_ALERT_MEMORY = []
+
+
+
+# ==========================
+# ALERT PRIORITY ENGINE
+# ==========================
+
+def calculate_alert_priority_v12(
+        opportunity: Dict
+) -> str:
+
+
+    score = opportunity.get(
+        "score",
+        0
+    )
+
+
+
+    if score >= 95:
+
+
+        return "ULTRA_HIGH"
+
+
+
+    elif score >= 85:
+
+
+        return "HIGH"
+
+
+
+    elif score >= 70:
+
+
+        return "MEDIUM"
+
+
+
+    return "LOW"
+
+
+
+# ==========================
+# SIGNAL MESSAGE BUILDER
+# ==========================
+
+def build_signal_alert_v12(
+        opportunity: Dict
+) -> Dict:
+
+
+    priority = calculate_alert_priority_v12(
+        opportunity
+    )
+
+
+
+    alert = {
+
+
+        "title":
+
+            "ICT V12 AI SIGNAL",
+
+
+        "signal":
+
+            opportunity.get(
+                "signal",
+                "NO_TRADE"
+            ),
+
+
+        "priority":
+
+            priority,
+
+
+        "score":
+
+            opportunity.get(
+                "score",
+                0
+            ),
+
+
+        "status":
+
+            (
+
+                "READY"
+
+                if opportunity.get(
+                    "opportunity",
+                    False
+                )
+
+                else
+
+                "WAIT"
+
+            )
+
+    }
+
+
+
+    return alert
+
+
+
+# ==========================
+# AI ALERT CONTROLLER
+# ==========================
+
+def institutional_alert_engine_v12(
+        df
+) -> Dict:
+
+
+    opportunity = get_trade_opportunity_v12(
+        df
+    )
+
+
+    alert = build_signal_alert_v12(
+        opportunity
+    )
+
+
+
+    V12_ALERT_MEMORY.append(
+        alert
+    )
+
+
+    return alert
+
+
+
+# ==========================
+# TELEGRAM COMPATIBILITY
+# ==========================
+
+def format_telegram_alert_v12(
+        alert: Dict
+) -> str:
+
+
+    return (
+
+        "📊 ICT V12 AI SIGNAL\n\n"
+
+        f"Signal: {alert['signal']}\n"
+
+        f"Priority: {alert['priority']}\n"
+
+        f"Score: {alert['score']}\n"
+
+        f"Status: {alert['status']}"
+
+    )
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_ai_alert_v12(
+        df
+) -> Dict:
+
+
+    return institutional_alert_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2J-19
+# Institutional AI Controller Layer
+# AI Trade Journal Intelligence Engine
+# Performance Tracking + Learning Feedback
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict, List
+from datetime import datetime, timezone
+
+
+# ==========================
+# TRADE JOURNAL MEMORY
+# ==========================
+
+V12_TRADE_JOURNAL_MEMORY = []
+
+
+
+# ==========================
+# CREATE JOURNAL RECORD
+# ==========================
+
+def create_trade_journal_record_v12(
+        trade: Dict
+) -> Dict:
+
+
+    return {
+
+
+        "time":
+
+            datetime.now(
+                timezone.utc
+            ).isoformat(),
+
+
+        "signal":
+
+            trade.get(
+                "signal",
+                "NONE"
+            ),
+
+
+        "entry":
+
+            trade.get(
+                "entry",
+                0
+            ),
+
+
+        "exit":
+
+            trade.get(
+                "exit",
+                0
+            ),
+
+
+        "result":
+
+            trade.get(
+                "result",
+                "OPEN"
+            ),
+
+
+        "confidence":
+
+            trade.get(
+                "confidence",
+                0
+            )
+
+    }
+
+
+
+# ==========================
+# STORE JOURNAL DATA
+# ==========================
+
+def store_trade_journal_v12(
+        trade: Dict
+) -> Dict:
+
+
+    record = create_trade_journal_record_v12(
+        trade
+    )
+
+
+    V12_TRADE_JOURNAL_MEMORY.append(
+        record
+    )
+
+
+    return record
+
+
+
+# ==========================
+# JOURNAL ANALYSIS
+# ==========================
+
+def analyze_trade_journal_v12() -> Dict:
+
+
+    if not V12_TRADE_JOURNAL_MEMORY:
+
+
+        return {
+
+
+            "trades":
+
+                0,
+
+
+            "win_rate":
+
+                0
+
+        }
+
+
+
+    total = len(
+        V12_TRADE_JOURNAL_MEMORY
+    )
+
+
+    wins = 0
+
+
+
+    for trade in V12_TRADE_JOURNAL_MEMORY:
+
+
+        if trade["result"] == "WIN":
+
+
+            wins += 1
+
+
+
+    return {
+
+
+        "trades":
+
+            total,
+
+
+        "wins":
+
+            wins,
+
+
+        "win_rate":
+
+            int(
+
+                (
+
+                    wins /
+
+                    total
+
+                )
+
+                *
+
+                100
+
+            )
+
+    }
+
+
+
+# ==========================
+# LEARNING FEEDBACK ENGINE
+# ==========================
+
+def trade_feedback_learning_v12() -> Dict:
+
+
+    analysis = analyze_trade_journal_v12()
+
+
+
+    feedback = "NORMAL"
+
+
+
+    if analysis["trades"] >= 10:
+
+
+        if analysis["win_rate"] < 50:
+
+
+            feedback = "REDUCE_RISK"
+
+
+
+        elif analysis["win_rate"] > 75:
+
+
+            feedback = "OPTIMIZE_ENTRY"
+
+
+
+    return {
+
+
+        "feedback":
+
+            feedback,
+
+
+        "performance":
+
+            analysis
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_trade_journal_learning_v12() -> Dict:
+
+
+    return trade_feedback_learning_v12()
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2J-20
+# Institutional AI Controller Layer
+# V12 Master Intelligence Orchestrator
+# Complete AI Decision Pipeline Controller
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# MASTER CONTROLLER MEMORY
+# ==========================
+
+V12_MASTER_CONTROLLER_MEMORY = []
+
+
+
+# ==========================
+# COMPLETE AI PIPELINE
+# ==========================
+
+def run_v12_master_intelligence_v12(
+        df
+) -> Dict:
+
+
+    # Market understanding
+
+    market = get_market_condition_v12(
+        df
+    )
+
+
+    sentiment = get_market_sentiment_v12(
+        df
+    )
+
+
+    context = get_market_context_v12(
+        df
+    )
+
+
+    anomaly = get_market_anomaly_v12(
+        df
+    )
+
+
+
+    # Trade intelligence
+
+    direction = get_direction_controller_v12(
+        df
+    )
+
+
+    opportunity = get_trade_opportunity_v12(
+        df
+    )
+
+
+    confidence = get_final_confidence_v12(
+        df
+    )
+
+
+    execution = get_execution_gate_v12(
+        df
+    )
+
+
+
+    # Alert generation
+
+    alert = get_ai_alert_v12(
+        df
+    )
+
+
+
+    final_decision = {
+
+
+        "signal":
+
+            direction.get(
+                "signal",
+                "NO_TRADE"
+            ),
+
+
+        "confidence":
+
+            confidence.get(
+                "confidence",
+                0
+            ),
+
+
+        "opportunity":
+
+            opportunity.get(
+                "opportunity",
+                False
+            ),
+
+
+        "execute":
+
+            execution.get(
+                "execute",
+                False
+            ),
+
+
+        "market":
+
+            market,
+
+
+        "sentiment":
+
+            sentiment,
+
+
+        "context":
+
+            context,
+
+
+        "anomaly":
+
+            anomaly,
+
+
+        "alert":
+
+            alert
+
+    }
+
+
+
+    V12_MASTER_CONTROLLER_MEMORY.append(
+        final_decision
+    )
+
+
+    return final_decision
+
+
+
+# ==========================
+# FINAL SIGNAL GATE
+# ==========================
+
+def v12_final_signal_gate_v12(
+        df
+) -> Dict:
+
+
+    decision = run_v12_master_intelligence_v12(
+        df
+    )
+
+
+
+    approved = (
+
+        decision["execute"]
+
+        and
+
+        decision["confidence"]
+
+        >=
+
+        85
+
+        and
+
+        decision["opportunity"]
+
+    )
+
+
+
+    return {
+
+
+        "approved":
+
+            approved,
+
+
+        "signal":
+
+            decision["signal"],
+
+
+        "confidence":
+
+            decision["confidence"],
+
+
+        "status":
+
+            (
+
+                "TRADE_READY"
+
+                if approved
+
+                else
+
+                "WAIT"
+
+            ),
+
+
+        "engine":
+
+            "ICT_V12_MASTER_CONTROLLER"
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_v12_master_signal_v12(
+        df
+) -> Dict:
+
+
+    return v12_final_signal_gate_v12(
+        df
+    )
+    
