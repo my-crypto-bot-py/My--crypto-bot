@@ -13856,3 +13856,1198 @@ def get_execution_trigger_v12(df) -> Dict:
     return institutional_execution_trigger_v12(
         df
     )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2D-9
+# Multi Timeframe Intelligence Layer
+# Institutional Trade Management Engine
+# Dynamic SL + TP + Position Logic
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict, Optional
+
+
+# ==========================
+# ENTRY LEVEL ENGINE
+# ==========================
+
+def institutional_entry_level_v12(df) -> float:
+
+
+    return float(
+        df["close"].iloc[-1]
+    )
+
+
+
+# ==========================
+# SWING BASED STOP LOSS
+# ==========================
+
+def institutional_stop_loss_v12(
+        df,
+        direction: str
+) -> Optional[float]:
+
+
+    atr = structure_atr(
+        df
+    )
+
+
+    if atr == 0:
+
+        return None
+
+
+
+    if direction == "BUY":
+
+
+        swing = dynamic_swing_low(
+            df
+        )
+
+
+        if swing:
+
+            return round(
+
+                swing["price"]
+                -
+                atr * 0.3,
+
+                4
+
+            )
+
+
+
+    if direction == "SELL":
+
+
+        swing = dynamic_swing_high(
+            df
+        )
+
+
+        if swing:
+
+            return round(
+
+                swing["price"]
+                +
+                atr * 0.3,
+
+                4
+
+            )
+
+
+
+    return None
+
+
+
+# ==========================
+# INSTITUTIONAL TARGET MAP
+# ==========================
+
+def institutional_targets_v12(
+        df,
+        direction: str
+) -> Dict:
+
+
+    entry = institutional_entry_level_v12(
+        df
+    )
+
+
+    sl = institutional_stop_loss_v12(
+        df,
+        direction
+    )
+
+
+    if sl is None:
+
+        return {}
+
+
+
+    risk = abs(
+        entry - sl
+    )
+
+
+
+    if direction == "BUY":
+
+
+        return {
+
+            "entry":
+
+                entry,
+
+
+            "sl":
+
+                sl,
+
+
+            "tp1":
+
+                round(
+                    entry + risk,
+                    4
+                ),
+
+
+            "tp2":
+
+                round(
+                    entry + risk*2,
+                    4
+                ),
+
+
+            "tp3":
+
+                round(
+                    entry + risk*3,
+                    4
+                )
+
+        }
+
+
+
+    if direction == "SELL":
+
+
+        return {
+
+            "entry":
+
+                entry,
+
+
+            "sl":
+
+                sl,
+
+
+            "tp1":
+
+                round(
+                    entry - risk,
+                    4
+                ),
+
+
+            "tp2":
+
+                round(
+                    entry - risk*2,
+                    4
+                ),
+
+
+            "tp3":
+
+                round(
+                    entry - risk*3,
+                    4
+                )
+
+        }
+
+
+
+    return {}
+
+
+
+# ==========================
+# TRADE MANAGEMENT SCORE
+# ==========================
+
+def trade_management_score_v12(df) -> int:
+
+
+    direction = optimized_direction_v12(
+        df
+    )
+
+
+    targets = institutional_targets_v12(
+        df,
+        direction
+    )
+
+
+    score = 0
+
+
+
+    if targets:
+
+        score += 50
+
+
+
+    if dynamic_rr_score(df) >= 80:
+
+        score += 30
+
+
+
+    if liquidity_target_validation(df):
+
+        score += 20
+
+
+
+    return min(score,100)
+
+
+
+# ==========================
+# TRADE MANAGEMENT ENGINE
+# ==========================
+
+def institutional_trade_management_v12(df) -> Dict:
+
+
+    direction = optimized_direction_v12(
+        df
+    )
+
+
+    return {
+
+        "direction":
+
+            direction,
+
+
+        "targets":
+
+            institutional_targets_v12(
+                df,
+                direction
+            ),
+
+
+        "score":
+
+            trade_management_score_v12(
+                df
+            )
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_trade_management_v12(df) -> Dict:
+
+    return institutional_trade_management_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2D-10
+# Multi Timeframe Intelligence Layer
+# Institutional Final Signal Fusion Engine
+# Structure + Liquidity + Execution + Risk
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# FINAL MODULE WEIGHT ENGINE
+# ==========================
+
+def final_module_weight_v12(df) -> Dict:
+
+
+    modules = {
+
+
+        "structure":
+
+            structure_event_score(df),
+
+
+        "mtf":
+
+            mtf_confidence_v12_score(df),
+
+
+        "liquidity":
+
+            liquidity_reversal_score_v12(df),
+
+
+        "entry":
+
+            execution_trigger_score_v12(df),
+
+
+        "poi":
+
+            premium_entry_validation_v12(
+                df,
+                optimized_direction_v12(df)
+            ),
+
+
+        "risk":
+
+            trade_management_score_v12(df)
+
+    }
+
+
+
+    return modules
+
+
+
+# ==========================
+# FINAL CONFIDENCE CALCULATION
+# ==========================
+
+def final_confidence_v12(df) -> int:
+
+
+    modules = final_module_weight_v12(
+        df
+    )
+
+
+    total = 0
+
+
+    count = 0
+
+
+
+    for value in modules.values():
+
+        total += value
+
+        count += 1
+
+
+
+    if count == 0:
+
+        return 0
+
+
+
+    return int(
+        total / count
+    )
+
+
+
+# ==========================
+# FINAL SIGNAL DIRECTION
+# ==========================
+
+def final_signal_direction_v12(df) -> str:
+
+
+    direction = optimized_direction_v12(
+        df
+    )
+
+
+    trigger = execution_trigger_v12(
+        df
+    )
+
+
+    if (
+
+        trigger["direction"]
+        ==
+        direction
+
+    ):
+
+        return direction
+
+
+
+    return "RANGE"
+
+
+
+# ==========================
+# FINAL TRADE APPROVAL
+# ==========================
+
+def final_trade_approval_v12(df) -> Dict:
+
+
+    confidence = final_confidence_v12(
+        df
+    )
+
+
+    direction = final_signal_direction_v12(
+        df
+    )
+
+
+    approved = False
+
+
+
+    if (
+
+        confidence >= 85
+
+        and
+
+        direction != "RANGE"
+
+    ):
+
+        approved = True
+
+
+
+    return {
+
+
+        "signal":
+
+            direction
+            if approved
+            else
+            "NO_TRADE",
+
+
+        "approved":
+
+            approved,
+
+
+        "confidence":
+
+            confidence,
+
+
+        "modules":
+
+            final_module_weight_v12(
+                df
+            )
+
+    }
+
+
+
+# ==========================
+# V12 D-SERIES ROUTER
+# ==========================
+
+def structure_engine_v12_d_series(df) -> Dict:
+
+
+    return final_trade_approval_v12(
+        df
+    )
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_structure_d_series_v12(df) -> Dict:
+
+    return structure_engine_v12_d_series(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2D-11
+# Multi Timeframe Intelligence Layer
+# Institutional Signal Protection Engine
+# Noise Filter + False Signal Rejection
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# MARKET NOISE DETECTION
+# ==========================
+
+def market_noise_filter_v12(df) -> Dict:
+
+
+    score = 0
+
+
+    reasons = []
+
+
+
+    # Low volatility filter
+
+    atr = structure_atr(df)
+
+
+    if atr > 0:
+
+        recent_range = structure_true_range(
+            df
+        )
+
+
+        ratio = recent_range / atr
+
+
+        if ratio < 0.5:
+
+            score += 30
+
+            reasons.append(
+                "LOW_VOLATILITY"
+            )
+
+
+
+    # Small candle compression
+
+    if detect_range_compression(df):
+
+        score += 30
+
+        reasons.append(
+            "COMPRESSION"
+        )
+
+
+
+    # Weak displacement
+
+    if not detect_displacement(df):
+
+        score += 20
+
+        reasons.append(
+            "NO_DISPLACEMENT"
+        )
+
+
+
+    # Missing liquidity
+
+    if not optimized_liquidity_sweep(df):
+
+        score += 20
+
+        reasons.append(
+            "NO_LIQUIDITY"
+        )
+
+
+
+    return {
+
+        "noise_score":
+
+            min(score,100),
+
+
+        "reasons":
+
+            reasons
+
+    }
+
+
+
+# ==========================
+# FALSE BREAK FILTER
+# ==========================
+
+def false_break_filter_v12(df) -> bool:
+
+
+    trap = fake_breakout_detection_v12(
+        df
+    )
+
+
+    if trap:
+
+        return False
+
+
+
+    return True
+
+
+
+# ==========================
+# SIGNAL QUALITY CHECK
+# ==========================
+
+def signal_quality_filter_v12(df) -> Dict:
+
+
+    noise = market_noise_filter_v12(
+        df
+    )
+
+
+    quality = 100 - noise["noise_score"]
+
+
+
+    return {
+
+        "quality":
+
+            max(quality,0),
+
+
+        "valid":
+
+            quality >= 70,
+
+
+        "noise":
+
+            noise["reasons"]
+
+    }
+
+
+
+# ==========================
+# FINAL PROTECTION LAYER
+# ==========================
+
+def institutional_protection_engine_v12(df) -> Dict:
+
+
+    quality = signal_quality_filter_v12(
+        df
+    )
+
+
+    false_break = false_break_filter_v12(
+        df
+    )
+
+
+
+    approved = (
+
+        quality["valid"]
+
+        and
+
+        false_break
+
+    )
+
+
+
+    return {
+
+        "approved":
+
+            approved,
+
+
+        "quality":
+
+            quality["quality"],
+
+
+        "noise":
+
+            quality["noise"]
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_signal_protection_v12(df) -> Dict:
+
+    return institutional_protection_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2D-12
+# Multi Timeframe Intelligence Layer
+# Institutional Market State Engine
+# Trend Phase + Expansion + Reversal Detection
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict
+
+
+# ==========================
+# MARKET PHASE DETECTION
+# ==========================
+
+def market_phase_v12(df) -> str:
+
+
+    if detect_range_market_v12(df):
+
+        return "ACCUMULATION"
+
+
+
+    if detect_displacement(df):
+
+        direction = optimized_direction_v12(
+            df
+        )
+
+
+        if direction != "RANGE":
+
+            return "EXPANSION"
+
+
+
+    trap = fake_breakout_detection_v12(
+        df
+    )
+
+
+    if trap:
+
+        return "MANIPULATION"
+
+
+
+    return "DISTRIBUTION"
+
+
+
+# ==========================
+# TREND CONTINUATION ENGINE
+# ==========================
+
+def trend_continuation_v12(df) -> Dict:
+
+
+    direction = optimized_direction_v12(
+        df
+    )
+
+
+    score = 0
+
+
+    if direction != "RANGE":
+
+        score += 30
+
+
+
+    if internal_structure_break(df):
+
+        score += 25
+
+
+
+    if detect_displacement(df):
+
+        score += 25
+
+
+
+    if optimized_fvg_detection(df):
+
+        score += 20
+
+
+
+    return {
+
+        "direction":
+
+            direction,
+
+
+        "score":
+
+            min(score,100)
+
+    }
+
+
+
+# ==========================
+# REVERSAL PROBABILITY
+# ==========================
+
+def reversal_probability_v12(df) -> int:
+
+
+    score = 0
+
+
+    if mtf_liquidity_sweep_v12(df):
+
+        score += 40
+
+
+
+    if fake_breakout_detection_v12(df):
+
+        score += 30
+
+
+
+    if detect_mss(df):
+
+        score += 30
+
+
+
+    return min(score,100)
+
+
+
+# ==========================
+# MARKET STATE ENGINE
+# ==========================
+
+def market_state_engine_v12(df) -> Dict:
+
+
+    phase = market_phase_v12(
+        df
+    )
+
+
+    continuation = trend_continuation_v12(
+        df
+    )
+
+
+    reversal = reversal_probability_v12(
+        df
+    )
+
+
+
+    return {
+
+        "phase":
+
+            phase,
+
+
+        "trend":
+
+            continuation,
+
+
+        "reversal_score":
+
+            reversal
+
+    }
+
+
+
+# ==========================
+# TRADE PHASE FILTER
+# ==========================
+
+def market_phase_filter_v12(df) -> bool:
+
+
+    state = market_state_engine_v12(
+        df
+    )
+
+
+    if state["phase"] == "ACCUMULATION":
+
+        return False
+
+
+
+    return True
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_market_state_v12(df) -> Dict:
+
+    return market_state_engine_v12(
+        df
+    )
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2D-13
+# Multi Timeframe Intelligence Layer
+# Institutional Confluence Ranking Engine
+# Setup Ranking + Priority Selection
+# Production Ready
+# Compatible with main.py
+# ==========================
+
+from typing import Dict, List
+
+
+# ==========================
+# SETUP COMPONENT RANKING
+# ==========================
+
+def rank_setup_components_v12(df) -> Dict:
+
+
+    components = {
+
+
+        "HTF_STRUCTURE":
+
+            htf_structure_quality_v12(df),
+
+
+        "LIQUIDITY":
+
+            liquidity_reversal_score_v12(df),
+
+
+        "ORDER_BLOCK":
+
+            order_block_quality_v12(df),
+
+
+        "FVG":
+
+            imbalance_strength(df),
+
+
+        "ENTRY_TRIGGER":
+
+            execution_trigger_score_v12(df),
+
+
+        "MARKET_STATE":
+
+            trend_strength_v12(df),
+
+
+        "RISK":
+
+            trade_management_score_v12(df)
+
+    }
+
+
+
+    return components
+
+
+
+# ==========================
+# SETUP GRADE CALCULATOR
+# ==========================
+
+def setup_grade_v12(df) -> str:
+
+
+    components = rank_setup_components_v12(
+        df
+    )
+
+
+    total = 0
+
+
+    for value in components.values():
+
+        total += value
+
+
+
+    average = total / len(
+        components
+    )
+
+
+
+    if average >= 90:
+
+        return "A+"
+
+
+    if average >= 80:
+
+        return "A"
+
+
+
+    if average >= 70:
+
+        return "B"
+
+
+
+    return "C"
+
+
+
+# ==========================
+# PRIORITY SCORE
+# ==========================
+
+def setup_priority_score_v12(df) -> int:
+
+
+    components = rank_setup_components_v12(
+        df
+    )
+
+
+    priority = 0
+
+
+
+    for value in components.values():
+
+        if value >= 80:
+
+            priority += 14
+
+
+
+    return min(priority,100)
+
+
+
+# ==========================
+# BEST SETUP SELECTOR
+# ==========================
+
+def select_best_setup_v12(df) -> Dict:
+
+
+    grade = setup_grade_v12(
+        df
+    )
+
+
+    score = setup_priority_score_v12(
+        df
+    )
+
+
+    direction = optimized_direction_v12(
+        df
+    )
+
+
+
+    return {
+
+        "grade":
+
+            grade,
+
+
+        "priority":
+
+            score,
+
+
+        "direction":
+
+            direction,
+
+
+        "trade_ready":
+
+            (
+                score >= 80
+
+                and
+
+                direction != "RANGE"
+
+            )
+
+    }
+
+
+
+# ==========================
+# CONFLUENCE RANK ENGINE
+# ==========================
+
+def confluence_ranking_engine_v12(df) -> Dict:
+
+
+    return {
+
+        "components":
+
+            rank_setup_components_v12(
+                df
+            ),
+
+
+        "setup":
+
+            select_best_setup_v12(
+                df
+            )
+
+    }
+
+
+
+# ==========================
+# MAIN.PY COMPATIBILITY
+# ==========================
+
+def get_confluence_rank_v12(df) -> Dict:
+
+    return confluence_ranking_engine_v12(
+        df
+    )
+    
