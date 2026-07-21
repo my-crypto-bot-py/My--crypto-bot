@@ -27,8 +27,7 @@ class ScannerEngineV12:
             "engine": "ScannerEngineV12",
             "results": len(self.results)
         }
-
-    def health(self):
+        
         return {
             "status": "OK",
             "engine": "ScannerEngineV12",
