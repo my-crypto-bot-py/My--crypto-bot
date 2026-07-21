@@ -3,7 +3,6 @@
 # PART 1
 # Architecture Skeleton
 # ==========================
-
 from dataclasses import dataclass
 from typing import Any, Dict, List
 
@@ -43,22 +42,20 @@ class ScannerEngineV12:
             metadata={}
         )
 
-    def scan(self, symbols, market_data_provider):
-        self.results.clear()
+    def scan(self, market_data):
+        processed = self.preprocess(market_data)
 
-        for symbol in symbols:
-            data = market_data_provider(symbol)
+        symbol = market_data.get("symbol", "UNKNOWN")
 
-            if data is None:
-                continue
+        result = self.analyze_symbol(
+            symbol,
+            processed
+        )
 
-            processed = self.preprocess(data)
+        self.results = [result]
 
-            self.results.append(
-                self.analyze_symbol(symbol, processed)
-            )
+        return result
 
-        return self.results 
 # ==========================
 # SCANNER ENGINE V12
 # PART 2
