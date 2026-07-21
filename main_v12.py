@@ -119,10 +119,14 @@ def fetch_market(symbol):
 
 
         data = get_market_data(
-
-            symbol
+   
+            symbol,
+   
+            "5m"
 
         )
+
+        
 
 
         return data
