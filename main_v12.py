@@ -65,6 +65,7 @@ scanner_router = ScannerEngineV12()
 
 def startup():
 
+    from datetime import datetime, UTC
 
     print(
         "=============================="
@@ -76,16 +77,12 @@ def startup():
 
     print(
         "TIME:",
-        datetime.utcnow()
+        datetime.now(UTC)
     )
-
 
     print(
-
         scanner_router.health()
-
     )
-
 
     print(
         "=============================="
