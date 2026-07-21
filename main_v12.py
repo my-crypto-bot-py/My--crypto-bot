@@ -13,10 +13,8 @@ from datetime import datetime
 # V12 ROUTER
 # ==========================
 
-from scanner_v12_integration import (
-    create_v12_router
-)
 
+from scanner_v12 import ScannerEngineV12
 
 # ==========================
 # MARKET MODULE
