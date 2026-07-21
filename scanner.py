@@ -267,26 +267,13 @@ def import_engines():
 # ==========================
 # SIGNAL ANALYZER
 # ==========================
+df = symbol_data["data"]
 
-def analyze_symbol(
+    from market import market_engine_v5
 
-    symbol_data,
+    market = market_engine_v5(df)
 
-    modules
-
-):
-
-    if symbol_data is None:
-
-        return None
-
-
-    df = symbol_data["data"]
-
-
-    # Placeholder data containers
-
-    market = {}
+    print("MARKET ENGINE:", market)
 
     structure = {}
 
@@ -297,7 +284,6 @@ def analyze_symbol(
     ote = {}
 
     smt = {}
-
 
     confidence = modules["confidence"](
 
