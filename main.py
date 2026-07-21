@@ -260,18 +260,22 @@ def prepare_market_bias(
 # ==========================
 # SCANNER CONNECTION
 # ==========================
+# ==========================
+# V12 SCANNER ROUTER
+# ==========================
+
 def run_scanner(
-
-    market_data
-
+        market_data
 ):
 
     try:
 
-        from scanner import run_market_scan
+        from scanner_v12 import get_v12_scanner_signal
 
 
-        result = run_market_scan()
+        result = get_v12_scanner_signal(
+            market_data
+        )
 
 
         return result
@@ -279,11 +283,7 @@ def run_scanner(
 
     except Exception as e:
 
-        handle_error(
-
-            e
-
-        )
+        handle_error(e)
 
         return None
 
@@ -410,7 +410,66 @@ def process_signal(
         return None
 
 
+# ==========================
+# V12 MASTER ROUTER
+# ==========================
 
+def run_v12_engine(
+        market_data
+):
+
+    try:
+
+        signal = get_v12_master_signal_v12(
+            market_data
+        )
+
+
+        if signal.get(
+            "approved",
+            False
+        ):
+
+            BOT_STATE["signals"] += 1
+
+            BOT_STATE["last_signal"] = signal
+
+
+            return {
+
+
+                "direction":
+
+                    signal["signal"],
+
+
+                "confidence":
+
+                    signal["confidence"],
+
+
+                "engine":
+
+                    "ICT_V12"
+
+
+            }
+
+
+        return None
+
+
+    except Exception as e:
+
+
+        BOT_STATE["errors"] += 1
+
+        handle_error(e)
+
+        return None
+
+
+        
 # ==========================
 # BOT PROCESS CYCLE
 # ==========================
