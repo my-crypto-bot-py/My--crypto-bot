@@ -470,6 +470,7 @@ def run_v12_engine(
 # ==========================
 # BOT PROCESS CYCLE
 # ==========================
+
 def bot_cycle():
 
     print("BOT CYCLE RUNNING")
@@ -487,52 +488,83 @@ def bot_cycle():
 
             return None
 
-          print("MARKET DATA OK")
+
+        print("MARKET DATA OK")
 
 
-# ==========================
-# V12 MASTER ENGINE
-# ==========================
+        # ==========================
+        # V12 MASTER ENGINE
+        # ==========================
 
-v12_signal = run_v12_engine(
-    data
-)
-
-
-print(
-    "V12 SIGNAL:",
-    v12_signal
-)
+        v12_signal = run_v12_engine(
+            data
+        )
 
 
-if v12_signal:
-
-    return v12_signal
-
-
-
-# ==========================
-# FALLBACK V5 SCANNER
-# ==========================
-
-scan_result = run_scanner(data)
-
-print(
-    "SCANNER RESULT:",
-    scan_result
-)
+        print(
+            "V12 SIGNAL:",
+            v12_signal
+        )
 
 
-if not scan_result:
+        if v12_signal:
 
-    print(
-        "NO SCANNER RESULT"
-    )
-
-    return None
+            return v12_signal
 
 
-bias = prepare_market_bias(data)
+
+        # ==========================
+        # FALLBACK V5 SCANNER
+        # ==========================
+
+        scan_result = run_scanner(
+            data
+        )
+
+
+        print(
+            "SCANNER RESULT:",
+            scan_result
+        )
+
+
+        if not scan_result:
+
+            print(
+                "NO SCANNER RESULT"
+            )
+
+            return None
+
+
+
+        bias = prepare_market_bias(
+            data
+        )
+
+
+        setup = {
+
+            "scan": scan_result,
+
+            "bias": bias
+
+        }
+
+
+        signal = process_signal(
+            setup
+        )
+
+
+        print(
+            "SIGNAL:",
+            signal
+        )
+
+
+        return signal
+
 
 
     except Exception as e:
@@ -541,7 +573,10 @@ bias = prepare_market_bias(data)
 
         handle_error(e)
 
-        print("ERROR:", e)
+        print(
+            "ERROR:",
+            e
+        )
 
         return None
 
