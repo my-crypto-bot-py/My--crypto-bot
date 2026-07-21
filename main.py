@@ -27,7 +27,7 @@ from structure_v12 import (
 
 
 # ==========================
-# BOT STATE V5
+# BOT STATE V12
 # ==========================
 
 BOT_STATE = {
@@ -36,10 +36,13 @@ BOT_STATE = {
 
     "signals": 0,
 
-    "errors": 0
+    "errors": 0,
+
+    "engine": "V12",
+
+    "last_signal": None
 
 }
-
 
 
 # ==========================
