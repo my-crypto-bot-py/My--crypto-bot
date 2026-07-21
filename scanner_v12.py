@@ -21,6 +21,12 @@ class ScannerEngineV12:
 
     def __init__(self):
         self.results: List[ScanResult] = []
+            def health(self):
+        return {
+            "status": "OK",
+            "engine": "ScannerEngineV12",
+            "results": len(self.results)
+        }
 
     def health(self):
         return {
