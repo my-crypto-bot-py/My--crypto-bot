@@ -55,7 +55,7 @@ TIMEFRAME = "5m"
 # CREATE V12 ROUTER
 # ==========================
 
-scanner_router = create_v12_router()
+scanner_router = ScannerEngineV12()
 
 
 
