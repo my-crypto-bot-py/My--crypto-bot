@@ -487,42 +487,52 @@ def bot_cycle():
 
             return None
 
-
-        print("MARKET DATA OK")
-
-
-        scan_result = run_scanner(data)
-
-        print("SCANNER RESULT:", scan_result)
+          print("MARKET DATA OK")
 
 
-        if not scan_result:
+# ==========================
+# V12 MASTER ENGINE
+# ==========================
 
-            print("NO SCANNER RESULT")
-
-            return None
-
-
-        bias = prepare_market_bias(data)
-
-        print("BIAS:", bias)
+v12_signal = run_v12_engine(
+    data
+)
 
 
-        setup = {
-
-            "scan": scan_result,
-
-            "bias": bias
-
-        }
+print(
+    "V12 SIGNAL:",
+    v12_signal
+)
 
 
-        signal = process_signal(setup)
+if v12_signal:
 
-        print("SIGNAL:", signal)
+    return v12_signal
 
 
-        return signal
+
+# ==========================
+# FALLBACK V5 SCANNER
+# ==========================
+
+scan_result = run_scanner(data)
+
+print(
+    "SCANNER RESULT:",
+    scan_result
+)
+
+
+if not scan_result:
+
+    print(
+        "NO SCANNER RESULT"
+    )
+
+    return None
+
+
+bias = prepare_market_bias(data)
 
 
     except Exception as e:
