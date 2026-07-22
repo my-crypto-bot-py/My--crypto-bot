@@ -25,11 +25,10 @@ from scanner_v12 import *
 from structure_v12 import (
     get_v12_master_signal_v12
 )
+import structure_v12
+  print("MODULE HAS GATE:", hasattr(structure_v12, "v12_final_signal_gate_v12"))
+  print("DIRECT GATE:", getattr(structure_v12, "v12_final_signal_gate_v12", None))
 
-import inspect
-
-print("FUNCTION SOURCE:")
-print(inspect.getsource(get_v12_master_signal_v12))
 
 # ==========================
 # BOT STATE V12
