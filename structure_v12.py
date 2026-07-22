@@ -45362,11 +45362,12 @@ def v12_final_signal_gate_v12(
 # ==========================
 # MAIN.PY COMPATIBILITY
 # ==========================
+
 def get_v12_master_signal_v12(df) -> Dict:
 
-    print("FUNCTION STARTED")
-    print("LOCAL CHECK:", "v12_final_signal_gate_v12" in globals())
+    print("INSIDE FUNCTION")
+    print("GATE CHECK:", "v12_final_signal_gate_v12" in globals())
+    print("GATE VALUE:", globals().get("v12_final_signal_gate_v12"))
 
     return v12_final_signal_gate_v12(df)
-
     
