@@ -34675,11 +34675,14 @@ def get_v12_master_signal_v12(df) -> Dict:
     print("TYPE:", type(result))
     print("VALUE:", result)
 
+    if isinstance(result, dict):
+        return result
+
     return {
         "approved": False,
-        "signal": "TEST",
+        "signal": "NO_TRADE",
         "confidence": 0,
         "status": "WAIT",
-        "engine": "TEST"
+        "engine": "ICT_V12_MASTER_CONTROLLER"
     }
     
