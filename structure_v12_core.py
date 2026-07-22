@@ -251,6 +251,201 @@ def bullish_bos(df):
         }
 
     return None
+    # ==========================
+# BEARISH BOS
+# ==========================
+
+def bearish_bos(df):
+
+    swing = get_last_swing_low(df)
+
+    if swing is None:
+        return None
+
+    close = float(df["close"].iloc[-1])
+
+    if close < swing["price"]:
+
+        return {
+            "type": "BOS",
+            "direction": "SELL",
+            "level": swing["price"],
+            "index": swing["index"]
+        }
+
+    return None
+
+
+# ==========================
+# BOS
+# ==========================
+
+def detect_bos(df):
+
+    bull = bullish_bos(df)
+    bear = bearish_bos(df)
+
+    if bull:
+        return bull
+
+    if bear:
+        return bear
+
+    return None
+
+
+# ==========================
+# BULLISH MSS
+# ==========================
+
+def bullish_mss(df):
+
+    if len(df) < 10:
+        return None
+
+    last_low = get_last_swing_low(df)
+
+    last_high = get_last_swing_high(df)
+
+    if last_low is None or last_high is None:
+        return None
+
+    close = float(df["close"].iloc[-1])
+
+    if close > last_high["price"]:
+
+        return {
+            "type": "MSS",
+            "direction": "BUY",
+            "level": last_high["price"]
+        }
+
+    return None
+
+
+# ==========================
+# BEARISH MSS
+# ==========================
+
+def bearish_mss(df):
+
+    if len(df) < 10:
+        return None
+
+    last_low = get_last_swing_low(df)
+
+    last_high = get_last_swing_high(df)
+
+    if last_low is None or last_high is None:
+        return None
+
+    close = float(df["close"].iloc[-1])
+
+    if close < last_low["price"]:
+
+        return {
+            "type": "MSS",
+            "direction": "SELL",
+            "level": last_low["price"]
+        }
+
+    return None
+
+
+# ==========================
+# MSS
+# ==========================
+
+def detect_mss(df):
+
+    bull = bullish_mss(df)
+
+    bear = bearish_mss(df)
+
+    if bull:
+        return bull
+
+    if bear:
+        return bear
+
+    return None
+
+
+# ==========================
+# STRUCTURE
+# ==========================
+
+def detect_structure(df):
+
+    mss = detect_mss(df)
+
+    if mss:
+        return mss
+
+    bos = detect_bos(df)
+
+    if bos:
+        return bos
+
+    return None
+
+
+# ==========================
+# STRUCTURE BIAS
+# ==========================
+
+def structure_bias(df):
+
+    structure = detect_structure(df)
+
+    if structure is None:
+        return "RANGE"
+
+    return structure["direction"]
+
+
+# ==========================
+# STRUCTURE VALID
+# ==========================
+
+def structure_valid(df):
+
+    return detect_structure(df) is not None
+    # ==========================
+# STRUCTURE ENGINE V12
+# PART 2B-2
+# Liquidity Sweep
+# Equal High / Low
+# Premium / Discount
+# ==========================
+
+
+# ==========================
+# EQUAL HIGH
+# ==========================
+
+def detect_equal_high(df, tolerance=0.0015):
+
+    if len(df) < 10:
+        return None
+
+    highs = df["high"].values
+
+    for i in range(len(highs) - 2, 3, -1):
+
+        h1 = float(highs[i])
+        h2 = float(highs[i - 1])
+
+        if abs(h1 - h2) / max(h1, h2) <= tolerance:
+
+            return {
+                "type": "EQH",
+                "price": (h1 + h2) / 2,
+                "index": i
+            }
+
+    return None
+
 
 
 
