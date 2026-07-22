@@ -45363,8 +45363,10 @@ def v12_final_signal_gate_v12(
 # MAIN.PY COMPATIBILITY
 # ==========================
 def get_v12_master_signal_v12(df) -> Dict:
-    print("globals gate:", "v12_final_signal_gate_v12" in globals())
-    print("gate object:", globals().get("v12_final_signal_gate_v12"))
-    return globals()["v12_final_signal_gate_v12"](df)
+
+    print("FUNCTION STARTED")
+    print("LOCAL CHECK:", "v12_final_signal_gate_v12" in globals())
+
+    return v12_final_signal_gate_v12(df)
 
     
