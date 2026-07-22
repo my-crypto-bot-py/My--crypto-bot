@@ -466,7 +466,35 @@ def run_v12_engine(
 
         handle_error(e)
 
-        return None
+        return None 
+# ==========================
+# SAFE V12 WRAPPER
+# ==========================
+
+def get_v12_master_signal_v12(df):
+    try:
+        result = v12_final_signal_gate_v12(df)
+
+        if result is None:
+            return {
+                "approved": False,
+                "signal": "NO_TRADE",
+                "confidence": 0,
+                "status": "WAIT",
+                "engine": "SAFE_WRAPPER"
+            }
+
+        return result
+
+    except KeyError as e:
+        print("SAFE V12 KeyError:", e)
+        return {
+            "approved": False,
+            "signal": "NO_TRADE",
+            "confidence": 0,
+            "status": "WAIT",
+            "engine": "SAFE_WRAPPER"
+        }
         
 # ==========================
 # BOT PROCESS CYCLE
