@@ -616,9 +616,98 @@ def smart_money_structure_valid(df):
             return True
 
     return False
-    # ==========================
+# ==========================
 # STRUCTURE ENGINE V12
 # PART 2B-3
+# CHoCH • Displacement • Internal BOS
+# Production Ready
+# ==========================
+
+from typing import Optional, Dict
+
+
+# ==========================
+# DISPLACEMENT CANDLE
+# ==========================
+
+def detect_displacement(df, body_multiplier: float = 1.5) -> Optional[Dict]:
+
+    if len(df) < 25:
+        return None
+
+    body = abs(
+        float(df["close"].iloc[-1]) -
+        float(df["open"].iloc[-1])
+    )
+
+    avg_body = 0.0
+
+    for i in range(-21, -1):
+        avg_body += abs(
+            float(df["close"].iloc[i]) -
+            float(df["open"].iloc[i])
+        )
+
+    avg_body /= 20
+
+    if avg_body == 0:
+        return None
+
+    if body >= avg_body * body_multiplier:
+
+        direction = (
+            "BUY"
+            if float(df["close"].iloc[-1]) >
+               float(df["open"].iloc[-1])
+            else "SELL"
+        )
+
+        return {
+            "type": "DISPLACEMENT",
+            "direction": direction,
+            "body": body,
+            "average_body": avg_body
+        }
+
+    return None
+
+
+# ==========================
+# INTERNAL BOS
+# ==========================
+
+def detect_internal_bos(df) -> Optional[Dict]:
+
+    if len(df) < 15:
+        return None
+
+    last_high = max(df["high"].tail(6).iloc[:-1])
+    last_low = min(df["low"].tail(6).iloc[:-1])
+
+    close = float(df["close"].iloc[-1])
+
+    if close > float(last_high):
+
+        return {
+            "type": "INTERNAL_BOS",
+            "direction": "BUY",
+            "level": float(last_high)
+        }
+
+    if close < float(last_low):
+
+        return {
+            "type": "INTERNAL_BOS",
+            "direction": "SELL",
+            "level": float(last_low)
+        }
+
+    return None
+
+
+# ==========================
+# CHoCH
+# ==========================
 
 
 
