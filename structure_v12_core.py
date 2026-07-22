@@ -11438,7 +11438,7 @@ def get_execution_signal_v12(df) -> Dict:
 
     return execution_engine_v12(df)
 
-                )
+   )
 
 
 
