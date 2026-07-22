@@ -25,11 +25,11 @@ from scanner_v12 import *
 from structure_v12 import (
     get_v12_master_signal_v12
 )
-import structure_v12
-print("IMPORTED FUNCTION CODE:")
-print(structure_v12.get_v12_master_signal_v12.__code__.co_firstlineno)
-print(structure_v12.get_v12_master_signal_v12.__code__.co_filename)
 
+import inspect
+
+print("FUNCTION SOURCE:")
+print(inspect.getsource(get_v12_master_signal_v12))
 
 # ==========================
 # BOT STATE V12
