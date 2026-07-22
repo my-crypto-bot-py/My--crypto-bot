@@ -1,38 +1,5 @@
 from structure_v12_core import *
 
-# STRUCTURE ENGINE V12
-# PART 2B-2
-# Liquidity Sweep
-# Equal High / Low
-# Premium / Discount
-# ==========================
-
-
-# ==========================
-# EQUAL HIGH
-# ==========================
-
-def detect_equal_high(df, tolerance=0.0015):
-
-    if len(df) < 10:
-        return None
-
-    highs = df["high"].values
-
-    for i in range(len(highs) - 2, 3, -1):
-
-        h1 = float(highs[i])
-        h2 = float(highs[i - 1])
-
-        if abs(h1 - h2) / max(h1, h2) <= tolerance:
-
-            return {
-                "type": "EQH",
-                "price": (h1 + h2) / 2,
-                "index": i
-            }
-
-    return None
 
 
 # ==========================
