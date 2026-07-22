@@ -34491,6 +34491,11 @@ def run_v12_master_intelligence_v12(
     execution = get_execution_gate_v12(
         df
     )
+    print("DEBUG TYPES:")
+    print("direction:", type(direction), direction)
+    print("opportunity:", type(opportunity), opportunity)
+    print("confidence:", type(confidence), confidence)
+    print("execution:", type(execution), execution)
 
 
 
