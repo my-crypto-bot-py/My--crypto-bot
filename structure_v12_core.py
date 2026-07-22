@@ -445,6 +445,111 @@ def detect_equal_high(df, tolerance=0.0015):
             }
 
     return None
+    
+# ==========================
+# EQUAL LOW
+# ==========================
+
+def detect_equal_low(df, tolerance=0.0015):
+
+    if len(df) < 10:
+        return None
+
+    lows = df["low"].values
+
+    for i in range(len(lows) - 2, 3, -1):
+
+        l1 = float(lows[i])
+        l2 = float(lows[i - 1])
+
+        if abs(l1 - l2) / max(l1, l2) <= tolerance:
+
+            return {
+                "type": "EQL",
+                "price": (l1 + l2) / 2,
+                "index": i
+            }
+
+    return None
+
+
+# ==========================
+# BUY SIDE LIQUIDITY
+# ==========================
+
+def detect_buy_side_liquidity(df):
+
+    eqh = detect_equal_high(df)
+
+    if eqh:
+
+        return {
+            "side": "BUY",
+            "price": eqh["price"],
+            "index": eqh["index"]
+        }
+
+    return None
+
+
+# ==========================
+# SELL SIDE LIQUIDITY
+# ==========================
+
+def detect_sell_side_liquidity(df):
+
+    eql = detect_equal_low(df)
+
+    if eql:
+
+        return {
+            "side": "SELL",
+            "price": eql["price"],
+            "index": eql["index"]
+        }
+
+    return None
+
+
+# ==========================
+# LIQUIDITY SWEEP
+# ==========================
+
+def detect_liquidity_sweep(df):
+
+    buy = detect_buy_side_liquidity(df)
+    sell = detect_sell_side_liquidity(df)
+
+    close = float(df["close"].iloc[-1])
+    high = float(df["high"].iloc[-1])
+    low = float(df["low"].iloc[-1])
+
+    if buy:
+
+        if high > buy["price"] and close < buy["price"]:
+
+            return {
+                "direction": "SELL",
+                "type": "BUY_SIDE_SWEEP",
+                "level": buy["price"]
+            }
+
+    if sell:
+
+        if low < sell["price"] and close > sell["price"]:
+
+            return {
+                "direction": "BUY",
+                "type": "SELL_SIDE_SWEEP",
+                "level": sell["price"]
+            }
+
+    return None
+
+
+# ==========================
+# DEALING RANGE
+# ==========================
 
 
 
