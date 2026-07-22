@@ -34468,6 +34468,11 @@ def run_v12_master_intelligence_v12(
     anomaly = get_market_anomaly_v12(
         df
     )
+    print("DEBUG MARKET:")
+    print(type(market), market)
+    print(type(sentiment), sentiment)
+    print(type(context), context)
+    print(type(anomaly), anomaly)
 
 
 
