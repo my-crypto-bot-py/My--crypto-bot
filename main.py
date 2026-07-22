@@ -26,11 +26,9 @@ from structure_v12 import (
     get_v12_master_signal_v12
 )
 import structure_v12
-
-print("STRUCTURE FILE:", structure_v12.__file__)
-print("HAS GATE:", hasattr(structure_v12, "v12_final_signal_gate_v12"))
-print("HAS MASTER:", hasattr(structure_v12, "get_v12_master_signal_v12"))
-
+print("IMPORTED FUNCTION CODE:")
+print(structure_v12.get_v12_master_signal_v12.__code__.co_firstlineno)
+print(structure_v12.get_v12_master_signal_v12.__code__.co_filename)
 
 
 # ==========================
