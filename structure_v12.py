@@ -34592,10 +34592,14 @@ def v12_final_signal_gate_v12(
         df
 ) -> Dict:
 
+    print("ENTERED FINAL SIGNAL GATE")
 
     decision = run_v12_master_intelligence_v12(
         df
     )
+
+    print("DECISION TYPE:", type(decision))
+    print("DECISION VALUE:", decision)
 
 
 
