@@ -708,7 +708,7 @@ def detect_internal_bos(df) -> Optional[Dict]:
 # ==========================
 # CHoCH
 # ==========================
-ef detect_choch(df) -> Optional[Dict]:
+def detect_choch(df) -> Optional[Dict]:
 
     bos = detect_bos(df)
     mss = detect_mss(df)
