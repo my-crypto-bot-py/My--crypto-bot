@@ -1,75 +1,9 @@
 from structure_v12_core import *
+
+
+
+ 
 # ==========================
-# DEALING RANGE
-# ==========================
-
-def get_dealing_range(df, lookback=50):
-
-    if len(df) < lookback:
-        lookback = len(df)
-
-    high = float(df["high"].tail(lookback).max())
-    low = float(df["low"].tail(lookback).min())
-
-    return {
-        "high": high,
-        "low": low,
-        "mid": (high + low) / 2
-    }
-
-
-# ==========================
-# PREMIUM / DISCOUNT
-# ==========================
-
-def premium_discount_zone(df):
-
-    dealing = get_dealing_range(df)
-
-    price = float(df["close"].iloc[-1])
-
-    if price > dealing["mid"]:
-
-        return {
-            "zone": "PREMIUM",
-            "mid": dealing["mid"]
-        }
-
-    return {
-        "zone": "DISCOUNT",
-        "mid": dealing["mid"]
-    }
-
-
-# ==========================
-# STRUCTURE CONTEXT
-# ==========================
-
-def structure_context(df):
-
-    return {
-        "structure": detect_structure(df),
-        "liquidity": detect_liquidity_sweep(df),
-        "zone": premium_discount_zone(df)
-    }
-
-
-# ==========================
-# SMART MONEY VALIDATION
-# ==========================
-
-def smart_money_structure_valid(df):
-
-    structure = detect_structure(df)
-    liquidity = detect_liquidity_sweep(df)
-
-    if structure and liquidity:
-
-        if structure["direction"] == liquidity["direction"]:
-            return True
-
-    return False
-    # ==========================
 # STRUCTURE ENGINE V12
 # PART 2B-3
 # CHoCH • Displacement • Internal BOS
