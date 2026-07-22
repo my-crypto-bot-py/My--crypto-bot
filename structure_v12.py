@@ -1,33 +1,4 @@
 from structure_v12_core import *
-
-
-
- 
-
-
-# ==========================
-# CHoCH
-# ==========================
-
-def detect_choch(df) -> Optional[Dict]:
-
-    bos = detect_bos(df)
-    mss = detect_mss(df)
-
-    if bos is None or mss is None:
-        return None
-
-    if bos["direction"] == mss["direction"]:
-
-        return {
-            "type": "CHOCH",
-            "direction": bos["direction"],
-            "level": bos["level"]
-        }
-
-    return None
-
-
 # ==========================
 # IMPULSE STRENGTH
 # ==========================
