@@ -45356,6 +45356,8 @@ def v12_final_signal_gate_v12(
             "ICT_V12_MASTER_CONTROLLER"
 
     }
+    print("BEFORE MASTER CHECK:")
+    print("GATE EXISTS:", "v12_final_signal_gate_v12" in globals())
 
 
 
@@ -45363,7 +45365,8 @@ def v12_final_signal_gate_v12(
 # MAIN.PY COMPATIBILITY
 # ==========================
 def get_v12_master_signal_v12(df) -> Dict:
-
+    
+    print("GATE FUNCTION LOADED")
     print("GATE IN GLOBAL:", "v12_final_signal_gate_v12" in globals())
 
     print("AVAILABLE GATE KEYS:")
