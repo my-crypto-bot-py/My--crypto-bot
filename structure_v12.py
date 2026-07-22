@@ -45367,10 +45367,18 @@ def v12_final_signal_gate_v12(
 # ==========================
 def get_v12_master_signal_v12(df) -> Dict:
 
+    print("CALLING GATE...")
+
     result = v12_final_signal_gate_v12(df)
 
-    print("RESULT TYPE:", type(result))
-    print("RESULT:", result)
+    print("TYPE:", type(result))
+    print("VALUE:", result)
 
-    return result
+    return {
+        "approved": False,
+        "signal": "TEST",
+        "confidence": 0,
+        "status": "WAIT",
+        "engine": "TEST"
+    }
     
