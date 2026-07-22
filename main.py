@@ -425,6 +425,21 @@ def run_v12_engine(
 
         print("CALLING get_v12_master_signal_v12")
 
+        import structure_v12
+
+        print("LOCAL FUNC:", get_v12_master_signal_v12)
+        print("MODULE FUNC:", structure_v12.get_v12_master_signal_v12)
+        print(
+            "SAME OBJECT:",
+            get_v12_master_signal_v12 is structure_v12.get_v12_master_signal_v12
+        )
+
+        print(
+            "FUNC GLOBALS HAS GATE:",
+            "v12_final_signal_gate_v12"
+            in get_v12_master_signal_v12.__globals__
+        )
+
         signal = get_v12_master_signal_v12(
             market_data
         )
@@ -469,7 +484,7 @@ def run_v12_engine(
 
         handle_error(e)
 
-        return None 
+        return None
 # ==========================
 # SAFE V12 WRAPPER
 # ==========================
