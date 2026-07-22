@@ -45315,6 +45315,7 @@ def v12_final_signal_gate_v12(
         decision["opportunity"]
 
     )
+    print("RETURNING DICT FROM GATE")
 
 
 
@@ -45365,12 +45366,11 @@ def v12_final_signal_gate_v12(
 # MAIN.PY COMPATIBILITY
 # ==========================
 def get_v12_master_signal_v12(df) -> Dict:
-    
-    print("GATE FUNCTION LOADED")
-    print("GATE IN GLOBAL:", "v12_final_signal_gate_v12" in globals())
 
-    print("AVAILABLE GATE KEYS:")
-    print([x for x in globals().keys() if "gate" in x.lower()])
+    result = v12_final_signal_gate_v12(df)
 
-    return v12_final_signal_gate_v12(df)
+    print("RESULT TYPE:", type(result))
+    print("RESULT:", result)
+
+    return result
     
