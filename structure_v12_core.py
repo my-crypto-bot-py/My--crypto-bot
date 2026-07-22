@@ -727,7 +727,6 @@ def detect_choch(df) -> Optional[Dict]:
     return None
     
 
-from structure_v12_core import *
 # ==========================
 # IMPULSE STRENGTH
 # ==========================
