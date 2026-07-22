@@ -411,12 +411,16 @@ def process_signal(
 
 # ==========================
 # V12 MASTER ROUTER
-# ==========================  
+# ==========================
 def run_v12_engine(
         market_data
 ):
 
     try:
+
+        print("RUN V12 ENGINE START")
+
+        print("CALLING get_v12_master_signal_v12")
 
         signal = get_v12_master_signal_v12(
             market_data
@@ -425,6 +429,7 @@ def run_v12_engine(
         print("RAW V12:", signal)
 
         if signal is None:
+            print("V12 RETURNED NONE")
             return None
 
         if signal.get(
@@ -449,11 +454,15 @@ def run_v12_engine(
 
             }
 
+        print("V12 NOT APPROVED:", signal)
+
         return None
 
     except Exception as e:
 
         BOT_STATE["errors"] += 1
+
+        print("V12 ERROR:", repr(e))
 
         handle_error(e)
 
