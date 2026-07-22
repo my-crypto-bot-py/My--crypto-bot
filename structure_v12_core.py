@@ -11435,10 +11435,7 @@ def execution_engine_v12(df) -> Dict:
 # ==========================
 
 def get_execution_signal_v12(df) -> Dict:
-
     return execution_engine_v12(df)
-
-   )
 
 
 
