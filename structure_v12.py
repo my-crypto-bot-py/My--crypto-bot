@@ -12204,6 +12204,8 @@ def structure_memory_tracker_v12(df) -> Dict:
     swings = swing_history_v12(
         df
     )
+    print("SWINGS TYPE:", type(swings))
+    print("SWINGS DATA:", swings)
 
 
     current = float(
