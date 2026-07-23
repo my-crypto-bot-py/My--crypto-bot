@@ -31259,6 +31259,7 @@ def calculate_direction_score_v12(
 
 
     for item in components:
+        print("DIRECTION COMPONENT:", item)
 
 
         signal = item.get(
@@ -31328,6 +31329,10 @@ def calculate_direction_score_v12(
             100
 
         )
+        print("BUY SCORE:", buy)
+        print("SELL SCORE:", sell)
+        print("FINAL DIRECTION:", direction)
+        print("FINAL CONFIDENCE:", confidence)
 
 
 
