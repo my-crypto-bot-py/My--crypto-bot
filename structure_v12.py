@@ -12212,6 +12212,9 @@ def structure_memory_tracker_v12(df) -> Dict:
 
 
     event = "NONE"
+    print("SWING HIGHS:", swings["highs"][-5:] if swings["highs"] else [])
+    print("SWING LOWS:", swings["lows"][-5:] if swings["lows"] else [])
+    print("CURRENT CLOSE:", current)
 
 
 
@@ -12248,6 +12251,8 @@ def structure_memory_tracker_v12(df) -> Dict:
     ) > 50:
 
         del V12_STRUCTURE_MEMORY[0]
+
+    print("TRACKER EVENT:", event)
 
 
 
