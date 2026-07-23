@@ -442,10 +442,11 @@ def run_v12_engine(
 
         import structure_v12
 
-        signal = structure_v12.get_v12_master_signal_v12
-        (
-                     market_data
+        signal = get_v12_master_signal_v12(
+             market_data
         )
+        print("SIGNAL TYPE:", type(signal))
+        print("SIGNAL VALUE:", signal)
 
         print("RAW V12:", signal)
 
