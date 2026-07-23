@@ -355,62 +355,50 @@ def generate_signal(
 
         )
 
-        return None 
+        return None  
 # ==========================
 # PROCESS SIGNAL
 # ==========================
 
+import traceback
+
 def process_signal(
-
     setup
-
 ):
 
     try:
 
         approved = run_filters(
-
             setup
-
         )
-
 
         if not approved:
 
             return no_trade_signal(
-
                 "Filter Rejected"
-
             )
 
-
         signal = generate_signal(
-
             setup
-
         )
-
 
         if signal:
 
             BOT_STATE["signals"] += 1
 
-
         return signal
-
 
     except Exception as e:
 
+        traceback.print_exc()
+
         BOT_STATE["errors"] += 1
 
-        handle_error(
+        print("V12 ERROR:", repr(e))
 
-            e
-
-        )
+        handle_error(e)
 
         return None
-
 
 # ==========================
 # V12 MASTER ROUTER
