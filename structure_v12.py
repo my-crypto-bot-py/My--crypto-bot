@@ -30445,23 +30445,10 @@ def context_direction_filter_v12(
 
     return {
 
-
-        "direction":
-
-            direction,
-
-
-        "confidence":
-
-            context["score"],
-
-
-        "context":
-
-            context["context"]
-
+        "direction": direction,
+        "confidence": context.get("confidence", 0),
+        "context": context["context"]
     }
-
 
 
 # ==========================
