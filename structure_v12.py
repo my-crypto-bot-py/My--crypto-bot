@@ -33821,75 +33821,51 @@ def calculate_opportunity_score_v12(
         data: Dict
 ) -> int:
 
+    print("DATA KEYS:", list(data.keys()))
+    print("DIRECTION:", data.get("direction"))
+    print("CONDITION:", data.get("condition"))
+    print("SENTIMENT:", data.get("sentiment"))
+    print("EXECUTION:", data.get("execution"))
+    print("ANOMALY:", data.get("anomaly"))
 
     score = 0
 
-
-
-    score += data["direction"].get(
+    score += data.get("direction", {}).get(
         "confidence",
         0
     ) * 0.35
 
-
-
-    score += data["condition"].get(
+    score += data.get("condition", {}).get(
         "confidence",
         0
     ) * 0.20
 
-
-
-    score += data["sentiment"].get(
+    score += data.get("sentiment", {}).get(
         "confidence",
         0
     ) * 0.20
-
-
 
     score += (
-
         100
-
-        if data["execution"].get(
+        if data.get("execution", {}).get(
             "execute",
             False
         )
-
         else
-
         0
-
     ) * 0.25
 
-
-
-    if data["anomaly"].get(
+    if not data.get("anomaly", {}).get(
         "safe",
         True
-    ) is False:
-
-
+    ):
         score -= 20
 
-
-
     return int(
-
         max(
-
-            min(
-
-                score,
-
-                100
-
-            ),
-
+            min(score, 100),
             0
-
         )
-
     )
 
 
