@@ -12311,6 +12311,14 @@ def structure_memory_score_v12(df) -> int:
     if internal_structure_break(df):
 
         score += 25
+    history = V12_STRUCTURE_MEMORY[-5:]
+
+    if any(
+         "MSS" in str(x)
+          or "BOS" in str(x)
+          for x in history
+    ):
+          score += 50
         
     print("STRUCTURE EVENT:", tracker["event"])
     print("MSS:", detect_mss(df))
