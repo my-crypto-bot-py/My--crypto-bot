@@ -34462,6 +34462,14 @@ def run_v12_master_intelligence_v12(
     opportunity = get_trade_opportunity_v12(
         df
     )
+    print(
+        "OPPORTUNITY TYPE:",
+        type(opportunity)
+    )
+    print(
+        "OPPORTUNITY:",
+         opportunity
+    )
 
 
     confidence = get_final_confidence_v12(
