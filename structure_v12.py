@@ -21768,28 +21768,28 @@ def entry_confirmation_matrix_v12(df) -> Dict:
         total += value
 
 
-confidence = int(
+    confidence = int(
 
-    total /
+        total /
 
-    len(components)
+        len(components)
 
-)
+    )
 
-print("ENTRY MATRIX COMPONENTS:", components)
-print("ENTRY MATRIX CONFIDENCE:", confidence)
+    print("ENTRY MATRIX COMPONENTS:", components)
+    print("ENTRY MATRIX CONFIDENCE:", confidence)
 
-return {
+    return {
 
-    "confidence":
+       "confidence":
 
-        confidence,
+            confidence,
 
-    "components":
+        "components":
 
-        components
+            components
 
-}
+    }
 
 
 # ==========================
