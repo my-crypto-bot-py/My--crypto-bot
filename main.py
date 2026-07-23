@@ -470,9 +470,15 @@ def run_v12_engine(
 
     except Exception as e:
 
+        import traceback
+
         BOT_STATE["errors"] += 1
 
+        traceback.print_exc()
+
         print("V12 ERROR:", repr(e))
+        print("ERROR TYPE:", type(e).__name__)
+        print("ERROR LINE:", e.__traceback__.tb_lineno)
 
         handle_error(e)
 
