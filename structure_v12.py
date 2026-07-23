@@ -17263,7 +17263,7 @@ def global_confluence_score_v12(df) -> Dict:
         "sentiment":
 
             get_market_sentiment_v12(df)
-            ["score"],
+            ["confidence"],
 
 
         "timing":
