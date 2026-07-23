@@ -12297,7 +12297,11 @@ def structure_memory_score_v12(df) -> int:
     if internal_structure_break(df):
 
         score += 25
-
+        
+    print("STRUCTURE EVENT:", tracker["event"])
+    print("MSS:", detect_mss(df))
+    print("ISB:", internal_structure_break(df))
+    print("STRUCTURE SCORE:", score)
 
 
     return min(
