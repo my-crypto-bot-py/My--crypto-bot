@@ -17113,6 +17113,8 @@ def timing_quality_v12(df) -> Dict:
     volatility = get_volatility_intelligence_v12(
         df
     )
+    print("VOLATILITY TYPE:", type(volatility))
+    print("VOLATILITY:", volatility)
 
 
 
