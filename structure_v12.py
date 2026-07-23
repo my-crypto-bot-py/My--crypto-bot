@@ -22625,8 +22625,9 @@ def volatility_execution_filter_v12(df) -> Dict:
 
             result["confidence"]
 
-    }
 
+        
+         
 
 
 # ==========================
@@ -22635,11 +22636,9 @@ def volatility_execution_filter_v12(df) -> Dict:
 
 def institutional_volatility_engine_v12(df) -> Dict:
 
-
-    return volatility_execution_filter_v12(
+    return volatility_adaptation_v12(
         df
     )
-
 
 
 # ==========================
