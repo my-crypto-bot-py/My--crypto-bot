@@ -34496,9 +34496,6 @@ def run_v12_master_intelligence_v12(
     execution = get_execution_gate_v12(
         df
     )
-    print("DEBUG OPPORTUNITY:", opportunity)
-    print("DEBUG CONFIDENCE:", confidence)
-    print("DEBUG EXECUTION:", execution)
     print("DEBUG TYPES:")
     print("direction:", type(direction), direction)
     print("opportunity:", type(opportunity), opportunity)
@@ -34675,14 +34672,6 @@ def v12_final_signal_gate_v12(
 # MAIN.PY COMPATIBILITY
 # ==========================
 def get_v12_master_signal_v12(df) -> Dict:
-    signal =(market_data)
-
-     print("SIGNAL:", signal)
-
-if signal is not None:
-    print("APPROVED =", signal.get("approved"))
-    print("CONFIDENCE =", signal.get("confidence"))
-    print("ENGINE =", signal.get("engine"))
 
     print("CALLING GATE...")
 
