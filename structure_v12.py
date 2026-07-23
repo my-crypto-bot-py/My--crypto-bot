@@ -12209,18 +12209,21 @@ def structure_memory_tracker_v12(df) -> Dict:
     current = float(
         df["close"].iloc[-1]
     )
-
-
+    
     event = "NONE"
+
     print("SWING HIGHS:", swings["highs"][-5:] if swings["highs"] else [])
     print("SWING LOWS:", swings["lows"][-5:] if swings["lows"] else [])
     print("CURRENT CLOSE:", current)
 
+    if swings["highs"]:
+        print("MAX HIGH:", max(swings["highs"]))
 
+    if swings["lows"]:
+        print("MIN LOW:", min(swings["lows"]))
 
     mss = detect_mss(df)
     isb = internal_structure_break(df)
-
 
     if mss:
 
@@ -12229,7 +12232,6 @@ def structure_memory_tracker_v12(df) -> Dict:
             + "_MSS"
         )
 
-
     elif isb:
 
         event = (
@@ -12237,16 +12239,13 @@ def structure_memory_tracker_v12(df) -> Dict:
             + "_BOS"
         )
 
-
     elif swings["highs"] and current > max(swings["highs"]):
 
         event = "BULLISH_BOS"
 
-
     elif swings["lows"] and current < min(swings["lows"]):
 
         event = "BEARISH_BOS"
-
 
 
     V12_STRUCTURE_MEMORY.append(
