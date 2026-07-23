@@ -22607,30 +22607,22 @@ def volatility_execution_filter_v12(df) -> Dict:
     )
 
 
+return {
 
-    return {
+    "approved":
+        approved,
 
+    "direction":
+        result["direction"],
 
-        "approved":
+    "confidence":
+        result["confidence"]
 
-            approved,
-
-
-        "direction":
-
-            result["direction"],
-
-
-        "confidence":
-
-            result["confidence"]
+}
 
 
         
-         
-
-
-# ==========================
+         # ==========================
 # VOLATILITY ENGINE
 # ==========================
 
