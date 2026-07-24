@@ -31988,151 +31988,72 @@ def collect_execution_inputs_v12(
 # EXECUTION SCORE
 # ==========================
 
-def calculate_execution_score_v12(
-        data: Dict
-) -> int:
+def calculate_execution_score_v12(data: Dict) -> int:
 
+    direction = data.get("direction", {})
+    confidence = data.get("confidence", {})
+    timing = data.get("timing", {})
+    risk = data.get("risk", {})
+    structure = data.get("structure", {})
+    entry = data.get("entry", {})
 
     score = 0
 
+    score += direction.get("confidence", 0) * 0.25
+    score += confidence.get("confidence", 0) * 0.20
+    score += timing.get("timing_score", 0) * 0.15
+    score += structure.get("confidence", structure.get("score", 0)) * 0.20
+    score += entry.get("confidence", entry.get("score", 0)) * 0.10
 
+    if risk.get("approved", False):
+        score += 10
 
-    score += data["direction"].get(
-        "confidence",
-        0
-    ) * 0.35
+    print("EXECUTION DIRECTION :", direction)
+    print("EXECUTION STRUCTURE :", structure)
+    print("EXECUTION ENTRY     :", entry)
+    print("EXECUTION TIMING    :", timing)
+    print("EXECUTION RISK      :", risk)
+    print("FINAL EXECUTION SCORE:", score)
 
-
-
-    score += data["confidence"].get(
-        "confidence",
-        0
-    ) * 0.35
-
-
-
-    score += data["timing"].get(
-        "timing_score",
-        0
-    ) * 0.20
-
-
-
-    score += (
-
-        100
-
-        if data["risk"].get(
-            "approved",
-            False
-        )
-
-        else
-
-        0
-
-    ) * 0.10
-
-
-
-    return int(
-
-        min(
-
-            score,
-
-            100
-
-        )
-
-    )
-
+    return min(int(score), 100)
 
 
 # ==========================
 # FINAL EXECUTION GATE
 # ==========================
 
-def institutional_execution_gate_v12(
-        df
-) -> Dict:
+def institutional_execution_gate_v12(df) -> Dict:
 
+    data = collect_execution_inputs_v12(df)
 
-    data = collect_execution_inputs_v12(
-        df
-    )
+    print("EXECUTION INPUT KEYS:", list(data.keys()))
 
+    score = calculate_execution_score_v12(data)
 
-    score = calculate_execution_score_v12(
-        data
-    )
-
-
-
-    signal = data["direction"].get(
-        "signal",
-        "NO_TRADE"
-    )
-    
-    print("EXECUTION SCORE:", score)
-    print("EXECUTION SIGNAL:", signal)
+    signal = data["direction"].get("signal", "NO_TRADE")
 
     approved = (
-
         score >= 85
-
-        and
-
-        signal != "NO_TRADE"
-
+        and signal != "NO_TRADE"
     )
-
-
 
     result = {
-
-
-        "execute":
-
-            approved,
-
-
-        "signal":
-
-            signal,
-
-
-        "execution_score":
-
-            score,
-
-
-        "reason":
-
-            (
-
-                "ALL_CONFIRMATION_PASSED"
-
-                if approved
-
-                else
-
-                "FILTER_FAILED"
-
-            )
-
+        "execute": approved,
+        "signal": signal,
+        "execution_score": score,
+        "reason": (
+            "ALL_CONFIRMATION_PASSED"
+            if approved
+            else
+            "FILTER_FAILED"
+        )
     }
 
+    print("EXECUTION RESULT:", result)
 
-
-    V12_EXECUTION_CONTROLLER_MEMORY.append(
-        result
-    )
-
+    V12_EXECUTION_CONTROLLER_MEMORY.append(result)
 
     return result
-
-
 
 # ==========================
 # MAIN.PY COMPATIBILITY
