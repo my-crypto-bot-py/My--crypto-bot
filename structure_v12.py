@@ -12250,52 +12250,44 @@ def structure_memory_tracker_v12(df) -> Dict:
 
 def structure_memory_score_v12(df) -> int:
 
+    tracker = structure_memory_tracker_v12(df)
 
-    tracker = structure_memory_tracker_v12(
-        df
-    )
-
+    mss = detect_mss(df)
+    isb = internal_structure_break(df)
+    swings = swing_history_v12(df)
 
     score = 0
 
-
-
     if tracker["event"] != "NONE":
-
         score += 50
 
-
-
-    if detect_mss(df):
-
+    if mss:
         score += 25
 
-
-
-    if internal_structure_break(df):
-
+    if isb:
         score += 25
+
     history = V12_STRUCTURE_MEMORY[-5:]
 
     if any(
-         "MSS" in str(x)
-          or "BOS" in str(x)
-          for x in history
+        ("MSS" in str(x)) or ("BOS" in str(x))
+        for x in history
     ):
-          score += 50
-        
-    print("STRUCTURE EVENT:", tracker["event"])
-    print("MSS:", detect_mss(df))
-    print("ISB:", internal_structure_break(df))
-    print("STRUCTURE SCORE:", score)
+        score += 50
 
+    print("===== STRUCTURE DEBUG =====")
+    print("LAST SWING HIGH:", swings["highs"][-1] if swings["highs"] else None)
+    print("LAST SWING LOW :", swings["lows"][-1] if swings["lows"] else None)
+    print("CURRENT HIGH   :", float(df["high"].iloc[-1]))
+    print("CURRENT LOW    :", float(df["low"].iloc[-1]))
+    print("CURRENT CLOSE  :", float(df["close"].iloc[-1]))
+    print("TRACKER EVENT  :", tracker["event"])
+    print("MSS            :", mss)
+    print("ISB            :", isb)
+    print("HISTORY        :", history)
+    print("STRUCTURE SCORE:", min(score, 100))
 
-    return min(
-        score,
-        100
-    )
-
-
+    return min(score, 100)
 
 # ==========================
 # STRUCTURE MEMORY ENGINE
