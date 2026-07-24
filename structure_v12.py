@@ -21741,66 +21741,53 @@ def get_mtf_alignment_v12(
 
 from typing import Dict
 
-
 # ==========================
 # ENTRY MATRIX CALCULATOR
 # ==========================
 
 def entry_confirmation_matrix_v12(df) -> Dict:
 
+    structure = get_structure_memory_v12(df)
+    order_block = get_order_block_execution_v12(df)
+    fvg = get_fvg_execution_v12(df)
+    liquidity = get_liquidity_entry_v12(df)
+    timing = get_trade_timing_v12(df)
+
+    print("STRUCTURE MEMORY:", structure)
+    print("ORDER BLOCK:", order_block)
+    print("FVG:", fvg)
+    print("LIQUIDITY:", liquidity)
+    print("TIMING:", timing)
 
     components = {
 
-
         "structure":
-
-            get_structure_memory_v12(df)
-            ["score"],
-
+            structure.get("score", 0),
 
         "order_block":
-
-            get_order_block_execution_v12(df)
-            ["confidence"],
-
+            order_block.get("confidence", 0),
 
         "fvg":
-
-            get_fvg_execution_v12(df)
-            ["confidence"],
-
+            fvg.get("confidence", 0),
 
         "liquidity":
-
-            get_liquidity_entry_v12(df)
-            ["quality"],
-
+            liquidity.get(
+                "quality",
+                liquidity.get(
+                    "confidence",
+                    liquidity.get("score", 0)
+                )
+            ),
 
         "timing":
-
-            get_trade_timing_v12(df)
-            ["timing"]
-            ["score"]
+            timing.get("timing", {}).get("score", 0)
 
     }
 
-
-
-    total = 0
-
-
-
-    for value in components.values():
-
-        total += value
-
+    total = sum(components.values())
 
     confidence = int(
-
-        total /
-
-        len(components)
-
+        total / len(components)
     )
 
     print("ENTRY MATRIX COMPONENTS:", components)
@@ -21808,16 +21795,11 @@ def entry_confirmation_matrix_v12(df) -> Dict:
 
     return {
 
-       "confidence":
+        "confidence": confidence,
 
-            confidence,
-
-        "components":
-
-            components
+        "components": components
 
     }
-
 
 # ==========================
 # MATRIX DIRECTION ENGINE
