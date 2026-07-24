@@ -31254,45 +31254,39 @@ def collect_direction_inputs_v12(
 # DIRECTION SCORE ENGINE
 # ==========================
 
-def calculate_direction_score_v12(
-        data: Dict
-) -> Dict:
-
+def calculate_direction_score_v12(data: Dict) -> Dict:
 
     buy = 0
-
     sell = 0
 
-
-
     components = [
-
         data["structure"],
-
         data["context"],
-
         data["smart_money"],
-
         data["mtf"],
-
         data["execution"]
-
     ]
 
-
     for item in components:
+
         print("DIRECTION COMPONENT:", item)
 
+        signal = item.get("signal")
 
-        signal = item.get(
-            "signal",
-            item.get(
-                "direction",
-                "NONE"
-            )
-        )
+        if signal is None:
+            signal = item.get("direction")
 
+        if signal is None:
+            event = item.get("event", "")
 
+            if "BUY" in str(event) or "BULLISH" in str(event):
+                signal = "BUY"
+
+            elif "SELL" in str(event) or "BEARISH" in str(event):
+                signal = "SELL"
+
+            else:
+                signal = "NONE"
 
         confidence = item.get(
             "confidence",
@@ -31302,86 +31296,41 @@ def calculate_direction_score_v12(
             )
         )
 
-
-
         if signal == "BUY":
-
-
             buy += confidence
 
-
-
         elif signal == "SELL":
-
-
             sell += confidence
 
-
-
-    direction = "NO_TRADE"
-
-    confidence = 0
-
-
-
-    if buy > sell:
-
-
-        direction = "BUY"
-
-        confidence = min(
-
-            int(buy / 5),
-
-            100
-
-        )
-
-
-
-    elif sell > buy:
-
-
-        direction = "SELL"
-
-        confidence = min(
-
-            int(sell / 5),
-
-            100
-
-        )
     print("BUY SCORE:", buy)
     print("SELL SCORE:", sell)
+
+    if buy > sell:
+        direction = "BUY"
+        confidence = min(buy, 100)
+
+    elif sell > buy:
+        direction = "SELL"
+        confidence = min(sell, 100)
+
+    else:
+        direction = "NO_TRADE"
+        confidence = 0
+
     print("FINAL DIRECTION:", direction)
     print("FINAL CONFIDENCE:", confidence)
 
-
-
     return {
 
-
-        "direction":
-
-            direction,
-
-
-        "confidence":
-
-            confidence,
-
-
-        "buy_score":
-
-            buy,
-
-
-        "sell_score":
-
-            sell
+        "signal": direction,
+        "direction": direction,
+        "confidence": confidence,
+        "buy_score": buy,
+        "sell_score": sell
 
     }
 
+        
 
 
 # ==========================
