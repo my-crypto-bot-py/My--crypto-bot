@@ -12163,85 +12163,60 @@ def swing_history_v12(df) -> Dict:
 
 def structure_memory_tracker_v12(df) -> Dict:
 
+    swings = swing_history_v12(df)
 
-    swings = swing_history_v12(
-        df
-    )
     print("SWINGS TYPE:", type(swings))
     print("SWINGS DATA:", swings)
 
+    current_close = float(df["close"].iloc[-1])
+    current_high = float(df["high"].iloc[-1])
+    current_low = float(df["low"].iloc[-1])
 
-    current = float(
-        df["close"].iloc[-1]
-    )
-    
     event = "NONE"
 
     print("SWING HIGHS:", swings["highs"][-5:] if swings["highs"] else [])
-    print("SWING LOWS:", swings["lows"][-5:] if swings["lows"] else [])
-    print("CURRENT CLOSE:", current)
+    print("SWING LOWS :", swings["lows"][-5:] if swings["lows"] else [])
+    print("CURRENT HIGH :", current_high)
+    print("CURRENT LOW  :", current_low)
+    print("CURRENT CLOSE:", current_close)
 
     if swings["highs"]:
         print("MAX HIGH:", max(swings["highs"]))
 
     if swings["lows"]:
-        print("MIN LOW:", min(swings["lows"]))
+        print("MIN LOW :", min(swings["lows"]))
 
     mss = detect_mss(df)
     isb = internal_structure_break(df)
 
     if mss:
-
-        event = (
-            mss["direction"]
-            + "_MSS"
-        )
+        event = f'{mss["direction"]}_MSS'
 
     elif isb:
+        event = f'{isb["direction"]}_BOS'
 
-        event = (
-            isb["direction"]
-            + "_BOS"
-        )
+    elif swings["highs"] and current_high > max(swings["highs"]):
+        event = "BUY_BOS"
 
-    elif swings["highs"] and current > max(swings["highs"]):
+    elif swings["lows"] and current_low < min(swings["lows"]):
+        event = "SELL_BOS"
 
-        event = "BULLISH_BOS"
+    print("===== TRACKER DEBUG =====")
+    print("MSS :", mss)
+    print("ISB :", isb)
+    print("EVENT BEFORE SAVE:", event)
 
-    elif swings["lows"] and current < min(swings["lows"]):
+    V12_STRUCTURE_MEMORY.append(event)
 
-        event = "BEARISH_BOS"
-
-
-    V12_STRUCTURE_MEMORY.append(
-        event
-    )
-
-
-
-    if len(
-        V12_STRUCTURE_MEMORY
-    ) > 50:
-
-        del V12_STRUCTURE_MEMORY[0]
+    if len(V12_STRUCTURE_MEMORY) > 50:
+        V12_STRUCTURE_MEMORY.pop(0)
 
     print("TRACKER EVENT:", event)
 
-
-
     return {
-
-        "event":
-
-            event,
-
-
-        "history":
-
-            V12_STRUCTURE_MEMORY[-10:]
-
+        "event": event,
+        "history": V12_STRUCTURE_MEMORY[-10:]
     }
-
 
 
 # ==========================
