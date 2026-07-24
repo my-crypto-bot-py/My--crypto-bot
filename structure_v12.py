@@ -30822,70 +30822,68 @@ def calculate_entry_score_v12(
         data: Dict
 ) -> int:
 
+    structure = data["structure"]
+    order_block = data["order_block"]
+    fvg = data["fvg"]
+    liquidity = data["liquidity"]
+    smart_money = data["smart_money"]
+
+    structure_confidence = structure.get("confidence", 0)
+
+    if structure_confidence == 0:
+
+        event = str(structure.get("event", ""))
+
+        if (
+            "BUY" in event
+            or "SELL" in event
+            or "BULLISH" in event
+            or "BEARISH" in event
+            or "MSS" in event
+            or "BOS" in event
+        ):
+            structure_confidence = 100
 
     score = 0
 
-
-
-    structure = data["structure"]
-
-    order_block = data["order_block"]
-
-    fvg = data["fvg"]
-
-    liquidity = data["liquidity"]
-
-    smart_money = data["smart_money"]
-
-
-
-    score += structure.get(
-        "confidence",
-        0
-    ) * 0.25
-
-
+    score += structure_confidence * 0.25
 
     score += order_block.get(
         "confidence",
         0
     ) * 0.20
 
-
-
     score += fvg.get(
         "confidence",
         0
     ) * 0.15
-
-
 
     score += liquidity.get(
         "score",
         0
     ) * 0.20
 
-
-
     score += smart_money.get(
         "score",
         0
     ) * 0.20
 
+    print("ENTRY MATRIX COMPONENTS:", {
+        "structure": structure_confidence,
+        "order_block": order_block.get("confidence", 0),
+        "fvg": fvg.get("confidence", 0),
+        "liquidity": liquidity.get("score", 0),
+        "smart_money": smart_money.get("score", 0),
+    })
 
+    print("ENTRY MATRIX CONFIDENCE:", int(min(score, 100)))
 
     return int(
-
         min(
-
             score,
-
             100
-
         )
-
     )
-
 
 
 # ==========================
