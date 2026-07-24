@@ -1,4 +1,60 @@
 # ==========================
+# SWING POINT DETECTOR
+# ========================== 
+def swing_history_v12(df) -> Dict:
+    highs = []
+    lows = []
+
+    if len(df) < 10:
+        return {"highs": highs, "lows": lows}
+
+    for i in range(2, len(df) - 2):
+
+        high = float(df["high"].iloc[i])
+        low = float(df["low"].iloc[i])
+
+        if (
+            high > float(df["high"].iloc[i - 1])
+            and high > float(df["high"].iloc[i + 1])
+        ):
+            highs.append(high)
+
+        if (
+            low < float(df["low"].iloc[i - 1])
+            and low < float(df["low"].iloc[i + 1])
+        ):
+            lows.append(low)
+
+    return {
+        "highs": highs[-10:],
+        "lows": lows[-10:]
+    }
+    ...
+
+# ==========================
+# DYNAMIC SWING HIGH
+# ==========================
+def dynamic_swing_high(df):
+    ...
+
+# ==========================
+# DYNAMIC SWING LOW
+# ==========================
+def dynamic_swing_low(df):
+    ...
+
+# ==========================
+# INTERNAL STRUCTURE BREAK
+# ==========================
+def internal_structure_break(df):
+    ...
+
+# ==========================
+# ORDER BLOCK ENGINE V12
+# ==========================
+def detect_bullish_order_block(df):
+    ...
+# ==========================
 # ORDER BLOCK ENGINE V12
 # ==========================
 
