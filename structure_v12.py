@@ -12270,24 +12270,18 @@ def structure_memory_score_v12(df) -> int:
 
 def institutional_structure_memory_v12(df) -> Dict:
 
+    tracker = structure_memory_tracker_v12(df)
+    score = structure_memory_score_v12(df)
 
-    return {
-
-        "structure":
-
-            structure_memory_tracker_v12(
-                df
-            ),
-
-
-        "score":
-
-            structure_memory_score_v12(
-                df
-            )
-
+    result = {
+        "structure": tracker,
+        "score": score
     }
 
+    print("===== MEMORY ENGINE =====")
+    print(result)
+
+    return result
 
 
 # ==========================
@@ -12296,10 +12290,8 @@ def institutional_structure_memory_v12(df) -> Dict:
 
 def get_structure_memory_v12(df) -> Dict:
 
-    return institutional_structure_memory_v12(
-        df
-    )
-    # ==========================
+    return institutional_structure_memory_v12(df)
+# ==========================
 # STRUCTURE ENGINE V12
 # PART 2F-12
 # Final Intelligence Layer
