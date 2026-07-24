@@ -1,12 +1,17 @@
 # ==========================
 # SWING POINT DETECTOR
-# ========================== 
+# ==========================
+
 def swing_history_v12(df) -> Dict:
+
     highs = []
     lows = []
 
     if len(df) < 10:
-        return {"highs": highs, "lows": lows}
+        return {
+            "highs": highs,
+            "lows": lows
+        }
 
     for i in range(2, len(df) - 2):
 
@@ -15,13 +20,15 @@ def swing_history_v12(df) -> Dict:
 
         if (
             high > float(df["high"].iloc[i - 1])
-            and high > float(df["high"].iloc[i + 1])
+            and
+            high > float(df["high"].iloc[i + 1])
         ):
             highs.append(high)
 
         if (
             low < float(df["low"].iloc[i - 1])
-            and low < float(df["low"].iloc[i + 1])
+            and
+            low < float(df["low"].iloc[i + 1])
         ):
             lows.append(low)
 
@@ -29,34 +36,127 @@ def swing_history_v12(df) -> Dict:
         "highs": highs[-10:],
         "lows": lows[-10:]
     }
-    ...
 
 # ==========================
 # DYNAMIC SWING HIGH
 # ==========================
-def dynamic_swing_high(df):
-    ...
+
+def dynamic_swing_high(df, lookback: int = 5):
+
+    if len(df) < (lookback * 2 + 1):
+        return None
+
+    for i in range(len(df) - lookback - 1, lookback, -1):
+
+        high = float(df["high"].iloc[i])
+
+        if (
+            high > df["high"].iloc[i-lookback:i].max()
+            and
+            high > df["high"].iloc[i+1:i+lookback+1].max()
+        ):
+
+            return {
+                "price": high,
+                "index": i,
+                "type": "SWING_HIGH"
+            }
+
+    return None
+
 
 # ==========================
 # DYNAMIC SWING LOW
 # ==========================
-def dynamic_swing_low(df):
-    ...
+
+def dynamic_swing_low(df, lookback: int = 5):
+
+    if len(df) < (lookback * 2 + 1):
+        return None
+
+    for i in range(len(df) - lookback - 1, lookback, -1):
+
+        low = float(df["low"].iloc[i])
+
+        if (
+            low < df["low"].iloc[i-lookback:i].min()
+            and
+            low < df["low"].iloc[i+1:i+lookback+1].min()
+        ):
+
+            return {
+                "price": low,
+                "index": i,
+                "type": "SWING_LOW"
+            }
+
+    return None
+
 
 # ==========================
 # INTERNAL STRUCTURE BREAK
 # ==========================
+
 def internal_structure_break(df):
-    ...
+
+    swing_high = dynamic_swing_high(df)
+    swing_low = dynamic_swing_low(df)
+
+    if swing_high is None or swing_low is None:
+
+        swings = swing_history_v12(df)
+
+        if swing_high is None and swings["highs"]:
+            swing_high = {
+                "price": swings["highs"][-1],
+                "type": "SWING_HIGH"
+            }
+
+        if swing_low is None and swings["lows"]:
+            swing_low = {
+                "price": swings["lows"][-1],
+                "type": "SWING_LOW"
+            }
+
+    if swing_high is None or swing_low is None:
+        return None
+
+    current_close = float(df["close"].iloc[-1])
+    current_high = float(df["high"].iloc[-1])
+    current_low = float(df["low"].iloc[-1])
+
+    if (
+        current_close > swing_high["price"]
+        or
+        current_high > swing_high["price"]
+    ):
+
+        return {
+            "type": "BOS",
+            "direction": "BUY",
+            "level": swing_high["price"]
+        }
+
+    if (
+        current_close < swing_low["price"]
+        or
+        current_low < swing_low["price"]
+    ):
+
+        return {
+            "type": "BOS",
+            "direction": "SELL",
+            "level": swing_low["price"]
+        }
+
+    return None
 
 # ==========================
 # ORDER BLOCK ENGINE V12
 # ==========================
 def detect_bullish_order_block(df):
     ...
-# ==========================
-# ORDER BLOCK ENGINE V12
-# ==========================
+    # complete code
 
 def detect_bullish_order_block(df):
 
@@ -87,7 +187,7 @@ def detect_bullish_order_block(df):
                 "strength": "NORMAL"
             }
 
-    return None 
+    return None
 # ==========================
 # BEARISH ORDER BLOCK
 # ==========================
