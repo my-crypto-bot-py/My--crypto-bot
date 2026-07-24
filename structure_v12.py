@@ -5328,79 +5328,42 @@ from typing import Dict
 
 def entry_timing_analysis_v12(df) -> Dict:
 
-
-    momentum = detect_displacement(
-        df
-    )
-
-
-    candle = candle_confirmation_v12(
-        df
-    )
-
-
-    structure = detect_mss(
-        df
-    )
-
+    momentum = detect_displacement(df)
+    candle = candle_confirmation_v12(df)
+    structure = detect_mss(df)
 
     timing = "WAIT"
-
-
     score = 0
 
-
-
     if structure:
-
         score += 30
-
-
 
     if momentum:
-
         score += 30
 
-
-
     if candle["confirmed"]:
-
         score += 20
-
-
 
     if optimized_liquidity_sweep(df):
-
         score += 20
 
-
-
     if score >= 80:
-
         timing = "EXECUTE"
-
-
 
     return {
 
-        "timing":
+        "timing": {
+            "status": timing,
+            "score": score
+        },
 
-            timing,
+        "timing_score": score,
 
+        "approved": timing == "EXECUTE",
 
-        "score":
+        "momentum": momentum,
 
-            score,
-
-
-        "momentum":
-
-            momentum,
-
-
-        "candle":
-
-            candle["signal"]
+        "candle": candle["signal"]
 
     }
 
