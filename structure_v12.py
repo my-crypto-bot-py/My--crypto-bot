@@ -12223,9 +12223,10 @@ def structure_memory_tracker_v12(df) -> Dict:
 # STRUCTURE QUALITY SCORE
 # ==========================
 
-def structure_memory_score_v12(df) -> int:
+def structure_memory_score_v12(df, tracker=None) -> int:
 
-    tracker = structure_memory_tracker_v12(df)
+    if tracker is None:
+        tracker = structure_memory_tracker_v12(df)
 
     mss = detect_mss(df)
     isb = internal_structure_break(df)
@@ -12250,6 +12251,8 @@ def structure_memory_score_v12(df) -> int:
     ):
         score += 50
 
+    score = min(score, 100)
+
     print("===== STRUCTURE DEBUG =====")
     print("LAST SWING HIGH:", swings["highs"][-1] if swings["highs"] else None)
     print("LAST SWING LOW :", swings["lows"][-1] if swings["lows"] else None)
@@ -12260,9 +12263,9 @@ def structure_memory_score_v12(df) -> int:
     print("MSS            :", mss)
     print("ISB            :", isb)
     print("HISTORY        :", history)
-    print("STRUCTURE SCORE:", min(score, 100))
+    print("STRUCTURE SCORE:", score)
 
-    return min(score, 100)
+    return score
 
 # ==========================
 # STRUCTURE MEMORY ENGINE
@@ -12271,7 +12274,11 @@ def structure_memory_score_v12(df) -> int:
 def institutional_structure_memory_v12(df) -> Dict:
 
     tracker = structure_memory_tracker_v12(df)
-    score = structure_memory_score_v12(df)
+
+    score = structure_memory_score_v12(
+        df,
+        tracker
+    )
 
     result = {
         "structure": tracker,
@@ -12282,7 +12289,6 @@ def institutional_structure_memory_v12(df) -> Dict:
     print(result)
 
     return result
-
 
 # ==========================
 # MAIN.PY COMPATIBILITY
