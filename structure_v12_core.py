@@ -7227,54 +7227,57 @@ from typing import Dict, Optional
 def internal_structure_break(df) -> Optional[Dict]:
 
     swing_high = dynamic_swing_high(df)
-
     swing_low = dynamic_swing_low(df)
 
+    swings = swing_history_v12(df)
+
+    # Fallback if dynamic swing not found
+    if swing_high is None and swings["highs"]:
+        swing_high = {
+            "price": swings["highs"][-1],
+            "type": "SWING_HIGH"
+        }
+
+    if swing_low is None and swings["lows"]:
+        swing_low = {
+            "price": swings["lows"][-1],
+            "type": "SWING_LOW"
+        }
 
     if swing_high is None or swing_low is None:
-
         return None
 
+    current_close = float(df["close"].iloc[-1])
+    current_high = float(df["high"].iloc[-1])
+    current_low = float(df["low"].iloc[-1])
 
-    price = float(
-        df["close"].iloc[-1]
-    )
+    print("===== ISB DEBUG =====")
+    print("SWING HIGH :", swing_high)
+    print("SWING LOW  :", swing_low)
+    print("CURRENT HIGH :", current_high)
+    print("CURRENT LOW  :", current_low)
+    print("CURRENT CLOSE:", current_close)
 
-
-    if price > swing_high["price"]:
-
-        return {
-
-            "type":
-                "BOS",
-
-            "direction":
-                "BUY",
-
-            "level":
-                swing_high["price"]
-
-        }
-
-
-
-    if price < swing_low["price"]:
+    # Bullish BOS
+    if current_close > swing_high["price"] or current_high > swing_high["price"]:
 
         return {
-
-            "type":
-                "BOS",
-
-            "direction":
-                "SELL",
-
-            "level":
-                swing_low["price"]
-
+            "type": "BOS",
+            "direction": "BUY",
+            "level": swing_high["price"]
         }
 
+    # Bearish BOS
+    if current_close < swing_low["price"] or current_low < swing_low["price"]:
+
+        return {
+            "type": "BOS",
+            "direction": "SELL",
+            "level": swing_low["price"]
+        }
 
     return None
+    
 
 
 
